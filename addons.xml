@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addons>
+<addon id="plugin.video.globotv"
+		name="Globo.tv"
+		version="0.5.5.1"
+		provider-name="Vitor Hirota">
+	<requires>
+		<import addon="xbmc.python" version="2.0"/>
+		<import addon="script.module.requests" version="0.13.2"/>
+		<import addon="script.module.xbmcswift2" version="1.1.1"/>
+		<import addon="script.common.plugin.cache" version="0.9.1"/>
+	</requires>
+	<extension point="xbmc.python.pluginsource" library="addon.py">
+		<provides>video</provides>
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<summary>Globo.tv Videos on XBMC</summary>
+		<summary language="pt">Globo.tv no XBMC</summary>
+		<description language="pt">Globo.tv no XBMC</description>
+		<platform>all</platform>
+	</extension>
+</addon>
+
+<!-- <addon id="plugin.video.muu"
+		name="Muu"
+		version="0.1"
+		provider-name="Vitor Hirota">
+	<requires>
+		<import addon="xbmc.python" version="1.0"/>
+		<import addon="script.common.plugin.cache" version="0.9.1"/>
+	</requires>
+	<extension point="xbmc.python.pluginsource" library="default.py">
+		<provides>video</provides>
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<summary>Muu on XBMC</summary>
+		<summary language="pt">Muu no XBMC</summary>
+		<description language="pt">Muuito mais TV</description>
+		<platform>all</platform>
+	</extension>
+</addon> -->
+
+<addon id="repository.brazilian.xbmc-addons"
+		name="Brazilian XBMC Add-On Repository"
+		version="1.0"
+		provider-name="vitorhirota">
+    <extension point="xbmc.addon.repository" name="Brazilian XBMC Add-on Repository">
+        <info compressed="false">https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/raw/master/addons.xml</info>
+        <checksum>https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/raw/master/addons.xml.md5</checksum>
+        <datadir zip="true">https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/downloads/repository.brazilian.xbmc-addons-1.0.zip</datadir>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Install Brazilian Addons</summary>
+        <description>Download and install brazilian addons</description>
+        <platform>all</platform>
+    </extension>
+</addon>
+</addons>

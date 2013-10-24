@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="repository.brazilian.xbmc-addons"
+		name="Brazilian XBMC Add-On Repository"
+		version="1.0.0"
+		provider-name="vitorhirota">
+    <extension point="xbmc.addon.repository" name="Brazilian XBMC Add-on Repository">
+        <info compressed="false">https://../addons.xml</info>
+        <checksum>https://../addons.xml.md5</checksum>
+        <datadir zip="true">https://../datadir/[addon.id]/[addon.id-x.y.z.zip]</datadir>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Install Brazilian Addons</summary>
+        <description>Download and install brazilian addons</description>
+        <platform>all</platform>
+    </extension>
+</addon>

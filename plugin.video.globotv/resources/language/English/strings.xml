@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+  <!-- Plugin name -->
+  <string id="30000">globo.tv</string>
+  <!-- Settings categories and labels -->
+  <string id="30100">General</string>
+  <string id="30110">Username</string>
+  <string id="30120">Password</string>
+  <string id="30130">Video Quality</string>
+  <string id="30131">SD Only</string>
+  <string id="30132">HD When Available</string>
+  <string id="30140">Videos Per Page</string>
+  <string id="30150">Debug</string>
+  <!-- Notifications messages -->
+  <string id="31001">Authentication error. Invalid username or password.</string>
+  <!-- Misc -->
+  <string id="32001">Next Page</string>
+</strings>

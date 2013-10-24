@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<settings>
+  <!-- General -->
+  <category label="30100">
+    <setting id="username" type="text" label="30110" default="" />
+    <setting id="password" type="text" option="hidden" label="30120" enable="!eq(-1,)" default="" />
+    <setting type="sep" />
+    <setting id="video_quality" type="enum" label="30130" lvalues="30131|30132" default="1" />
+    <setting type="sep" />
+    <setting id="page_size" type="labelenum" label="30140" values="15|30|60" default="15" />
+    <!-- <setting type="sep" />
+    <setting id="debug" type="bool" label="30150" default="false" /> -->
+  </category>
+</settings>
