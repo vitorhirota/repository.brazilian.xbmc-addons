@@ -2,7 +2,7 @@
 <addon id="plugin.video.globotv"
 		name="Globo.tv"
 		version="0.5.5.1"
-		provider-name="Vitor Hirota">
+		provider-name="vitorhirota">
 	<requires>
 		<import addon="xbmc.python" version="2.0"/>
 		<import addon="script.module.requests" version="0.13.2"/>
