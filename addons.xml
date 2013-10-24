@@ -28,7 +28,7 @@
     <extension point="xbmc.addon.repository" name="Brazilian XBMC Add-on Repository">
         <info compressed="false">https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/raw/master/addons.xml</info>
         <checksum>https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/raw/master/addons.xml.md5</checksum>
-        <datadir zip="true">https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/downloads</datadir>
+        <datadir zip="true">https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/raw/master/repo</datadir>
     </extension>
     <extension point="xbmc.addon.metadata">
         <summary>Install Brazilian Addons</summary>
