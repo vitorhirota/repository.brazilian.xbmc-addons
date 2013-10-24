@@ -55,7 +55,7 @@ Se você tiver qualquer um destes, vá em frente e abra um [problema][5].
 
 
 [1]: http://globotv.globo.com
-[2]: https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/downloads/repository.brazilian.xbmc-addons-1.0.zip
+[2]: https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/downloads/repository.brazilian.xbmc-addons-1.0-0.zip
 [3]: http://wiki.xbmc.org/index.php?title=Add-ons#How_to_install_from_zip
 [4]: http://passion-xbmc.org/addons/?Page=View&ID=plugin.program.repo.installer
 [5]: https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/issues
