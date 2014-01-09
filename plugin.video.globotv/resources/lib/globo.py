@@ -58,7 +58,7 @@ class GloboApi(object):
     def _get_hashes(self, video_id, resource_ids, is_retry=False):
         args = (video_id, '|'.join(resource_ids))
         _cookies = {'GLBID': self.authenticate()}
-        # self.plugin.log.debug('requesting hash: %s' % (HASH_URL % args))
+        self.plugin.log.debug('requesting hash: %s' % (HASH_URL % args))
         req = requests.get(HASH_URL % args, cookies=_cookies)
         self.plugin.log.debug('resource ids: %s' % '|'.join(resource_ids))
         self.plugin.log.debug('return: %s' %
@@ -73,12 +73,12 @@ class GloboApi(object):
         except KeyError:
             args = (data['http_status_code'], data['message'])
             self.plugin.log.error('Request error: [%s] %s' % args)
-            if args[0] == '403' and _cookies['GLBID']:
+            if str(args[0]) == '403' and _cookies['GLBID']:
                 # if a 403 is returned (authentication needed) and there is an
                 # globo id, then this might be due to session expiration and a
                 # retry with a blank id shall be tried
-                self.plugin.set_setting('glbid', '')
                 self.plugin.log.debug('cleaning globo id')
+                self.plugin.set_setting('glbid', '')
                 if not is_retry:
                     self.plugin.log.debug('retrying authentication')
                     return self._get_hashes(video_id, resource_ids, True)
@@ -101,6 +101,38 @@ class GloboApi(object):
             self.cache.set('video|%s' % video_id, repr(info))
         return info
 
+    def _get_show_tree(self):
+        # two trees shall be built, one base on categories, the other on channels
+        tree = {}
+        data = self._get_cached(BASE_URL)
+
+        # match channels
+        rexp = (r'<a href="/([\w-]*)/" .* data-event-listagem-canais.*=' +
+                r'([\s\S]+?)>')
+        channels = re.compile(rexp).findall(data)
+
+        # match categories
+        rexp = (r'<h4 data-tema-slug="(.+?)">(.+?)<span[\s\S]+?<ul>' +
+                r'([\s\S]+?)</ul>')
+        categories_match = re.compile(rexp).findall(data)
+
+        shows = {}
+        channels = set()
+        for slug, category, content in categories_match:
+            # match show uri, names and thumb and return an object
+            # match: ('/gnt/decora', 'Decora', 'http://s2.glbimg.com/[.].png'),
+            shows_re = (r'<a href="/([\w-]*)/([\w-]*)/".*programa="(.+?)">' +
+                        r'[\s\S]+?<img data-src="(.+?)"')
+            shows_match = re.compile(shows_re).findall(content)
+            channels |= set([i[0] for i in shows_match])
+            shows[slug] = {'title': category, 'shows': shows_match}
+
+
+        tree['categories'] = dict(zip(shows.keys(),
+                                      [i['title'] for i in shows.values()]))
+
+        return tree
+
     def authenticate(self):
         glbid = self.plugin.get_setting('glbid')
         username = self.plugin.get_setting('username')
@@ -112,6 +144,7 @@ class GloboApi(object):
                 'login-passaporte': username,
                 'senha-passaporte': password
             }
+            self.plugin.log.debug('username/password set. trying to authenticate')
             r = requests.post(LOGIN_URL, data=payload)
             glbid = r.cookies.get('GLBID')
             if glbid:
@@ -121,7 +154,7 @@ class GloboApi(object):
                 self.plugin.log.debug('wrong username or password')
                 self.plugin.notify(self.plugin.get_string(31001))
         elif glbid:
-            self.plugin.log.debug('already authenticated')
+            self.plugin.log.debug('already authenticated with id %s' % glbid)
         return glbid
 
     def get_shows_by_categories(self):
@@ -227,7 +260,7 @@ class GloboApi(object):
             raise Exception('Invalid video id: %s' % video_id)
 
         resources = [r for r in sorted(data['resources'],
-                                       key=lambda v: v.get('bitrate') or 0)
+                                       key=lambda v: v.get('height') or 0)
                      if r.has_key('players') and 'flash' in r['players']]
 
         r = resources[-1] if hd_first else resources[0]
