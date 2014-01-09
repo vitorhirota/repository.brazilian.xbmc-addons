@@ -2,7 +2,7 @@
 <addons>
 <addon id="plugin.video.globotv"
 		name="Globo.tv"
-		version="0.5.5.1"
+		version="0.5.5.2"
 		provider-name="vitorhirota">
 	<requires>
 		<import addon="xbmc.python" version="2.0"/>
