@@ -48,14 +48,15 @@ Alternativamente, você pode usar o [plugin de instalação de repositórios][4]
 
 ## Questões, comentários, sugestões de funcionalidades e problemas
 
-Se você tiver qualquer um destes, vá em frente e abra um [problema][5].
+Se você tiver qualquer um destes, vá em frente e abra um [problema][5], ou dê um alo na thread oficial do [fórum xbmc.org][6]
 
-*If you have any of questions, comments, feature requests or issues, go ahead and submit an [issue][5].*
+*If you have any of questions, comments, feature requests or issues, go ahead and submit an [issue][5] or check the official thread at [xbmc.org forum][6]
 
 
 
 [1]: http://globotv.globo.com
-[2]: https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/downloads/repository.brazilian.xbmc-addons-1.0.zip
+[2]: https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/downloads/repository.brazilian.xbmc-addons-1.0.0.zip
 [3]: http://wiki.xbmc.org/index.php?title=Add-ons#How_to_install_from_zip
 [4]: http://passion-xbmc.org/addons/?Page=View&ID=plugin.program.repo.installer
 [5]: https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/issues
+[6]: http://forum.xbmc.org/showthread.php?tid=145951
