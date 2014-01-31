@@ -1,3 +1,7 @@
+0.5.5.3
+ PT: Correção da versão do player na url de hash
+ EN: player version update during hash request
+
 0.5.5.2
  PT: correção para quando id de sessão expirou
  EN: fix for expired session id
