@@ -32,7 +32,7 @@ RAIL_URL = SHOW_URL + '/_/trilhos/%(rail)s/page/%(page)s/'
 INFO_URL = 'http://api.globovideos.com/videos/%s/playlist'
 OFFER_URL = 'http://globotv.globo.com/_/oferta_tematica/%(slug)s.json'
 HASH_URL = ('http://security.video.globo.com/videos/%s/hash?'
-            + 'resource_id=%s&version=2.5.8&player=flash')
+            + 'resource_id=%s&version=2.7.4&player=flash')
 LOGIN_URL = 'https://login.globo.com/login/151?tam=widget'
 
 
