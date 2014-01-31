@@ -1,0 +1,59 @@
+0.5.5.3
+ PT: Correção da versão do player na url de hash
+ EN: player version update during hash request
+
+0.5.5.2
+ PT: correção para quando id de sessão expirou
+ EN: fix for expired session id
+
+0.5.5.1
+ PT: atualização da versão da api na url de hash
+ EN: api version update in hash url
+
+0.5.5
+ PT: atualização código de hash
+ EN: hash code update
+
+0.5.4
+ PT: Correção da lista de recursos de vídeo
+ EN: Video resource list fix
+
+0.5.3
+ PT: Correção de bug
+ EN: statement fix
+
+0.5.2
+ PT: Correção de UnicodeError para algumas mensagens de log.
+ EN: UnicodeError fix for some log messages.
+
+0.5.1
+ PT: Correção para retro compatibilidade com Eden
+ EN: Backwards compatibility for Eden
+
+0.5
+ PT: Alterado estrutura para swift2 e requests.
+ 	 Correções:
+ 	 - 'skipping unplayable item'
+ 	 - cabeçalho de cookie fixo para autorização
+ 	 - casos em que aparentemente nenhum video toca (filtragem de playlists)
+ EN: Major move to swift2 and requests. Bug-fixes.
+
+0.4
+ PT: Possibilidade de assistir aos vídeos em alta-resolução quando disponível, e autenticação, permitindo a usuários assinantes assistir ao conteúdo exclusivo.
+ EN: HD videos when available are now streaming and authentication for paying users, allowing for subscribers only video streaming.
+
+0.3.1
+ PT: Corrigido casos em que próxima página não retorna nenhum vídeo.
+ EN: Fixed when next page does not bring any results.
+
+0.3
+ PT: Melhorado a regexp de busca de vídeos, corrigindo casos em que o mesmo id de seção seria buscado duas vezes.
+ EN: Improved video scraping regexp, correcting cases in which the same section id would be fetched twice.
+
+0.2
+ PT: Alterado o nome do plugin de gnt para globotv, já que agora busca diretamente no website da globotv.
+ EN: Change plugin name from gnt to globotv, since it's now scrapping globotv website directly.
+
+0.1
+ PT: Primeira versão para Eden, listagem básica dos programas disponíveis e seus episódios.
+ EN: First Version for Eden, basic listing of available shows and its episodes.
