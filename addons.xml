@@ -1,24 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="repository.brazilian.xbmc-addons"
-        name="Brazilian XBMC Add-On Repository"
-        version="1.0.0"
-        provider-name="vitorhirota">
-    <extension point="xbmc.addon.repository" name="Brazilian XBMC Add-on Repository">
-        <info compressed="false">https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/raw/master/addons.xml</info>
-        <checksum>https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/raw/master/addons.xml.md5</checksum>
-        <datadir zip="true">https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/raw/master/repo</datadir>
-    </extension>
-    <extension point="xbmc.addon.metadata">
-        <summary>Install Brazilian Addons</summary>
-        <description>Download and install brazilian addons</description>
-        <platform>all</platform>
-    </extension>
-</addon>
-
 <addon id="plugin.video.globotv"
 		name="Globo.tv"
-		version="0.5.5.3"
+		version="0.5.5.4"
 		provider-name="vitorhirota">
 	<requires>
 		<import addon="xbmc.python" version="2.0"/>
@@ -35,5 +19,21 @@
 		<description language="pt">Globo.tv no XBMC</description>
 		<platform>all</platform>
 	</extension>
+</addon>
+
+<addon id="repository.brazilian.xbmc-addons"
+        name="Brazilian XBMC Add-On Repository"
+        version="1.0.0"
+        provider-name="vitorhirota">
+    <extension point="xbmc.addon.repository" name="Brazilian XBMC Add-on Repository">
+        <info compressed="false">https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/raw/master/addons.xml</info>
+        <checksum>https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/raw/master/addons.xml.md5</checksum>
+        <datadir zip="true">https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/raw/master/repo</datadir>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Install Brazilian Addons</summary>
+        <description>Download and install brazilian addons</description>
+        <platform>all</platform>
+    </extension>
 </addon>
 </addons>
