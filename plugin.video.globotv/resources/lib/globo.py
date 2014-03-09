@@ -32,8 +32,9 @@ RAIL_URL = SHOW_URL + '/_/trilhos/%(rail)s/page/%(page)s/'
 INFO_URL = 'http://api.globovideos.com/videos/%s/playlist'
 OFFER_URL = 'http://globotv.globo.com/_/oferta_tematica/%(slug)s.json'
 HASH_URL = ('http://security.video.globo.com/videos/%s/hash?'
-            + 'resource_id=%s&version=2.8.4&player=flash')
+            + 'resource_id=%s&version=%s&player=flash')
 LOGIN_URL = 'https://login.globo.com/login/151?tam=widget'
+API_MIN_URL = 'http://s.videos.globo.com/p2/j/api.min.js'
 
 
 class GloboApi(object):
@@ -54,9 +55,21 @@ class GloboApi(object):
                     and json.loads(r.text) or r.text)
             self.cache.set(key, repr(data))
         return data
-
-    def _get_hashes(self, video_id, resource_ids, is_retry=False):
-        args = (video_id, '|'.join(resource_ids))
+        
+    def _get_player_version(self):
+        req = requests.get(API_MIN_URL)
+        rexp = r'playerVersion="([\d\.]+)"'
+        playerVersion = re.findall(rexp,req.text)
+        if playerVersion:
+            return playerVersion[0]
+        raise Exception("Player version not found")
+     
+    def _get_hashes(self, video_id, resource_ids, auth_retry=False, player_retry=False):
+        playerVersion = self.plugin.get_setting('player_version')
+        if not playerVersion:
+            playerVersion = self._get_player_version()
+            self.plugin.set_setting('player_version', playerVersion)
+        args = (video_id, '|'.join(resource_ids), playerVersion)
         _cookies = {'GLBID': self.authenticate()}
         self.plugin.log.debug('requesting hash: %s' % (HASH_URL % args))
         req = requests.get(HASH_URL % args, cookies=_cookies)
@@ -73,15 +86,23 @@ class GloboApi(object):
         except KeyError:
             args = (data['http_status_code'], data['message'])
             self.plugin.log.error('Request error: [%s] %s' % args)
+            
+            if data['message'] == "Player not recognized":
+                self.plugin.log.debug('cleaning player version')
+                self.plugin.set_setting('player_version', '')
+                if not player_retry:
+                    self.plugin.log.debug('retrying player version')
+                    return self._get_hashes(video_id, resource_ids, auth_retry, True)
+                    
             if str(args[0]) == '403' and _cookies['GLBID']:
                 # if a 403 is returned (authentication needed) and there is an
                 # globo id, then this might be due to session expiration and a
                 # retry with a blank id shall be tried
                 self.plugin.log.debug('cleaning globo id')
                 self.plugin.set_setting('glbid', '')
-                if not is_retry:
+                if not auth_retry:
                     self.plugin.log.debug('retrying authentication')
-                    return self._get_hashes(video_id, resource_ids, True)
+                    return self._get_hashes(video_id, resource_ids, True, player_retry)
             raise Exception(data['message'])
 
     def _get_video_info(self, video_id):
