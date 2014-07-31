@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+  <!-- Plugin name -->
+  <string id="30000">globo.com</string>
+  <!-- Services -->
+  <string id="30001">globo.tv</string>
+  <string id="30002">globosat play</string>
+  <!-- Menu -->
+  <string id="30011">Channels</string>
+  <string id="30012">Live</string>
+  <string id="30013">Favorites</string>
+  <string id="30014">Search</string>
+  <!-- Settings categories and labels -->
+  <string id="31000">General</string>
+  <string id="31100">Globo.tv Settings</string>
+  <string id="31110">Username</string>
+  <string id="31120">Password</string>
+  <string id="31200">Globosat Play Settings</string>
+  <string id="31210">Provider</string>
+  <string id="31211">CTBC</string>
+  <string id="31212">GVT</string>
+  <string id="31213">Multiplay</string>
+  <string id="31214">NET</string>
+  <string id="31215">NET Angra</string>
+  <string id="31216">TV Oi</string>
+  <string id="31217">Vivo</string>
+  <string id="31218">Globosat Guest</string>
+  <string id="31300">Addon Settings</string>
+  <string id="31310">Video Quality</string>
+  <string id="31311">SD Only</string>
+  <string id="31312">HD When Available</string>
+  <string id="31400">Videos Per Page</string>
+  <string id="31500">Debug</string>
+  <!-- Notifications messages -->
+  <string id="32001">Authentication error. Invalid username or password.</string>
+  <string id="32002">Provider %s not implemented yet.</string>
+  <!-- Misc -->
+  <string id="33001">Next Page</string>
+</strings>
