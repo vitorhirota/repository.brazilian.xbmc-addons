@@ -76,13 +76,14 @@ class GloboApi(object):
             playerVersion = self._get_player_version()
             self.plugin.set_setting('player_version', playerVersion)
 
+        video_data = self._get_video_info(video_id)
+        credentials = self.authenticate('globo' if video_data['channel_id'] == 196
+                                        else self.plugin.get_setting('play_provider'))
+
         args = (video_id, '|'.join(resource_ids), playerVersion)
-        cookies = {'GLBID': self.authenticate()}
+        data = self._get_page(HASH_URL % args, cookies=credentials)
 
-        self.plugin.log.debug('requesting hash: %s' % (HASH_URL % args))
-
-        data = self._get_page(HASH_URL % args, cookies=cookies)
-
+        self.plugin.log.debug('hash requested: %s' % (HASH_URL % args))
         self.plugin.log.debug('resource ids: %s' % '|'.join(resource_ids))
         self.plugin.log.debug('return: %s' % repr(data).encode('ascii', 'replace'))
         try:
@@ -102,7 +103,7 @@ class GloboApi(object):
                     self.plugin.log.debug('retrying player version')
                     return self._get_hashes(video_id, resource_ids, auth_retry, True)
 
-            if str(args[0]) == '403' and cookies['GLBID']:
+            if str(args[0]) == '403' and credentials['GLBID']:
                 # if a 403 is returned (authentication needed) and there is an
                 # globo id, then this might be due to session expiration and a
                 # retry with a blank id shall be tried
@@ -113,21 +114,20 @@ class GloboApi(object):
                     return self._get_hashes(video_id, resource_ids, True, player_retry)
             raise Exception(data['message'])
 
-    # @cache.cacheFunction
+    # @util.cacheFunction
     def _get_video_info(self, video_id):
         # get video info
         data = self._get_page(INFO_URL % video_id)['videos'][0]
         # substitute unicode keys with basestring
         data = dict((str(key), value) for key, value in data.items())
-
         if 'duration' not in data:
             data['duration'] = sum(x['resources'][0]['duration']/1000
                                    for x in data.get('children') or [data])
-
         return data
 
     def _build_base_index(self):
         # get globosat play page
+        # TO-DO: cache
         html = self._get_page(GLOBOSAT_URL)
 
         # build on demmand channels
@@ -156,7 +156,7 @@ class GloboApi(object):
                 ('live', self.plugin.get_string(30012)),
                 ('favorites', self.plugin.get_string(30013)),
             ],
-            'channel': channels,
+            'channels': channels,
             'live': live,
             'favorites': self.plugin.get_setting('favorites'),
         }
@@ -187,23 +187,18 @@ class GloboApi(object):
         return shows
 
     def _build_globosat(self, key):
-        # to-do
+        # TO-DO
         pass
         return []
 
 
     def authenticate(self, provider):
-        glbid = self.plugin.get_setting('glbid')
-
         try:
-            backend = getattr(backends, provider)
-            backend = backend(self.plugin, username, password)
+            backend = getattr(backends, provider)(self.plugin)
         except AttributeError:
             self.plugin.log.error('%s provider unavailable' % provider)
             self.plugin.notify(self.plugin.get_string(32001) % provider)
-
-        user_id = backend.authenticate()
-        return user_id
+        return backend.authenticate()
 
     def get_path(self, key):
         # import pydevd; pydevd.settrace()
@@ -249,92 +244,6 @@ class GloboApi(object):
             return []
 
 
-
-
-    def get_shows_by_categories(self):
-        categories = {}
-        data = self._get_page(BASE_URL)
-        # match categories
-        rexp = ('<h4 data-tema-slug="(.+?)">(.+?)' +
-                r'<span[\s\S]+?<ul>([\s\S]+?)</ul>')
-        for slug, category, content in util.find(rexp, data):
-            # match show uri, names and thumb and return an object
-            # match: ('/gnt/decora', 'Decora', 'http://s2.glbimg.com/[.].png'),
-            shows_re = ('<a href="(.+?)".*programa="(.+?)">' +
-                        r'[\s\S]+?<img data-src="(.+?)"')
-            shows = util.find(shows_re, content)
-            categories[slug] = {'title': category, 'shows': shows}
-        return categories
-
-    def get_rails(self, uri):
-        data = self._get_page(SHOW_URL % {'uri': uri})
-        # match video 'rail's id and name
-        # match ex: ('4dff4cf691089163a9000002', 'Edi\xc3\xa7\xc3\xa3o')
-        rails_re = r'id="trilho-(.+?)"[\s\S]+?<h2.*title="(.+?)"'
-        rails = util.find(rails_re, data)
-        return rails
-
-    def get_rail_videos(self, **kwargs):
-        video_count = last_count = 0
-        videos = util.struct()
-        videos.list = []
-        videos.next = 1
-        while video_count < int(self.plugin.get_setting('page_size') or 15):
-            data = self._get_page(RAIL_URL % kwargs)
-            # match video 'rail's
-            # match: (title, video_id, date [DD/MM/AAAA],
-            #         thumb, duration [MM:SS], plot)
-            regExp = (
-                r'<li.*data-video-title="(.+?)"[\s]+data-video-id="(.+?)"[\s]+'
-                + r'data-video-data-exibicao="(.+?)">[\s\S]+?'
-                + r'<img.+src="(.+?)"[\s\S]+?'
-                + r'<span class="duracao.*?">(.+?)</span>[\s\S]+?'
-                + r'div class="balao">[\s]+?<p>[\s]+?([\w].+?)[\s]+?</p>'
-            )
-            matches = util.find(regExp, data)
-            mcount = len(matches)
-            properties = ('title', 'id', 'date', 'thumb', 'duration', 'plot')
-            for item in matches:
-                video = util.struct(dict(zip(properties, item)))
-                # update attrs
-                video.title = util.unescape(video.title)
-                video.plot = util.unescape(video.plot)
-                video.date = video.date.replace('/', '.')
-                _split = video.duration.split(':')
-                video.duration = sum(int(x) * 60 ** i for i, x in
-                                     enumerate(reversed(_split)))
-                self.cache.set('video|%s' % video.id, repr(video))
-                videos.list.append(video)
-            if mcount == 0 or mcount < last_count:
-                videos.next = None
-                break
-            video_count += mcount
-            last_count = mcount
-            kwargs['page'] += 1
-        if videos.next:
-            videos.next = kwargs['page']
-        return videos
-
-    def get_offer_videos(**kwargs):
-        data = self._get_page(OFFER_URL % kwargs)
-        key = {'last': 'ultimos_videos',
-               'popular': 'videos_mais_vistos'}[kwargs.get('filter') or 'last']
-        content = json.loads(data)[key]
-        items = []
-        for entry in content:
-            date, duration, descr = (entry['exibicao'],
-                                     entry['duracao'],
-                                     entry['descricao'])
-            # params = {'action': 'play', 'video_id': _id}
-            items.append({
-                'Date': date.replace('/', '.'),
-                'Duration': duration,
-                'PlotOutline': descr,
-            })
-            # addItem(title, thumb, params, listItemAttr)
-            # self.cache.set(_id, repr([title, date, thumb, duration, descr]))
-        return items
-
     def get_videos(self, video_id):
         data = self._get_video_info(video_id)
         if 'children' in data:
@@ -352,7 +261,6 @@ class GloboApi(object):
         # this method assumes there's no children
         if 'children' in data:
             raise Exception('Invalid video id: %s' % video_id)
-
 
         resources = sorted(data['resources'],
                            key=lambda v: v.get('height') or 0,

@@ -26,10 +26,10 @@ class Backends(object):
     def authenticate(self):
         raise Exception('Not implemented.')
 
-    def debug(msg):
+    def debug(self, msg):
         self.plugin.log.debug('[%s] %s' % (self.__class__.__name__, msg))
 
-    def notify(string_id):
+    def notify(self, string_id):
         self.plugin.notify('[%s] %s' % (self.__class__.__name__,
                                         self.plugin.get_string(string_id)))
 
@@ -60,11 +60,11 @@ class globo(Backends):
                 self.debug('wrong username or password')
                 self.notify_error(32001)
         elif self.glbid:
-            self.debug('already authenticated with id %s' % self.glbid)
+            self.debug('already authenticated')
         else:
             self.debug('no username set to authenticate')
 
-        return self.glbid
+        return { 'GLBID': self.glbid }
 
 
 class GlobosatBackends(Backends):
