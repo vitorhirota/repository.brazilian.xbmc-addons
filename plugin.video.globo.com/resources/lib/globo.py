@@ -77,8 +77,9 @@ class GloboApi(object):
             self.plugin.set_setting('player_version', playerVersion)
 
         video_data = self._get_video_info(video_id)
-        credentials = self.authenticate('globo' if video_data['channel_id'] == 196
-                                        else self.plugin.get_setting('play_provider'))
+        provider = ('globo' if video_data['channel_id'] == 196
+                    else self.plugin.get_setting('play_provider').lower().replace(' ', ''))
+        credentials = self.authenticate(provider)
 
         args = (video_id, '|'.join(resource_ids), playerVersion)
         data = self._get_page(HASH_URL % args, cookies=credentials)

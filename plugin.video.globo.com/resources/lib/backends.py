@@ -16,15 +16,49 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
+import cPickle
 import re
 import requests
 import urlparse
 
 class Backends(object):
     ENDPOINT_URL = None
+    SETT_PREFIX = None
+
+    def __init__(self, plugin):
+        self.plugin = plugin
+        self.username = self.plugin.get_setting('%s_username' % self.SETT_PREFIX)
+        self.password = self.plugin.get_setting('%s_password' % self.SETT_PREFIX)
+        try:
+            credentials = self.plugin.get_setting('%s_credentials' % self.SETT_PREFIX)
+            self.credentials = cPickle.loads(credentials)
+        except:
+            self.credentials = {}
+
+    def _provider_auth(self):
+        raise Exception('Not implemented.')
+
+    def _save_credentials(self):
+        self.plugin.set_setting('%s_credentials' % self.SETT_PREFIX,
+                                cPickle.dumps(self.credentials, -1))
 
     def authenticate(self):
-        raise Exception('Not implemented.')
+        # import pydevd; pydevd.settrace()
+        if not any(self.credentials.values()) and (self.username and self.password):
+            self.debug('username/password set. trying to authenticate')
+            self.credentials = self._provider_auth()
+            if any(self.credentials.values()):
+                self.debug('successfully authenticated')
+                self._save_credentials()
+            else:
+                self.debug('wrong username or password')
+                self.notify(32001)
+        elif any(self.credentials.values()):
+            self.debug('already authenticated')
+        else:
+            self.debug('no username set to authenticate')
+
+        return self.credentials
 
     def debug(self, msg):
         self.plugin.log.debug('[%s] %s' % (self.__class__.__name__, msg))
@@ -36,35 +70,16 @@ class Backends(object):
 
 class globo(Backends):
     ENDPOINT_URL = 'https://login.globo.com/login/151?tam=widget'
+    SETT_PREFIX = 'globo'
 
-    def __init__(self, plugin):
-        self.plugin = plugin
-        self.glbid = self.plugin.get_setting('glbid')
-        self.username = self.plugin.get_setting('globo_username')
-        self.password = self.plugin.get_setting('globo_password')
-
-    def authenticate(self):
-        if not self.glbid and (self.username and self.password):
-            payload = {
-                'botaoacessar': 'acessar',
-                'login-passaporte': self.username,
-                'senha-passaporte': self.password
-            }
-            self.debug('username/password set. trying to authenticate')
-            r = requests.post(self.ENDPOINT_URL, data=payload)
-            self.glbid = r.cookies.get('GLBID')
-            if self.glbid:
-                self.debug('successfully authenticated')
-                self.plugin.set_setting('glbid', self.glbid)
-            else:
-                self.debug('wrong username or password')
-                self.notify_error(32001)
-        elif self.glbid:
-            self.debug('already authenticated')
-        else:
-            self.debug('no username set to authenticate')
-
-        return { 'GLBID': self.glbid }
+    def _provider_auth(self):
+        payload = {
+            'botaoacessar': 'acessar',
+            'login-passaporte': self.username,
+            'senha-passaporte': self.password
+        }
+        response = requests.post(self.ENDPOINT_URL, data=payload)
+        return { 'GLBID': response.cookies.get('GLBID') }
 
 
 class GlobosatBackends(Backends):
@@ -75,12 +90,7 @@ class GlobosatBackends(Backends):
         'response_type': 'code',
     }
     PROVIDER_ID = None
-
-    def __init__(self, plugin):
-        self.plugin = plugin
-        self.playid = self.plugin.get_setting('playid')
-        self.username = self.plugin.get_setting('play_username')
-        self.password = self.plugin.get_setting('play_password')
+    SETT_PREFIX = 'play'
 
     def _prepare_auth(self):
         # get a client_id token
@@ -94,7 +104,7 @@ class GlobosatBackends(Backends):
 class gvt(GlobosatBackends):
     PROVIDER_ID = 62
 
-    def authenticate(self):
+    def _provider_auth(self):
         url, qs, cookies = self._prepare_auth()
         qs = urlparse.parse_qs(qs)
         r3 = requests.post(url,
@@ -107,64 +117,8 @@ class gvt(GlobosatBackends):
                                  'login': 'Login',
                                  })
         # validate authentication on globosat
-        params = urlparse.parse_qs(r3.url.split('?', 1)[1])
-        r4 = requests.get(params['redirect_uri'][0])
+        # params = urlparse.parse_qs(r3.url.split('?', 1)[1])
+        r4 = requests.get(r3.url.split('redirect_uri=', 1)[1])
         # save session id
-        print r4, dict(r4.cookies)
-        return
+        return dict(r4.cookies)
 
-
-        if not self.playid and (self.username and self.password):
-
-
-            # post form_data to ENDPOINT_URL
-            payload = {
-                'code': '',
-                'user_Fone': None,
-                'user_CpfCnpj': None,
-                # 'user_Fone': '',
-                'user_CpfCnpj': '',
-                'password': '',
-                'login': 'Login',
-            }
-
-            if len(self.username) >= 11:
-                payload['user_CpfCnpj'] = self.username
-            else:
-                payload['user_Fone'] = self.username
-            self.debug('username/password set. trying to authenticate')
-            r = requests.post(self.ENDPOINT_URL, data=payload)
-            self.playid = r.cookies.get('GLBID')
-            if self.playid:
-                self.debug('successfully authenticated')
-                self.plugin.set_setting('playid', self.playid)
-            else:
-                self.debug('wrong username or password')
-                self.notify_error(32001)
-        elif self.playid:
-            self.debug('already authenticated with id %s' % self.playid)
-        else:
-            self.debug('no username set to authenticate')
-
-        return self.playid
-
-        # wait redirection
-        # get string from urlString JS var
-        # upon request of urlString, get Location response header, this is a callback
-        # request the callback, and get the set cookie directives (2) containing Globo session id
-        # request http://globosatplay.globo.com/-/gplay/authorize/
-        # sample response:
-        # {
-        #     "user_id":"",
-        #     "ueid":"",
-        #     "token":"",
-        #     "nome":"",
-        #     "autorizador":{
-        #         "nome":"GVT",
-        #         "slug":"gvt",
-        #         "app":"gvt",
-        #         "imagem":"https://auth.globosat.tv/media/autorizador/6_2.png"
-        #     }
-        # }
-        # token holds the id of the session
-        pass
