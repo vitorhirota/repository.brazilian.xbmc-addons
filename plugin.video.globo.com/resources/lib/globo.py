@@ -192,7 +192,7 @@ class GloboApi(object):
 
     def resolve_video_url(self, video_id):
         # which index to look in the list
-        hd_first = int(self.plugin.get_setting('video_quality') or 0)
+        hd_first = int(self.plugin.get_setting('hd_video_quality') or 0)
         data = self._get_video_info(video_id)
         self.plugin.log.debug('resolving video: %s' % video_id)
         # this method assumes there's no children
