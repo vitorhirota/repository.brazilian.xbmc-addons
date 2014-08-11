@@ -1,6 +1,9 @@
+import cPickle
 import htmlentitydefs
+import json
 import unicodedata
 import re
+import time
 
 try:
     from StorageServer import StorageServer
@@ -8,9 +11,11 @@ except:
     from test.storageserverdummy import StorageServer
 
 
-# simple attributes object
-# supports dict.get method and return None if attr does not exist
 class struct(object):
+    '''
+        Simple attributes helper class that behaves like dict.get for unset
+        attrs.
+    '''
     def __init__(self, kdict=None):
         kdict = kdict or {}
         self.__dict__.update(kdict)
@@ -30,26 +35,19 @@ class struct(object):
 
 class Cache(StorageServer):
     '''
-        StorageServer class specialization that always sets values as python
-        objects repr and upong get eval the string back to python objects.
+        StorageServer class specialization that always serializes objects upon
+        set.
     '''
     def set(self, key, value):
-        StorageServer.set(self, key, repr(value))
+        StorageServer.set(self, key, cPickle.dumps(value, -1))
 
     def get(self, key):
-        data = StorageServer.get(self, key)
-        if data:
-            try:
-                data = eval(data)
-            except:
-                pass
-        return data
-
+        return cPickle.loads(StorageServer.get(self, key))
 
 
 def find(exp, text):
     '''
-        Helper class for regexp matching.
+        Helper for regexp matching.
         @param exp The regular expression.
         @param text The text to be matched against.
         @return A tuple containing the matches
@@ -65,6 +63,7 @@ def slugify(string):
     slug = slug.encode('ascii', 'ignore').lower()
     slug = re.sub(r'[^a-z0-9]+', '-', slug).strip('-')
     return re.sub(r'[-]+', '-', slug)
+
 
 def unescape(text):
     '''
@@ -91,6 +90,14 @@ def unescape(text):
                 pass
         return text  # leave as is
     return re.sub("&#?\w+;", fixup, text)
+
+
+def time_format(time_str, input_format):
+    '''
+        Helper function to reformat time according to xbmc expecctation DD.MM.YYYY
+    '''
+    time_obj = time.strptime(time_str, input_format)
+    return time.strftime('%d.%m.%Y')
 
 
 # metaclass definition to turn all methods in classmethods

@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 from resources.lib import globo
-from resources.lib import globotv, globosat
+# from resources.lib import globotv, globosat
 from xbmcswift2 import Plugin, xbmc
 from resources.lib import util
 
@@ -26,7 +26,7 @@ from resources.lib import util
 from resources.lib import swift_patch
 swift_patch.patch()
 
-cache = util.Cache("Globosat", 0.005)
+cache = util.Cache("Globosat", 0.05)
 cache.dbg = True
 plugin = Plugin()
 api = globo.GloboApi(plugin, cache)
@@ -57,7 +57,7 @@ def live():
         'info': {
             'plot': channel.plot,
         },
-    } for channel in index]
+    } for channel in map(util.struct, index)]
 
 
 @plugin.route('/channels')
@@ -70,33 +70,21 @@ def channels():
     } for slug, name, img in index]
 
 
-@plugin.route('/globo/<category>')
-def list_globo_categories(category=None):
+@plugin.route('/<channel>', name='list_shows')
+@plugin.route('/globo/<category>', name='list_globo_categories', options={'channel': 'globo'})
+def list_shows(channel, category=None):
     # import pydevd; pydevd.settrace()
-    index = api.get_path('globo')
-    if not category:
-        return [{
-            'label': name,
-            'path': plugin.url_for('list_globo_categories', category=slug),
-        } for slug, name in index['categories']]
-    else:
-        return [{
-            'label': name,
-            'path': plugin.url_for('list_episodes', channel='globo', show=slug, page=1),
-            'thumbnail': img
-        } for slug, name, img in index['shows'][category]]
-
-
-@plugin.route('/<channel>')
-def list_shows(channel):
-    if channel == 'globo':
-        return list_globo_categories()
-    else:
-        return []
+    index = api.get_path(category or channel)
+    return [{
+        'label': name,
+        'path': (plugin.url_for('list_globo_categories', category=slug) if channel == 'globo' and not category else
+                 plugin.url_for('list_episodes', channel=channel, show=slug, page=1)),
+        'thumbnail': img
+    } for slug, name, img in index]
 
 
 @plugin.route('/<channel>/<show>/page/<page>')
-def list_episodes(channel, show, page):
+def list_episodes(channel, show, page=1):
     videos = api.get_episodes(channel, show, int(page))
     items = [{
         'label': video.title,
@@ -197,7 +185,6 @@ def play_live(channel):
     # item = items[0]
     # _id = item['info']['id']
     # plugin.log.debug('setting resolved url for first item %s' % _id)
-    # # from pysrc import pydevd; pydevd.settrace()
     # try:
     #     item['path'] = api.resolve_video_url(_id)
     #     plugin.set_resolved_url(item, 'video/mp4')
