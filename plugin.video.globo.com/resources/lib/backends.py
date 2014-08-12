@@ -20,6 +20,7 @@ import cPickle
 import re
 import requests
 import urlparse
+from BeautifulSoup import BeautifulSoup
 
 class Backends(object):
     ENDPOINT_URL = None
@@ -122,3 +123,42 @@ class gvt(GlobosatBackends):
         # save session id
         return dict(r4.cookies)
 
+class netGeral(GlobosatBackends):
+        PROVIDER_ID = 64
+
+        def __init__(self,plugin):
+            super(netGeral,self).__init__(plugin)
+            self.session = requests.Session()
+
+        def _prepare_auth(self):
+            # STEP 1 ******************
+            URL1 = 'http://globosatplay.globo.com/-/auth/gplay/'
+            PARAMS1 = {'callback' :	'http://globosatplay.globo.com/fechar-login/?redirect=false',
+                       'target_url' : 'http://globosatplay.globo.com/'}
+            self.response = self.session.get(URL1,params=PARAMS1)
+            # STEP 2 ***************** is really necessary ? could I use self.response.url direct ?
+            u = urlparse.urlparse(self.response.url)
+            url2 = u.scheme + '://' + u.hostname + u.path
+            params2 = urlparse.parse_qs(u.query)
+            POST_DATA2 = post_params = {'config':netGeral.PROVIDER_ID} # 64 = id net
+            return self.session.post(url2,params=params2,data=POST_DATA2)
+
+
+        def _provider_auth(self):
+            #
+            r2 = self._prepare_auth()
+            u = urlparse.urlparse(r2.url)
+            params3 = urlparse.parse_qs(u.query)
+            params3['_submit.x'] = '115'
+            params3['_submit.y'] = '20'
+            params3['externalSystemName'] = 'none'
+            params3['password'] = self.password
+            params3['passwordHint'] = ''
+            params3['selectedSecurityType'] = 'public'
+            params3['username'] = self.username
+            r3 = self.session.post('https://idm.netcombo.com.br/IDM/SamlAuthnServlet',data=params3)
+            s = BeautifulSoup(r3.text)
+            params4 = {}
+            params4[s.input['name']] = s.input['value']
+            r4 = self.session.post(s.form['action'],data=params4)
+            return r4.cookies
