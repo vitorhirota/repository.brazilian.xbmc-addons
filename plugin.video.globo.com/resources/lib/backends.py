@@ -84,22 +84,26 @@ class globo(Backends):
 
 
 class GlobosatBackends(Backends):
-    AUTHORIZE_URL = 'http://globosatplay.globo.com/-/gplay/authorize/'
-    OAUTH_URL = 'https://auth.globosat.tv/oauth/authorize'
-    OAUTH_QS = {
-        'redirect_uri': 'http://globosatplay.globo.com/-/auth/gplay/?callback',
-        'response_type': 'code',
-    }
     PROVIDER_ID = None
     SETT_PREFIX = 'play'
 
+    def __init__(self,plugin):
+        super(GlobosatBackends,self).__init__(plugin)
+        self.session = requests.Session()
+
     def _prepare_auth(self):
-        # get a client_id token
-        # https://auth.globosat.tv/oauth/authorize/?redirect_uri=http://globosatplay.globo.com/-/auth/gplay/?callback&response_type=code
-        r1 = requests.get(self.OAUTH_URL, params=self.OAUTH_QS)
-        # get backend url
-        r2 = requests.post(r1.url, data={'config': self.PROVIDER_ID})
-        return r2.url.split('?', 1) + [dict(r2.cookies), ]
+        # STEP 1 ******************
+        URL1 = 'http://globosatplay.globo.com/-/auth/gplay/'
+        PARAMS1 = {'callback' :	'http://globosatplay.globo.com/fechar-login/?redirect=false',
+                   'target_url' : 'http://globosatplay.globo.com/'}
+        r = self.session.get(URL1,params=PARAMS1)
+        # STEP 2 *****************
+        u = urlparse.urlparse(r.url)
+        url2 = u.scheme + '://' + u.hostname + u.path
+        params2 = urlparse.parse_qs(u.query)
+        post_data2 = {'config':self.PROVIDER_ID}
+        r = self.session.post(url2,params=params2,data=post_data2)
+        return r.url.split('?', 1) + [dict(r.cookies), ]
 
 
 class gvt(GlobosatBackends):
@@ -123,32 +127,12 @@ class gvt(GlobosatBackends):
         # save session id
         return dict(r4.cookies)
 
-class netGeral(GlobosatBackends):
+class net(GlobosatBackends):
         PROVIDER_ID = 64
 
-        def __init__(self,plugin):
-            super(netGeral,self).__init__(plugin)
-            self.session = requests.Session()
-
-        def _prepare_auth(self):
-            # STEP 1 ******************
-            URL1 = 'http://globosatplay.globo.com/-/auth/gplay/'
-            PARAMS1 = {'callback' :	'http://globosatplay.globo.com/fechar-login/?redirect=false',
-                       'target_url' : 'http://globosatplay.globo.com/'}
-            self.response = self.session.get(URL1,params=PARAMS1)
-            # STEP 2 ***************** is really necessary ? could I use self.response.url direct ?
-            u = urlparse.urlparse(self.response.url)
-            url2 = u.scheme + '://' + u.hostname + u.path
-            params2 = urlparse.parse_qs(u.query)
-            POST_DATA2 = post_params = {'config':netGeral.PROVIDER_ID} # 64 = id net
-            return self.session.post(url2,params=params2,data=POST_DATA2)
-
-
         def _provider_auth(self):
-            #
-            r2 = self._prepare_auth()
-            u = urlparse.urlparse(r2.url)
-            params3 = urlparse.parse_qs(u.query)
+            q = self._prepare_auth()[1]
+            params3 = urlparse.parse_qs(q)
             params3['_submit.x'] = '115'
             params3['_submit.y'] = '20'
             params3['externalSystemName'] = 'none'
