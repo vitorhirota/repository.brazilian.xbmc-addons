@@ -21,7 +21,7 @@ import re
 import requests
 import urlparse
 
-import try:
+try:
     import cPickle as pickle
 except:
     import pickle
