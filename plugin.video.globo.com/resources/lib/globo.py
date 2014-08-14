@@ -21,7 +21,6 @@ import re
 import requests
 
 import backends
-import hashjs
 import scraper
 import util
 
@@ -100,8 +99,9 @@ class GloboApi(object):
                 # If a 403 is returned (authentication needed) and there is an
                 # globo id, then this might be due to session expiration and a
                 # retry with a blank id shall be tried
-                self.plugin.log.debug('cleaning globo id')
-                self.plugin.set_setting('globo_credentials', '')
+                self.plugin.log.debug('cleaning credentials')
+                credentials_key = '%s_credentials' % ('globo' if 'globo' == provider else 'play')
+                self.plugin.set_setting(credentials_key, '')
                 if not auth_retry:
                     self.plugin.log.debug('retrying authentication')
                     return self._get_hashes(video_id, resource_ids, True, player_retry)
@@ -208,7 +208,7 @@ class GloboApi(object):
                 break
 
         hashes = self._get_hashes(video_id, [r['_id']])
-        signed_hashes = hashjs.get_signed_hashes(hashes)
+        signed_hashes = util.get_signed_hashes(hashes)
         # live videos might differ
         query_string = re.sub(r'{{([a-z]*)}}',
                               r'%(\1)s',
