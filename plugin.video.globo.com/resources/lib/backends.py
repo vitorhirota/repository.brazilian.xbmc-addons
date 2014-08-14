@@ -16,10 +16,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
-import cPickle
+import datetime
 import re
 import requests
 import urlparse
+
+try:
+    import cPickle as pickle
+except:
+    import pickle
 
 class Backends(object):
     ENDPOINT_URL = None
@@ -31,7 +36,7 @@ class Backends(object):
         self.password = self.plugin.get_setting('%s_password' % self.SETT_PREFIX)
         try:
             credentials = self.plugin.get_setting('%s_credentials' % self.SETT_PREFIX)
-            self.credentials = cPickle.loads(credentials)
+            self.credentials = pickle.loads(credentials)
         except:
             self.credentials = {}
 
@@ -40,7 +45,7 @@ class Backends(object):
 
     def _save_credentials(self):
         self.plugin.set_setting('%s_credentials' % self.SETT_PREFIX,
-                                cPickle.dumps(self.credentials, -1))
+                                pickle.dumps(self.credentials, -1))
 
     def authenticate(self):
         # import pydevd; pydevd.settrace()
@@ -57,6 +62,7 @@ class Backends(object):
             self.debug('already authenticated')
         else:
             self.debug('no username set to authenticate')
+        self.debug(repr(self.credentials))
 
         return self.credentials
 
@@ -84,6 +90,7 @@ class globo(Backends):
 
 class GlobosatBackends(Backends):
     AUTHORIZE_URL = 'http://globosatplay.globo.com/-/gplay/authorize/'
+    AUTH_TOKEN_URL = 'http://security.video.globo.com/providers/WMPTOKEN_%s/tokens/%s/session?callback=setAuthenticationToken_%s&expires=%s'
     OAUTH_URL = 'https://auth.globosat.tv/oauth/authorize'
     OAUTH_QS = {
         'redirect_uri': 'http://globosatplay.globo.com/-/auth/gplay/?callback',
@@ -92,6 +99,20 @@ class GlobosatBackends(Backends):
     PROVIDER_ID = None
     SETT_PREFIX = 'play'
 
+    def _set_auth_token(self):
+        # provider_id is a property from a video playlist. Tt seems, however,
+        # the only provider available for now is gplay. Instead of requesting
+        # for a given playlist (which requires a valid video_id, this is being
+        # harcoded for now.
+        provider_id = '52dfc02cdd23810590000f57'
+        token = self.credentials[self.credentials['b64gplay']]
+        now = datetime.datetime.now()
+        expiration = now + datetime.timedelta(days=7)
+        r = requests.get(self.AUTH_TOKEN_URL % (provider_id, token,
+                                                now.strftime('%s'),
+                                                expiration.strftime('%a, %d %b %Y %H:%M:%S GMT')))
+        self.credentials = dict(r.cookies)
+
     def _prepare_auth(self):
         # get a client_id token
         # https://auth.globosat.tv/oauth/authorize/?redirect_uri=http://globosatplay.globo.com/-/auth/gplay/?callback&response_type=code
@@ -99,6 +120,12 @@ class GlobosatBackends(Backends):
         # get backend url
         r2 = requests.post(r1.url, data={'config': self.PROVIDER_ID})
         return r2.url.split('?', 1) + [dict(r2.cookies), ]
+
+    def _save_credentials(self):
+        # update credentials to be a proper authentication token
+        self._set_auth_token()
+        self.plugin.set_setting('%s_credentials' % self.SETT_PREFIX,
+                                pickle.dumps(self.credentials, -1))
 
 
 class gvt(GlobosatBackends):
@@ -118,7 +145,11 @@ class gvt(GlobosatBackends):
                                  })
         # validate authentication on globosat
         # params = urlparse.parse_qs(r3.url.split('?', 1)[1])
-        r4 = requests.get(r3.url.split('redirect_uri=', 1)[1])
+        try:
+            r4 = requests.get(r3.url.split('redirect_uri=', 1)[1])
+        except IndexError:
+            # if invalid user/pass: IndexError: list index out of range
+            return {}
         # save session id
         return dict(r4.cookies)
 

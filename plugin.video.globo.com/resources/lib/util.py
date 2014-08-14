@@ -1,9 +1,16 @@
-import cPickle
+import base64
+import hashlib
 import htmlentitydefs
 import json
 import unicodedata
+import random
 import re
 import time
+
+try:
+    import cPickle as pickle
+except:
+    import pickle
 
 try:
     from StorageServer import StorageServer
@@ -39,20 +46,10 @@ class Cache(StorageServer):
         set.
     '''
     def set(self, key, value):
-        StorageServer.set(self, key, cPickle.dumps(value, -1))
+        StorageServer.set(self, key, pickle.dumps(value, -1))
 
     def get(self, key):
-        return cPickle.loads(StorageServer.get(self, key))
-
-
-def find(exp, text):
-    '''
-        Helper for regexp matching.
-        @param exp The regular expression.
-        @param text The text to be matched against.
-        @return A tuple containing the matches
-    '''
-    return re.findall(exp, text, re.S|re.U)
+        return pickle.loads(StorageServer.get(self, key))
 
 
 def slugify(string):
@@ -100,9 +97,49 @@ def time_format(time_str, input_format):
     return time.strftime('%d.%m.%Y')
 
 
-# metaclass definition to turn all methods in classmethods
-def m(name, bases, dct):
-    for k, v in dct.items():
-        if type(v) is type(m):
-            dct[k] = classmethod(v)
-    return type(name, bases, dct)
+# methods below are part of globo hashing scheme
+# original procedure at http://s.videos.globo.com/p2/j/api.min.js
+# version > 2.5.4
+def get_signed_hashes(a):
+    a = type(a) == list and a or [a]
+    return map(P, a)
+
+G = 3600
+H = "=0xAC10FD"
+
+def J(a):
+    # def I has been replaced with hashlib.md5.digest
+    # def rstr2b64 has been replaced with b64encode
+    digest = hashlib.md5(a + H[1:]).digest()
+    return base64.b64encode(digest).replace('=', '')
+
+def K(a):
+    # def I has been replaced with hashlib.md5.digest
+    # def rstr2hex has been replaced with b16encode
+    # note that def rstr2hex outputs in lower
+    digest = hashlib.md5(a + H[1:]).digest()
+    return base64.b16encode(digest).replace('=', '')
+
+def L():
+    return '%010d' % random.randint(1, 1e10)
+
+def M(a):
+    b, c, d, e = (a[0:2], a[2:12], a[12:22], a[22:44])
+    f, g = (int(c) + G, L())
+    h = J(e + str(f) + g)
+    return ''.join(map(str, ['05', b, c, d, f, g, h]))
+
+def N():
+    return int(time.time() / 1e3)
+
+def O(a):
+    b, c, d, e, f, g, h = (
+            a[0:2], a[2:3], a[3:13], a[13:23], a[24:46],
+            N() + G, L())
+    i = J(f+g+h)
+    return b + c + d + e + g + h + i
+
+def P(a):
+    b, c, d, e, f = ('04', '03', '02', '', a[0:2])
+    return (f == b and O(a) or
+            (f == c or f == d) and M(a) or e)
