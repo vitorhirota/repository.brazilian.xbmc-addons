@@ -90,7 +90,6 @@ class globo(Backends):
 
 
 class GlobosatBackends(Backends):
-<<<<<<< HEAD
     PROVIDER_ID = None
     SETT_PREFIX = 'play'
 
