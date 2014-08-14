@@ -166,13 +166,15 @@ class net(GlobosatBackends):
         def _provider_auth(self):
             q = self._prepare_auth()[1]
             params3 = urlparse.parse_qs(q)
-            params3['_submit.x'] = '115'
-            params3['_submit.y'] = '20'
-            params3['externalSystemName'] = 'none'
-            params3['password'] = self.password
-            params3['passwordHint'] = ''
-            params3['selectedSecurityType'] = 'public'
-            params3['username'] = self.username
+            params3.update({
+            '_submit.x':'115',
+            '_submit.y':'20',
+            'externalSystemName':'none',
+            'password':self.password,
+            'passwordHint':'',
+            'selectedSecurityType':'public',
+            'username':self.username,
+            })
             r3 = self.session.post('https://idm.netcombo.com.br/IDM/SamlAuthnServlet',data=params3)
             mo = re.search(net.EXTRACT_ACTION,r3.text)
             if mo:
