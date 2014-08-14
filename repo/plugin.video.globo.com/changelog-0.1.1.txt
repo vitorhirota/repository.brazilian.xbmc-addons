@@ -1,0 +1,7 @@
+0.1.1
+ PT: correção de erros
+ EN: bugfixes
+
+0.1
+ PT: Primeira versão alpha, apenas alguns vídeos e autorização pela GVT funcionais.
+ EN: First alpha, just some videos and gvt auth working.

@@ -1,6 +1,16 @@
+import base64
+import hashlib
 import htmlentitydefs
+import json
 import unicodedata
+import random
 import re
+import time
+
+try:
+    import cPickle as pickle
+except:
+    import pickle
 
 try:
     from StorageServer import StorageServer
@@ -8,9 +18,11 @@ except:
     from test.storageserverdummy import StorageServer
 
 
-# simple attributes object
-# supports dict.get method and return None if attr does not exist
 class struct(object):
+    '''
+        Simple attributes helper class that behaves like dict.get for unset
+        attrs.
+    '''
     def __init__(self, kdict=None):
         kdict = kdict or {}
         self.__dict__.update(kdict)
@@ -30,31 +42,14 @@ class struct(object):
 
 class Cache(StorageServer):
     '''
-        StorageServer class specialization that always sets values as python
-        objects repr and upong get eval the string back to python objects.
+        StorageServer class specialization that always serializes objects upon
+        set.
     '''
     def set(self, key, value):
-        StorageServer.set(self, key, repr(value))
+        StorageServer.set(self, key, pickle.dumps(value, -1))
 
     def get(self, key):
-        data = StorageServer.get(self, key)
-        if data:
-            try:
-                data = eval(data)
-            except:
-                pass
-        return data
-
-
-
-def find(exp, text):
-    '''
-        Helper class for regexp matching.
-        @param exp The regular expression.
-        @param text The text to be matched against.
-        @return A tuple containing the matches
-    '''
-    return re.findall(exp, text, re.S|re.U)
+        return pickle.loads(StorageServer.get(self, key))
 
 
 def slugify(string):
@@ -65,6 +60,7 @@ def slugify(string):
     slug = slug.encode('ascii', 'ignore').lower()
     slug = re.sub(r'[^a-z0-9]+', '-', slug).strip('-')
     return re.sub(r'[-]+', '-', slug)
+
 
 def unescape(text):
     '''
@@ -93,9 +89,57 @@ def unescape(text):
     return re.sub("&#?\w+;", fixup, text)
 
 
-# metaclass definition to turn all methods in classmethods
-def m(name, bases, dct):
-    for k, v in dct.items():
-        if type(v) is type(m):
-            dct[k] = classmethod(v)
-    return type(name, bases, dct)
+def time_format(time_str, input_format):
+    '''
+        Helper function to reformat time according to xbmc expecctation DD.MM.YYYY
+    '''
+    time_obj = time.strptime(time_str, input_format)
+    return time.strftime('%d.%m.%Y')
+
+
+# methods below are part of globo hashing scheme
+# original procedure at http://s.videos.globo.com/p2/j/api.min.js
+# version > 2.5.4
+def get_signed_hashes(a):
+    a = type(a) == list and a or [a]
+    return map(P, a)
+
+G = 3600
+H = "=0xAC10FD"
+
+def J(a):
+    # def I has been replaced with hashlib.md5.digest
+    # def rstr2b64 has been replaced with b64encode
+    digest = hashlib.md5(a + H[1:]).digest()
+    return base64.b64encode(digest).replace('=', '')
+
+def K(a):
+    # def I has been replaced with hashlib.md5.digest
+    # def rstr2hex has been replaced with b16encode
+    # note that def rstr2hex outputs in lower
+    digest = hashlib.md5(a + H[1:]).digest()
+    return base64.b16encode(digest).replace('=', '')
+
+def L():
+    return '%010d' % random.randint(1, 1e10)
+
+def M(a):
+    b, c, d, e = (a[0:2], a[2:12], a[12:22], a[22:44])
+    f, g = (int(c) + G, L())
+    h = J(e + str(f) + g)
+    return ''.join(map(str, ['05', b, c, d, f, g, h]))
+
+def N():
+    return int(time.time() / 1e3)
+
+def O(a):
+    b, c, d, e, f, g, h = (
+            a[0:2], a[2:3], a[3:13], a[13:23], a[24:46],
+            N() + G, L())
+    i = J(f+g+h)
+    return b + c + d + e + g + h + i
+
+def P(a):
+    b, c, d, e, f = ('04', '03', '02', '', a[0:2])
+    return (f == b and O(a) or
+            (f == c or f == d) and M(a) or e)

@@ -1,19 +1,17 @@
-# Muu XBMC Plugin
+# Globo.com XBMC Plugin
 
-Veja os filmes, shows e programas disponibilizados pelo site
-http://muu.globo.com.
+Plugin para ver os vídeos específicos para assinantes dos serviços Globo.tv+ e GlobosatPlay.
 
-Inclui programas completos dos canais Globosat (GNT, Canal Brasil, Multishow,
-BIS, entre outros).
+Globo.tv+ é um serviço disponível para assinatura online.
 
-Este serviço é exclusivo para assinantes NET e CTBC.
+GlobosatPlay é um serviço exclusivo para assinantes CTBC, GVT, NET, NET Angra, Multiplay, TV Oi, Sky e Vivo.
+
+Por enquanto, apenas autenticação para GVT está disponível.
 
 ---
 
-Watch movies, concerts and shows available on http://muu.globo.com.
+Watch subscriber movies from Globo.tv+ and GlobosatPlay.
 
-Includes complete shows from the Globosat channels (GNT, Canal Brasil,
-Multishow, BIS, amongst others).
+Globo.tv+ is avaiable for anyone.
 
-This service is for NET and CTBC subscribers only.
-
+GlobosatPlay is exclusive for CTBC, GVT, NET, NET Angra, Multiplay, TV Oi, Sky and Vivo subscribers.
