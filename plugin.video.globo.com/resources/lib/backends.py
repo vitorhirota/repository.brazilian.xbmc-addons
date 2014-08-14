@@ -20,7 +20,7 @@ import datetime
 import re
 import requests
 import urlparse
-from BeautifulSoup import BeautifulSoup
+
 
 try:
     import cPickle as pickle
@@ -115,12 +115,10 @@ class GlobosatBackends(Backends):
 
 
     def _prepare_auth(self):
-        # STEP 1 ******************
         URL1 = 'http://globosatplay.globo.com/-/auth/gplay/'
         PARAMS1 = {'callback' :	'http://globosatplay.globo.com/fechar-login/?redirect=false',
                    'target_url' : 'http://globosatplay.globo.com/'}
         r = self.session.get(URL1,params=PARAMS1)
-        # STEP 2 *****************
         u = urlparse.urlparse(r.url)
         url2 = u.scheme + '://' + u.hostname + u.path
         params2 = urlparse.parse_qs(u.query)
