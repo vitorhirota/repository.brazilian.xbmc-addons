@@ -92,20 +92,12 @@ class globo(Backends):
 class GlobosatBackends(Backends):
     PROVIDER_ID = None
     SETT_PREFIX = 'play'
+    AUTH_TOKEN_URL = 'http://security.video.globo.com/providers/WMPTOKEN_%s/tokens/%s/session?callback=setAuthenticationToken_%s&expires=%s'
 
     def __init__(self,plugin):
         super(GlobosatBackends,self).__init__(plugin)
         self.session = requests.Session()
 
-    AUTHORIZE_URL = 'http://globosatplay.globo.com/-/gplay/authorize/'
-    AUTH_TOKEN_URL = 'http://security.video.globo.com/providers/WMPTOKEN_%s/tokens/%s/session?callback=setAuthenticationToken_%s&expires=%s'
-    OAUTH_URL = 'https://auth.globosat.tv/oauth/authorize'
-    OAUTH_QS = {
-        'redirect_uri': 'http://globosatplay.globo.com/-/auth/gplay/?callback',
-        'response_type': 'code',
-    }
-    PROVIDER_ID = None
-    SETT_PREFIX = 'play'
 
     def _set_auth_token(self):
         # provider_id is a property from a video playlist. Tt seems, however,
@@ -170,7 +162,9 @@ class gvt(GlobosatBackends):
 
 class net(GlobosatBackends):
         PROVIDER_ID = 64
-
+        EXTRACT_ACTION = 'action.*=.*"(.+)" '
+        EXTRACT_VALUE  = 'value.*=.*"(.+)"'
+        INPUT_NAME = 'SAMLResponse'
         def _provider_auth(self):
             q = self._prepare_auth()[1]
             params3 = urlparse.parse_qs(q)
@@ -182,8 +176,17 @@ class net(GlobosatBackends):
             params3['selectedSecurityType'] = 'public'
             params3['username'] = self.username
             r3 = self.session.post('https://idm.netcombo.com.br/IDM/SamlAuthnServlet',data=params3)
-            s = BeautifulSoup(r3.text)
+            mo = re.search(net.EXTRACT_ACTION,r3.text)
+            if mo:
+                action = mo.group(1)
+            else:
+                self.debug('Action not Found!')
+            mo = re.search(net.EXTRACT_VALUE,r3.text)
+            if mo:
+                value = mo.group(1)
+            else:
+                self.debug('Value not Found!')
             params4 = {}
-            params4[s.input['name']] = s.input['value']
-            r4 = self.session.post(s.form['action'],data=params4)
+            params4[net.INPUT_NAME] = value
+            r4 = self.session.post(action,data=params4)
             return r4.cookies
