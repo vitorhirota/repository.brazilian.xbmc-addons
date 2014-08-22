@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.sbt-thenoite" name="SBT The Noite - Programas na Integra" version="0.0.2" provider-name="vfranchi">
+	<requires>
+		<import addon="xbmc.python" version="2.1.0"/>
+	</requires>
+	<extension point="xbmc.python.pluginsource" library="sbt-thenoite.py">
+		<provides>video</provides>
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<summary lang="en">SBT The Noite plugin fetches videos from the brazilian SBT tv network and opens them on XBMC</summary>
+		<summary lang="pt_BR">O plugin SBT The Noite busca os vídeos dos episódio Na Íntegra do programa no site do SBT</summary>
+		<summary lang="pt">O plugin SBT The Noite busca os vídeos dos episódio Na Íntegra do programa no site do SBT</summary>
+		<description lang="en">SBT The Noite plugin fetches videos from the brazilian SBT tv network and opens them on XBMC</description>
+		<description lang="pt_BR">O plugin SBT The Noite busca os vídeos dos episódio Na Íntegra do programa no site do SBT para tocá-los no XBMC</description>
+		<description lang="pt">O plugin SBT The Noite busca os vídeos dos episódio Na Íntegra do programa no site do SBT para tocá-los no XBMC</description>
+		<disclaimer lang="en">This plugin comes 'as is'. The authors are not responsible for any problems it may cause.</disclaimer>
+		<language>en pt_BR pt</language>
+		<platform>all</platform>
+		<license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+	</extension>
+</addon>
