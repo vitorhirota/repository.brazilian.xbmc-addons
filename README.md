@@ -40,6 +40,13 @@ que fornece vídeos de programas na íntegra (novelas, jornais, seriados).
 *Videos from [globo.tv][1]. Also supports Globo+ subscribers, wich provides
 full episodes of original shows.*
 
+### SBT-TheNoite
+
+Este é um Video Add-on para o XBMC aonde você pode assistir os programas na 
+íntegra do The Noite.
+
+O plugin busca os vídeos direto no site do SBT, assim você não tem os cortes 
+que acontecem nos vídeos do canal no Youtube do programa.
 
 #### Idéias
 
