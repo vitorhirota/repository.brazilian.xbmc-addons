@@ -9,12 +9,15 @@ import urlparse;
 import json;
 import re;
 
+# getting settings strings
 settings = xbmcaddon.Addon("plugin.video.sbt-thenoite");
 _ = settings.getLocalizedString;
+
+# setting SBT urls
 thenoite_urls = {};
 thenoite_urls['na_integra'] = 'http://api.sbt.com.br/1.4.5/videos/key=AE8C984EECBA4F7F835C585D5CB6AB4B&fields=id,title,thumbnail,publishdate,secondurl&program=400&limit=100&orderBy=publishdate&category=4526&sort=desc';
-
 video_url = 'http://fast.player.liquidplatform.com/pApiv2/embed/25ce5b8513c18a9eae99a8af601d0943/$videoId';
+
 base_url = sys.argv[0];
 addon_handle = int(sys.argv[1]);
 args = urlparse.parse_qs(sys.argv[2][1:]);
@@ -51,6 +54,7 @@ if mode is None:
 		else:
 			episodes[episode[0]] = [video];
 	
+	# listing each episode part
 	for episode in sorted(episodes, key=invertDates, reverse=True):
 		video_ids = [];
 		for video in episodes[episode]:
@@ -99,10 +103,20 @@ elif (mode[0] == "videourl"):
 						break;
 				break;
 elif (mode[0] == "episodeurl"):
+	# Displaying progress dialog
+	pDialog = xbmcgui.DialogProgress();
+	pDialog.create(_(30002), _(30003)); # pDialog.create("Fetching videos", "Loading episode parts...")
+
 	videos_ids = json.loads(args.get("play_episode")[0]);
 	xbmcPlaylist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO);
 	xbmcPlaylist.clear();
+	
+	pDialogCount = 0;
+	pDialogLength = len(videos_ids);
 	for video_id in videos_ids:
+		pDialogCount = pDialogCount + 1;
+		pDialog.update(int(90*pDialogCount/float(pDialogLength)), _(30004).format(str(pDialogCount),str(pDialogLength)));
+		
 		iframe = fetchUrl(video_url.replace("$videoId", video_id));
 		match = re.compile("window.mediaJson = (.+?);").findall(iframe);
 		if match[0]:
@@ -134,4 +148,7 @@ elif (mode[0] == "episodeurl"):
 							break;
 					break;
 					
+	# Closing progress dialog
+	pDialog.update(100, _(30005));
+	pDialog.close();
 	xbmc.Player().play(xbmcPlaylist);

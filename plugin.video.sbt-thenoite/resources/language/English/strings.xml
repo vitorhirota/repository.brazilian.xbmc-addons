@@ -4,4 +4,8 @@
 <!-- Report language file syntax bugs at: http://trac.xbmc.org/ -->
 <strings>
 	<string id="30001">Play whole episode</string>
+	<string id="30002">Fetching videos</string>
+	<string id="30003">Loading episode parts...</string>
+	<string id="30004">Fetching part {0} of {1}</string>
+	<string id="30005">Done</string>
 </strings>
