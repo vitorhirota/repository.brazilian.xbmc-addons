@@ -89,15 +89,14 @@ class globo(Backends):
 
 
 class GlobosatBackends(Backends):
-    AUTHORIZE_URL = 'http://globosatplay.globo.com/-/gplay/authorize/'
     AUTH_TOKEN_URL = 'http://security.video.globo.com/providers/WMPTOKEN_%s/tokens/%s/session?callback=setAuthenticationToken_%s&expires=%s'
-    OAUTH_URL = 'https://auth.globosat.tv/oauth/authorize'
-    OAUTH_QS = {
-        'redirect_uri': 'http://globosatplay.globo.com/-/auth/gplay/?callback',
-        'response_type': 'code',
-    }
+    OAUTH_URL = 'http://globosatplay.globo.com/-/auth/gplay/'
     PROVIDER_ID = None
     SETT_PREFIX = 'play'
+
+    def __init__(self,plugin):
+        super(GlobosatBackends,self).__init__(plugin)
+        self.session = requests.Session()
 
     def _set_auth_token(self):
         # provider_id is a property from a video playlist. Tt seems, however,
@@ -116,10 +115,10 @@ class GlobosatBackends(Backends):
     def _prepare_auth(self):
         # get a client_id token
         # https://auth.globosat.tv/oauth/authorize/?redirect_uri=http://globosatplay.globo.com/-/auth/gplay/?callback&response_type=code
-        r1 = requests.get(self.OAUTH_URL, params=self.OAUTH_QS)
+        r1 = self.session.get(self.OAUTH_URL)
         # get backend url
-        r2 = requests.post(r1.url, data={'config': self.PROVIDER_ID})
-        return r2.url.split('?', 1) + [dict(r2.cookies), ]
+        r2 = self.session.post(r1.url, data={'config': self.PROVIDER_ID})
+        return r2.url.split('?', 1)
 
     def _save_credentials(self):
         # update credentials to be a proper authentication token
@@ -132,17 +131,16 @@ class gvt(GlobosatBackends):
     PROVIDER_ID = 62
 
     def _provider_auth(self):
-        url, qs, cookies = self._prepare_auth()
+        url, qs = self._prepare_auth()
         qs = urlparse.parse_qs(qs)
-        r3 = requests.post(url,
-                           cookies=dict(cookies),
-                           data={
-                                 'code': qs['code'][0],
-                                 'user_Fone': None,
-                                 'user_CpfCnpj': self.username,
-                                 'password': self.password,
-                                 'login': 'Login',
-                                 })
+        post_data = {
+            'code': qs['code'][0],
+            'user_Fone': None,
+            'user_CpfCnpj': self.username,
+            'password': self.password,
+            'login': 'Login',
+        }
+        r3 = self.session.post(url, data=post_data)
         # validate authentication on globosat
         # params = urlparse.parse_qs(r3.url.split('?', 1)[1])
         try:
@@ -153,3 +151,30 @@ class gvt(GlobosatBackends):
         # save session id
         return dict(r4.cookies)
 
+
+class net(GlobosatBackends):
+        PROVIDER_ID = 64
+
+        def _provider_auth(self):
+            qs = self._prepare_auth()[1]
+            params3 = urlparse.parse_qs(qs)
+            params3.update({
+                '_submit.x': '115',
+                '_submit.y': '20',
+                'externalSystemName': 'none',
+                'password': self.password,
+                'passwordHint': '',
+                'selectedSecurityType': 'public',
+                'username': self.username,
+            })
+            r3 = self.session.post('https://idm.netcombo.com.br/IDM/SamlAuthnServlet', data=params3)
+            ipt_values_regex = r'%s.*=.*"(.+)" '
+            try:
+                action = re.findall(ipt_values_regex % 'action', r3.text)[0]
+                value = re.findall(ipt_values_regex % 'value', r3.text)[0]
+            except IndexError:
+                return {}
+            self.debug('action: %s, value: %s')
+            params4 = {'SAMLResponse': value}
+            r4 = self.session.post(action, data=params4)
+            return r4.cookies
