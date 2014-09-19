@@ -8,4 +8,7 @@
 	<string id="30003">Loading episode parts...</string>
 	<string id="30004">Fetching part {0} of {1}</string>
 	<string id="30005">Done</string>
+	
+	<string id="30006">SBT The Noite</string>
+	<string id="30007">No video on this category</string>
 </strings>
