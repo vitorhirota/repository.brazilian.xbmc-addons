@@ -1,6 +1,3 @@
-v0.1.1
-- Fixed error when episode name didn’t have the "Part X" text
-
 v0.1.0
 - Added support to other The Noite videos from the site
 - Correctly sort each part of the whole episode

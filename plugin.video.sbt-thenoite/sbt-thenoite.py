@@ -15,8 +15,12 @@ _ = settings.getLocalizedString;
 
 # setting SBT urls
 thenoite_urls = {};
-thenoite_urls['na_integra'] = 'http://api.sbt.com.br/1.4.5/videos/key=AE8C984EECBA4F7F835C585D5CB6AB4B&fields=id,title,thumbnail,publishdate,secondurl&program=400&limit=100&orderBy=publishdate&category=4526&sort=desc';
-video_url = 'http://fast.player.liquidplatform.com/pApiv2/embed/25ce5b8513c18a9eae99a8af601d0943/$videoId';
+thenoite_urls["menu_api"] = "http://api.sbt.com.br/1.4.5/medias/key=AE8C984EECBA4F7F835C585D5CB6AB4B&fields=id,title,thumbnail,author&idsite=198&idSiteArea=1011&limit=100&orderBy=ordem&sort=asc";
+thenoite_urls["media_api"] = "http://api.sbt.com.br/1.4.5/videos/key=AE8C984EECBA4F7F835C585D5CB6AB4B&fields=id,title,thumbnail,publishdate,secondurl&program=400&limit=100&orderBy=publishdate&category=$authorId&sort=desc";
+thenoite_urls["video_url"] = 'http://fast.player.liquidplatform.com/pApiv2/embed/25ce5b8513c18a9eae99a8af601d0943/$videoId';
+
+thenoite_authors_slug = {};
+thenoite_authors_slug["4526"] = "naintegra";
 
 base_url = sys.argv[0];
 addon_handle = int(sys.argv[1]);
@@ -42,37 +46,101 @@ mode = args.get("mode", None);
 if mode is None:
 	xbmcplugin.setContent(addon_handle, 'tvshows');
 	
-	index = fetchUrl(thenoite_urls['na_integra']);
-	videos = json.loads(index);
+	index = fetchUrl(thenoite_urls["menu_api"]);
+	menu = json.loads(index);
 	
-	# grouping urls by episodes
-	episodes = {};
-	for video in videos["videos"]:
-		episode = re.compile("The Noite \(?(.+?)\)? ").findall(video["title"]);
-		if (episode[0] in episodes):
-			episodes[episode[0]].append(video);
-		else:
-			episodes[episode[0]] = [video];
-	
-	# listing each episode part
-	for episode in sorted(episodes, key=invertDates, reverse=True):
-		video_ids = [];
-		for video in episodes[episode]:
-			video_ids.append(video["id"]);
+	if ("error" in menu):
+		xbmc.log("["+_(30006)+"]: "+str(menu["error"]), 0);
 		
-		whole_url = makeUrl({"mode" : "episodeurl", "play_episode" : json.dumps(video_ids)});
+		# do nothing
+		toaster = xbmcgui.Dialog();
+		try:
+			toaster.notification(_(30006), _(30008), xbmcgui.NOTIFICATION_WARNING, 3000);
+		except AttributeError:
+			toaster.ok(_(30006), _(30008));
+		pass
+	else:
+		# displaying each video category from The Noite website
+		for menuItem in menu["medias"]:
+			url = makeUrl({"mode" : "listitems", "author" : menuItem["author"]});
 		
-		for video in episodes[episode]:
-			url = makeUrl({"mode" : "videourl", "play_video" : video["id"]});
-			
-			li = xbmcgui.ListItem(video["title"], iconImage=video["thumbnail"]);
-			li.addContextMenuItems([(_(30001), 'XBMC.RunPlugin('+whole_url+')')]);
-
-			xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li);
+			li = xbmcgui.ListItem(menuItem["title"], iconImage=menuItem["thumbnail"]);
+			li.setProperty('fanart_image', 'special://home/addons/plugin.video.sbt-thenoite/fanart.jpg');
+			xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True);
 
 	xbmcplugin.endOfDirectory(addon_handle);
+elif (mode[0] == "listitems"):
+	xbmcplugin.setContent(addon_handle, 'episodes');
+	
+	authorId = args.get("author")[0];
+	index = fetchUrl(thenoite_urls["media_api"].replace("$authorId", authorId));
+	videos = json.loads(index);
+	
+	if ("error" in videos):
+		xbmc.log("["+_(30006)+"]: "+str(videos["error"]), 0);
+		
+		# do nothing
+		toaster = xbmcgui.Dialog();
+		try:
+			toaster.notification(_(30006), _(30007), xbmcgui.NOTIFICATION_WARNING, 3000);
+		except AttributeError:
+			toaster.ok(_(30006), _(30007));
+		pass
+	elif ((authorId in thenoite_authors_slug) and thenoite_authors_slug[authorId] == "naintegra"):
+		# grouping urls by episodes
+		episodes = {};
+		for video in videos["videos"]:
+			episode = re.compile("The Noite \(?(.+?)\)? ").findall(video["title"]);
+			part = re.compile("parte \(?(.+?)\)?", re.IGNORECASE).findall(video["title"]);
+			
+			if (len(part) == 0):
+				part = [0];
+			
+			video["index"] = int(part[0]);
+			if (episode[0] in episodes):
+				inserted = False;
+				for index, item in enumerate(episodes[episode[0]]):
+					if (int(part[0]) < item["index"]):
+						inserted = True;
+						episodes[episode[0]].insert(index, video);
+						break;
+						
+				if (not(inserted)):
+					episodes[episode[0]].append(video);
+				
+			else:
+				episodes[episode[0]] = [video];
+	
+		# listing each episode part
+		for episode in sorted(episodes, key=invertDates, reverse=True):
+			video_ids = [];
+			for video in episodes[episode]:
+				video_ids.append(video["id"]);
+		
+			whole_url = makeUrl({"mode" : "episodeurl", "play_episode" : json.dumps(video_ids)});
+		
+			for video in episodes[episode]:
+				url = makeUrl({"mode" : "videourl", "play_video" : video["id"]});
+			
+				li = xbmcgui.ListItem(video["title"], iconImage=video["thumbnail"]);
+				li.addContextMenuItems([(_(30001), 'XBMC.RunPlugin('+whole_url+')')]);
+				li.setProperty('fanart_image', 'special://home/addons/plugin.video.sbt-thenoite/fanart.jpg');
+
+				xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li);
+		
+	else:
+		for video in videos["videos"]:
+			url = makeUrl({"mode" : "videourl", "play_video" : video["id"]});
+	
+			li = xbmcgui.ListItem(video["title"], iconImage=video["thumbnail"]);
+			li.setProperty('fanart_image', 'special://home/addons/plugin.video.sbt-thenoite/fanart.jpg');
+
+			xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li);
+					
+		
+	xbmcplugin.endOfDirectory(addon_handle);
 elif (mode[0] == "videourl"):
-	iframe = fetchUrl(video_url.replace("$videoId", args.get("play_video")[0]));
+	iframe = fetchUrl(thenoite_urls["video_url"].replace("$videoId", args.get("play_video")[0]));
 	match = re.compile("window.mediaJson = (.+?);").findall(iframe);
 	if match[0]:
 		video = json.loads(match[0]);
@@ -117,7 +185,7 @@ elif (mode[0] == "episodeurl"):
 		pDialogCount = pDialogCount + 1;
 		pDialog.update(int(90*pDialogCount/float(pDialogLength)), _(30004).format(str(pDialogCount),str(pDialogLength)));
 		
-		iframe = fetchUrl(video_url.replace("$videoId", video_id));
+		iframe = fetchUrl(thenoite_urls["video_url"].replace("$videoId", video_id));
 		match = re.compile("window.mediaJson = (.+?);").findall(iframe);
 		if match[0]:
 			video = json.loads(match[0]);
