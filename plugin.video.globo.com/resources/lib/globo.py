@@ -148,7 +148,7 @@ class GloboApi(object):
 
     def _build_globosat(self, channel, show=None):
         shows = scraper.get_gplay_shows(channel)
-        data = { channel: [(util.slugify(slug.replace(channel, '')),
+        data = { channel: [(slug.split('/')[2],
                            name, img) for slug, name, img in shows] }
         return data
 
@@ -219,4 +219,3 @@ class GloboApi(object):
         url = '?'.join([r['url'], query_string])
         self.plugin.log.debug('video url: %s' % url)
         return url
-
