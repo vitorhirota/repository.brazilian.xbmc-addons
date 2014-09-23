@@ -49,13 +49,24 @@ if mode is None:
 	index = fetchUrl(thenoite_urls["menu_api"]);
 	menu = json.loads(index);
 	
-	# displaying each video category from The Noite website
-	for menuItem in menu["medias"]:
-		url = makeUrl({"mode" : "listitems", "author" : menuItem["author"]});
+	if ("error" in menu):
+		xbmc.log("["+_(30006)+"]: "+str(menu["error"]), 0);
 		
-		li = xbmcgui.ListItem(menuItem["title"], iconImage=menuItem["thumbnail"]);
-		li.setProperty('fanart_image', 'special://home/addons/plugin.video.sbt-thenoite/fanart.jpg');
-		xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True);
+		# do nothing
+		toaster = xbmcgui.Dialog();
+		try:
+			toaster.notification(_(30006), _(30008), xbmcgui.NOTIFICATION_WARNING, 3000);
+		except AttributeError:
+			toaster.ok(_(30006), _(30008));
+		pass
+	else:
+		# displaying each video category from The Noite website
+		for menuItem in menu["medias"]:
+			url = makeUrl({"mode" : "listitems", "author" : menuItem["author"]});
+		
+			li = xbmcgui.ListItem(menuItem["title"], iconImage=menuItem["thumbnail"]);
+			li.setProperty('fanart_image', 'special://home/addons/plugin.video.sbt-thenoite/fanart.jpg');
+			xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True);
 
 	xbmcplugin.endOfDirectory(addon_handle);
 elif (mode[0] == "listitems"):
@@ -66,6 +77,8 @@ elif (mode[0] == "listitems"):
 	videos = json.loads(index);
 	
 	if ("error" in videos):
+		xbmc.log("["+_(30006)+"]: "+str(videos["error"]), 0);
+		
 		# do nothing
 		toaster = xbmcgui.Dialog();
 		try:
@@ -79,6 +92,9 @@ elif (mode[0] == "listitems"):
 		for video in videos["videos"]:
 			episode = re.compile("The Noite \(?(.+?)\)? ").findall(video["title"]);
 			part = re.compile("parte \(?(.+?)\)?", re.IGNORECASE).findall(video["title"]);
+			
+			if (len(part) == 0):
+				part = [0];
 			
 			video["index"] = int(part[0]);
 			if (episode[0] in episodes):
