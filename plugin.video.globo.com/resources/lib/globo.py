@@ -206,9 +206,12 @@ class GloboApi(object):
             r = resources.pop()
             if r.has_key('players') and 'flash' in r['players']:
                 break
-
-        hashes = self._get_hashes(video_id, [r['_id']])
-        signed_hashes = util.get_signed_hashes(hashes)
+        #FIXED Issue #12
+        while True:
+            hashes = self._get_hashes(video_id, [r['_id']])
+            signed_hashes = util.get_signed_hashes(hashes)
+            if signed_hashes[0].find('/') == -1 and signed_hashes[0].find('+') == -1:
+                break
         # live videos might differ
         query_string = re.sub(r'{{([a-z]*)}}',
                               r'%(\1)s',
