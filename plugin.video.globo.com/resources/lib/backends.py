@@ -168,13 +168,13 @@ class net(GlobosatBackends):
                 'username': self.username,
             })
             r3 = self.session.post('https://idm.netcombo.com.br/IDM/SamlAuthnServlet', data=params3)
-            ipt_values_regex = r'%s.*=.*"(.+)" '
+            ipt_values_regex = r'%s=["\'](.*)["\'] '
             try:
                 action = re.findall(ipt_values_regex % 'action', r3.text)[0]
-                value = re.findall(ipt_values_regex % 'value', r3.text)[0]
+                value = re.findall(ipt_values_regex[:-1] % 'value', r3.text)[0]
             except IndexError:
                 return {}
-            self.debug('action: %s, value: %s')
+            self.debug('action: %s, value: %s' % (action,value))
             params4 = {'SAMLResponse': value}
             r4 = self.session.post(action, data=params4)
             return r4.cookies
