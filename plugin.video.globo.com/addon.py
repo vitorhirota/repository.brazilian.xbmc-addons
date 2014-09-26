@@ -85,6 +85,7 @@ def list_shows(channel, category=None):
     } for slug, name, img in index]
 
 
+
 @plugin.route('/<channel>/<show>/page/<page>')
 def list_episodes(channel, show, page=1):
     videos = api.get_episodes(channel, show, int(page))

@@ -123,7 +123,9 @@ class GloboApi(object):
         channels, live = scraper.get_gplay_channels()
         # adjusts
         globo = [('globo', 'Rede Globo', 'http://s.glbimg.com/vi/mk/channel/196/logotipo/4/149x84.png')]
-        channels = globo + channels[:-1]
+        # channels = globo + channels[:-1]
+        channels = globo + channels
+
         # channels['live'] = channels['live'][:-2]
 
         return {
@@ -148,7 +150,15 @@ class GloboApi(object):
 
     def _build_globosat(self, channel, show=None):
         shows = scraper.get_gplay_shows(channel)
-        data = { channel: [(slug.split('/')[2],
+        pos_show = {
+        'megapix':3,
+        'combate':2
+        }
+        try:
+            pos = pos_show[channel]
+        except:
+            pos = 2
+        data = { channel: [(slug.split('/')[pos],
                            name, img) for slug, name, img in shows] }
         return data
 
@@ -174,9 +184,15 @@ class GloboApi(object):
         # import pydevd; pydevd.settrace()
         # page_size = int(self.plugin.get_setting('page_size') or 10)
         self.plugin.log.debug('getting episodes for %s/%s, page %s' % (channel, show, page))
-
         # define scraper method
-        method = 'get_%s_episodes' % (channel if channel == 'globo' else 'gplay')
+        method_strs =        {
+            'megapix': 'get_megapix_episodes',
+            'globo':'get_globo_episodes',
+        }
+        try:
+            method = method_strs[channel]
+        except:
+            method = 'get_gplay_episodes'
         episodes, next = getattr(scraper, method)(channel, show, page)
 
         return util.struct({'list': episodes, 'next': next})

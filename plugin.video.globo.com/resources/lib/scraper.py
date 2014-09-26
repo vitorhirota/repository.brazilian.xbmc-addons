@@ -90,7 +90,15 @@ def get_globo_shows():
 
 def get_gplay_shows(channel):
     soup = bs(get_page(GLOBOSAT_SHOW_URL % channel))
-    shows = soup.find('ul', attrs={'id': 'mobile-submenu-programas'}).findAll('a')[1:]
+    search_strs = {
+        'megapix':'submenu-generos',
+        'combate':'submenu-competicoes',
+    }
+    try:
+        search = search_strs[channel]
+    except:
+        search = 'mobile-submenu-programas'
+    shows = soup.find('ul', attrs={'id':search }).findAll('a')[1:]
     return [(a['href'], a.text, None) for a in shows]
 
 
@@ -125,7 +133,8 @@ def get_gplay_episodes(channel, show, page):
     properties = ('id', 'title', 'plot', 'duration', 'date')
     prop_data = ('id', 'titulo', 'descricao', 'duracao_original', 'data_exibicao')
 
-    data = get_page(GLOBOSAT_EPS_JSON % ('%s/%s' % (channel, show), page))
+
+    data = get_page( GLOBOSAT_EPS_JSON % ('%s/%s' % (channel, show), page) )
 
     for item in data['resultado']:
         video = util.struct(dict(zip(properties,
@@ -139,3 +148,26 @@ def get_gplay_episodes(channel, show, page):
     page = (page+1 if page < data['total_paginas'] else None)
     return videos, page
 
+
+def get_megapix_episodes(channel, show, page):
+    # page_size = 15
+    # import pydevd; pydevd.settrace()
+    # 'http://globosatplay.globo.com/megapix/generos/comedia/videos/pagina/1.json'
+    MEGAPIX_EPS_JSON = 'http://globosatplay.globo.com/%s/generos/%s/videos/pagina/%s.json'
+    videos = []
+    properties = ('id', 'title', 'plot', 'duration', 'date')
+    prop_data = ('id', 'titulo')
+
+    data = get_page( MEGAPIX_EPS_JSON % (channel, show, page) )
+
+    for item in data:
+        video = util.struct(dict(zip(properties,
+                                     [item.get(p) for p in prop_data])))
+        # update attrs
+        video.date = '2014-01-01'
+        # video.duration = int(video.duration/1000)
+        video.thumb = EPSTHUMB_URL % video.id
+        # self.cache.set('video|%s' % video.id, repr(video))
+        videos.append(video)
+    page = (page+1 if page < 1 else None)
+    return videos, page
