@@ -26,6 +26,8 @@ from resources.lib import util
 from resources.lib import swift_patch
 swift_patch.patch()
 
+# datetime
+from datetime import datetime
 cache = util.Cache("Globosat", 0.05)
 cache.dbg = True
 plugin = Plugin()
@@ -81,6 +83,7 @@ def list_shows(channel, category=None):
                  plugin.url_for('list_episodes', channel=channel, show=slug, page=1)),
         'thumbnail': img
     } for slug, name, img in index]
+
 
 
 @plugin.route('/<channel>/<show>/page/<page>')
@@ -146,9 +149,9 @@ def play(video_id):
     plugin.log.debug('setting resolved url for first item %s' % _id)
     try:
         item['path'] = api.resolve_video_url(_id)
+        item['info']['date'] = str(datetime.now().date())
         plugin.set_resolved_url(item, 'video/mp4')
     except Exception as e:
-        plugin.log.error(str(e))
         plugin.notify(str(e))
 
 

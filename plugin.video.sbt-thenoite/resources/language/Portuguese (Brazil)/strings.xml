@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Translated using Transifex web application. For support, or if you would like to to help out, please visit your language team! -->
+<!-- English language-Team URL: http://www.transifex.com/projects/p/XBMC-Main-Frodo/language/en/ -->
+<!-- Report language file syntax bugs at: http://trac.xbmc.org/ -->
+<strings>
+	<string id="30001">Tocar episódio inteiro</string>
+	<string id="30002">Buscando vídeos</string>
+	<string id="30003">Carregando as partes do episódio...</string>
+	<string id="30004">Buscando parte {0} de {1}</string>
+	<string id="30005">Finalizado</string>
+	
+	<!-- Error messages -->
+	<string id="30006">SBT The Noite</string>
+	<string id="30007">Nenhum vídeo nesta categoria</string>
+	<string id="30008">A API do SBT está offline</string>
+	
+</strings>

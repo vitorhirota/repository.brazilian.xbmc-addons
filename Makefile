@@ -1,6 +1,6 @@
 
 define rollout
-	$(eval VERSION := "$(shell sed -n '/version="[0-9.]*"$$/s/.*version="\([0-9.]*\)"/\1/p' $(PLUGIN)/addon.xml)")
+	$(eval VERSION := "$(shell egrep '^(\s*|<addon.*)version' $(PLUGIN)/addon.xml | sed -e 's/.*version="\([0-9.]*\)\".*/\1/')")
 	@printf "== building archive for $(PLUGIN), version $(VERSION)\n"
 	@find $(PLUGIN) | zip -@ "repo/$(PLUGIN)/$(PLUGIN)-$(VERSION).zip"
 	@cp $(PLUGIN)/changelog.txt repo/$(PLUGIN)/changelog-$(VERSION).txt
@@ -14,6 +14,10 @@ clean:
 
 globocom: clean
 	$(eval PLUGIN  := plugin.video.globo.com)
+	$(rollout)
+
+sbt-thenoite: clean
+	$(eval PLUGIN  := plugin.video.sbt-thenoite)
 	$(rollout)
 
 rollout:
