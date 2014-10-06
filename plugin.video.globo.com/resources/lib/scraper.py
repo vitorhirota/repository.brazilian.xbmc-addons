@@ -36,7 +36,8 @@ def get_page(url, **kwargs):
     '''
     r = requests.get(url, **kwargs)
     return ('application/json' in r.headers.get('content-type')
-            and json.loads(r.text) or r.text)
+            and json.loads(r.text, object_hook=lambda x: dict((str(k), v) for k, v in x.items()))
+            or r.text)
 
 def get_player_version():
     req = get_page(JSAPI_URL)
@@ -133,8 +134,7 @@ def get_gplay_episodes(channel, show, page):
     properties = ('id', 'title', 'plot', 'duration', 'date')
     prop_data = ('id', 'titulo', 'descricao', 'duracao_original', 'data_exibicao')
 
-
-    data = get_page( GLOBOSAT_EPS_JSON % ('%s/%s' % (channel, show), page) )
+    data = get_page(GLOBOSAT_EPS_JSON % ('%s/%s' % (channel, show), page))
 
     for item in data['resultado']:
         video = util.struct(dict(zip(properties,

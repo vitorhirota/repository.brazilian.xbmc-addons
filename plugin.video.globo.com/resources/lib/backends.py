@@ -45,7 +45,7 @@ class Backends(object):
 
     def _save_credentials(self):
         self.plugin.set_setting('%s_credentials' % self.SETT_PREFIX,
-                                pickle.dumps(self.credentials, -1))
+                                pickle.dumps(self.credentials))
 
     def authenticate(self):
         # import pydevd; pydevd.settrace()
@@ -95,10 +95,18 @@ class GlobosatBackends(Backends):
     SETT_PREFIX = 'play'
 
     def __init__(self,plugin):
-        super(GlobosatBackends,self).__init__(plugin)
+        super(GlobosatBackends, self).__init__(plugin)
         self.session = requests.Session()
 
-    def _set_auth_token(self):
+    def _prepare_auth(self):
+        # get a client_id token
+        # https://auth.globosat.tv/oauth/authorize/?redirect_uri=http://globosatplay.globo.com/-/auth/gplay/?callback&response_type=code
+        r1 = self.session.get(self.OAUTH_URL)
+        # get backend url
+        r2 = self.session.post(r1.url, data={'config': self.PROVIDER_ID})
+        return r2.url.split('?', 1)
+
+    def _save_credentials(self):
         # provider_id is a property from a video playlist. Tt seems, however,
         # the only provider available for now is gplay. Instead of requesting
         # for a given playlist (which requires a valid video_id, this is being
@@ -110,21 +118,9 @@ class GlobosatBackends(Backends):
         r = requests.get(self.AUTH_TOKEN_URL % (provider_id, token,
                                                 now.strftime('%s'),
                                                 expiration.strftime('%a, %d %b %Y %H:%M:%S GMT')))
-        self.credentials = dict(r.cookies)
-
-    def _prepare_auth(self):
-        # get a client_id token
-        # https://auth.globosat.tv/oauth/authorize/?redirect_uri=http://globosatplay.globo.com/-/auth/gplay/?callback&response_type=code
-        r1 = self.session.get(self.OAUTH_URL)
-        # get backend url
-        r2 = self.session.post(r1.url, data={'config': self.PROVIDER_ID})
-        return r2.url.split('?', 1)
-
-    def _save_credentials(self):
         # update credentials to be a proper authentication token
-        self._set_auth_token()
-        self.plugin.set_setting('%s_credentials' % self.SETT_PREFIX,
-                                pickle.dumps(self.credentials, -1))
+        self.credentials = dict(r.cookies)
+        super(GlobosatBackends, self)._save_credentials()
 
 
 class gvt(GlobosatBackends):

@@ -111,8 +111,9 @@ class GloboApi(object):
     def _get_video_info(self, video_id):
         # get video info
         data = scraper.get_page(INFO_URL % video_id)['videos'][0]
-        # substitute unicode keys with basestring
-        data = dict((str(key), value) for key, value in data.items())
+        if 'date' not in data:
+            # original date is not part of INFO_URLs metadata response
+            data['date'] = util.time_format()
         if 'duration' not in data:
             data['duration'] = sum(x['resources'][0]['duration']/1000
                                    for x in data.get('children') or [data])
@@ -151,8 +152,8 @@ class GloboApi(object):
     def _build_globosat(self, channel, show=None):
         shows = scraper.get_gplay_shows(channel)
         pos_show = {
-        'megapix':3,
-        'combate':2
+            'megapix': 3,
+            'combate': 2
         }
         try:
             pos = pos_show[channel]
@@ -222,13 +223,8 @@ class GloboApi(object):
             r = resources.pop()
             if r.has_key('players') and 'flash' in r['players']:
                 break
-        #FIXED Issue #12
-        while True:
-            hashes = self._get_hashes(video_id, [r['_id']])
-            signed_hashes = util.get_signed_hashes(hashes)
-            if signed_hashes[0].find('/') == -1 and signed_hashes[0].find('+') == -1:
-                break
-        # live videos might differ
+        hashes = self._get_hashes(video_id, [r['_id']])
+        signed_hashes = util.get_signed_hashes(hashes)
         query_string = re.sub(r'{{([a-z]*)}}',
                               r'%(\1)s',
                               r['query_string_template']) % {
