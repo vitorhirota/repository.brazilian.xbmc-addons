@@ -40,7 +40,7 @@ class Backends(object):
         except:
             self.credentials = {}
 
-    def _provider_auth(self):
+    def _authenticate(self):
         raise Exception('Not implemented.')
 
     def _save_credentials(self):
@@ -51,7 +51,7 @@ class Backends(object):
         # import pydevd; pydevd.settrace()
         if not any(self.credentials.values()) and (self.username and self.password):
             self.debug('username/password set. trying to authenticate')
-            self.credentials = self._provider_auth()
+            self.credentials = self._authenticate()
             if any(self.credentials.values()):
                 self.debug('successfully authenticated')
                 self._save_credentials()
@@ -78,7 +78,7 @@ class globo(Backends):
     ENDPOINT_URL = 'https://login.globo.com/login/151?tam=widget'
     SETT_PREFIX = 'globo'
 
-    def _provider_auth(self):
+    def _authenticate(self):
         payload = {
             'botaoacessar': 'acessar',
             'login-passaporte': self.username,
@@ -98,37 +98,42 @@ class GlobosatBackends(Backends):
         super(GlobosatBackends, self).__init__(plugin)
         self.session = requests.Session()
 
-    def _prepare_auth(self):
+    def _authenticate(self):
         # get a client_id token
         # https://auth.globosat.tv/oauth/authorize/?redirect_uri=http://globosatplay.globo.com/-/auth/gplay/?callback&response_type=code
         r1 = self.session.get(self.OAUTH_URL)
         # get backend url
         r2 = self.session.post(r1.url, data={'config': self.PROVIDER_ID})
-        return r2.url.split('?', 1)
-
-    def _save_credentials(self):
+        url, qs = r2.url.split('?', 1)
+        # provider authentication
+        r3 = self._provider_auth(url, urlparse.parse_qs(qs))
+        # set profile
+        post_data = {
+            '_method': 'PUT',
+            'perfil_id': re.findall('<div data-id="(\d+)" class="avatar', r3.text)
+        }
+        r4 = self.session.post(r3.url, data=post_data)
+        # build credentials
+        credentials = dict(r4.cookies)
         # provider_id is a property from a video playlist. Tt seems, however,
         # the only provider available for now is gplay. Instead of requesting
         # for a given playlist (which requires a valid video_id, this is being
         # harcoded for now.
         provider_id = '52dfc02cdd23810590000f57'
-        token = self.credentials[self.credentials['b64gplay']]
+        token = credentials[credentials['b64gplay']]
         now = datetime.datetime.now()
         expiration = now + datetime.timedelta(days=7)
-        r = requests.get(self.AUTH_TOKEN_URL % (provider_id, token,
-                                                now.strftime('%s'),
-                                                expiration.strftime('%a, %d %b %Y %H:%M:%S GMT')))
-        # update credentials to be a proper authentication token
-        self.credentials = dict(r.cookies)
-        super(GlobosatBackends, self)._save_credentials()
+        r5 = requests.get(self.AUTH_TOKEN_URL % (provider_id,
+                                                 token,
+                                                 now.strftime('%s'),
+                                                 expiration.strftime('%a, %d %b %Y %H:%M:%S GMT')))
+        return dict(r5.cookies)
 
 
 class gvt(GlobosatBackends):
     PROVIDER_ID = 62
 
-    def _provider_auth(self):
-        url, qs = self._prepare_auth()
-        qs = urlparse.parse_qs(qs)
+    def _provider_auth(self, url, qs):
         post_data = {
             'code': qs['code'][0],
             'user_Fone': None,
@@ -136,41 +141,34 @@ class gvt(GlobosatBackends):
             'password': self.password,
             'login': 'Login',
         }
-        r3 = self.session.post(url, data=post_data)
-        # validate authentication on globosat
-        # params = urlparse.parse_qs(r3.url.split('?', 1)[1])
+        req = self.session.post(url, data=post_data)
         try:
-            r4 = requests.get(r3.url.split('redirect_uri=', 1)[1])
+            return self.session.get(req.url.split('redirect_uri=', 1)[1])
         except IndexError:
             # if invalid user/pass: IndexError: list index out of range
-            return {}
-        # save session id
-        return dict(r4.cookies)
+            return None
 
 
 class net(GlobosatBackends):
-        PROVIDER_ID = 64
+    PROVIDER_ID = 64
 
-        def _provider_auth(self):
-            qs = self._prepare_auth()[1]
-            params3 = urlparse.parse_qs(qs)
-            params3.update({
-                '_submit.x': '115',
-                '_submit.y': '20',
-                'externalSystemName': 'none',
-                'password': self.password,
-                'passwordHint': '',
-                'selectedSecurityType': 'public',
-                'username': self.username,
-            })
-            r3 = self.session.post('https://idm.netcombo.com.br/IDM/SamlAuthnServlet', data=params3)
-            ipt_values_regex = r'%s=["\'](.*)["\'] '
-            try:
-                action = re.findall(ipt_values_regex % 'action', r3.text)[0]
-                value = re.findall(ipt_values_regex[:-1] % 'value', r3.text)[0]
-            except IndexError:
-                return {}
-            self.debug('action: %s, value: %s' % (action,value))
-            params4 = {'SAMLResponse': value}
-            r4 = self.session.post(action, data=params4)
-            return r4.cookies
+    def _provider_auth(self, url, qs):
+        qs.update({
+            '_submit.x': '115',
+            '_submit.y': '20',
+            'externalSystemName': 'none',
+            'password': self.password,
+            'passwordHint': '',
+            'selectedSecurityType': 'public',
+            'username': self.username,
+        })
+        req = self.session.post('https://idm.netcombo.com.br/IDM/SamlAuthnServlet', data=qs)
+        ipt_values_regex = r'%s=["\'](.*)["\'] '
+        try:
+            action = re.findall(ipt_values_regex % 'action', req.text)[0]
+            value = re.findall(ipt_values_regex[:-1] % 'value', req.text)[0]
+        except IndexError:
+            return {}
+        self.debug('action: %s, value: %s' % (action,value))
+        return self.session.post(action, data={'SAMLResponse': value})
+
