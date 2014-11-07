@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 from resources.lib import globo
-# from resources.lib import globotv, globosat
 from xbmcswift2 import Plugin, xbmc
 from resources.lib import util
 

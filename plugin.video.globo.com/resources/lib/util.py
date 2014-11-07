@@ -5,6 +5,7 @@ import json
 import unicodedata
 import random
 import re
+import string
 import time
 
 try:
@@ -89,12 +90,15 @@ def unescape(text):
     return re.sub("&#?\w+;", fixup, text)
 
 
-def time_format(time_str, input_format):
+def time_format(time_str=None, input_format=None):
     '''
         Helper function to reformat time according to xbmc expecctation DD.MM.YYYY
     '''
-    time_obj = time.strptime(time_str, input_format)
-    return time.strftime('%d.%m.%Y')
+    if time_str:
+        time_obj = time.strptime(time_str, input_format)
+        return time.strftime('%d.%m.%Y', time_obj)
+    else:
+        return time.strftime('%d.%m.%Y')
 
 
 # methods below are part of globo hashing scheme
@@ -106,12 +110,13 @@ def get_signed_hashes(a):
 
 G = 3600
 H = "=0xAC10FD"
+table1 = string.maketrans('/+', '_-')
 
 def J(a):
     # def I has been replaced with hashlib.md5.digest
     # def rstr2b64 has been replaced with b64encode
     digest = hashlib.md5(a + H[1:]).digest()
-    return base64.b64encode(digest).replace('=', '')
+    return base64.b64encode(digest).translate(table1, '=')
 
 def K(a):
     # def I has been replaced with hashlib.md5.digest

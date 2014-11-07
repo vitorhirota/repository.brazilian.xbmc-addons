@@ -111,8 +111,9 @@ class GloboApi(object):
     def _get_video_info(self, video_id):
         # get video info
         data = scraper.get_page(INFO_URL % video_id)['videos'][0]
-        # substitute unicode keys with basestring
-        data = dict((str(key), value) for key, value in data.items())
+        if 'date' not in data:
+            # original date is not part of INFO_URLs metadata response
+            data['date'] = util.time_format()
         if 'duration' not in data:
             data['duration'] = sum(x['resources'][0]['duration']/1000
                                    for x in data.get('children') or [data])
@@ -123,7 +124,9 @@ class GloboApi(object):
         channels, live = scraper.get_gplay_channels()
         # adjusts
         globo = [('globo', 'Rede Globo', 'http://s.glbimg.com/vi/mk/channel/196/logotipo/4/149x84.png')]
-        channels = globo + channels[:-1]
+        # channels = globo + channels[:-1]
+        channels = globo + channels
+
         # channels['live'] = channels['live'][:-2]
 
         return {
@@ -148,7 +151,15 @@ class GloboApi(object):
 
     def _build_globosat(self, channel, show=None):
         shows = scraper.get_gplay_shows(channel)
-        data = { channel: [(util.slugify(slug.replace(channel, '')),
+        pos_show = {
+            'megapix': 3,
+            'combate': 2
+        }
+        try:
+            pos = pos_show[channel]
+        except:
+            pos = 2
+        data = { channel: [(slug.split('/')[pos],
                            name, img) for slug, name, img in shows] }
         return data
 
@@ -174,9 +185,15 @@ class GloboApi(object):
         # import pydevd; pydevd.settrace()
         # page_size = int(self.plugin.get_setting('page_size') or 10)
         self.plugin.log.debug('getting episodes for %s/%s, page %s' % (channel, show, page))
-
         # define scraper method
-        method = 'get_%s_episodes' % (channel if channel == 'globo' else 'gplay')
+        method_strs =        {
+            'megapix': 'get_megapix_episodes',
+            'globo':'get_globo_episodes',
+        }
+        try:
+            method = method_strs[channel]
+        except:
+            method = 'get_gplay_episodes'
         episodes, next = getattr(scraper, method)(channel, show, page)
 
         return util.struct({'list': episodes, 'next': next})
@@ -206,10 +223,8 @@ class GloboApi(object):
             r = resources.pop()
             if r.has_key('players') and 'flash' in r['players']:
                 break
-
         hashes = self._get_hashes(video_id, [r['_id']])
         signed_hashes = util.get_signed_hashes(hashes)
-        # live videos might differ
         query_string = re.sub(r'{{([a-z]*)}}',
                               r'%(\1)s',
                               r['query_string_template']) % {
@@ -219,4 +234,3 @@ class GloboApi(object):
         url = '?'.join([r['url'], query_string])
         self.plugin.log.debug('video url: %s' % url)
         return url
-
