@@ -14,4 +14,8 @@
 	<string id="30007">Nenhum vídeo nesta categoria</string>
 	<string id="30008">A API do SBT está offline</string>
 	
+	<!-- Settings messages -->
+	<string id="30900">Configurações de Vídeo</string>
+	<string id="30901">Qualidade de vídeo</string>
+	
 </strings>

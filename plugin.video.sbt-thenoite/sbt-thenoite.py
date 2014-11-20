@@ -17,7 +17,7 @@ _ = settings.getLocalizedString;
 # setting SBT urls
 thenoite_urls = {};
 thenoite_urls["menu_api"] = "http://api.sbt.com.br/1.4.5/medias/key=AE8C984EECBA4F7F835C585D5CB6AB4B&fields=id,title,thumbnail,author&idsite=198&idSiteArea=1011&limit=100&orderBy=ordem&sort=asc";
-thenoite_urls["media_api"] = "http://api.sbt.com.br/1.4.5/videos/key=AE8C984EECBA4F7F835C585D5CB6AB4B&fields=id,title,thumbnail,publishdate,secondurl&program=400&limit=100&orderBy=publishdate&category=$authorId&sort=desc";
+thenoite_urls["media_api"] = "http://api.sbt.com.br/1.4.5/videos/key=AE8C984EECBA4F7F835C585D5CB6AB4B&fields=id,title,thumbnail,publishdate,secondurl&program=400&limit=300&orderBy=publishdate&category=$authorId&sort=desc";
 thenoite_urls["video_url"] = 'http://fast.player.liquidplatform.com/pApiv2/embed/25ce5b8513c18a9eae99a8af601d0943/$videoId';
 
 thenoite_authors_slug = {};
@@ -173,6 +173,7 @@ elif (mode[0] == "listitems"):
 elif (mode[0] == "videourl"):
 	iframe = fetchUrl(thenoite_urls["video_url"].replace("$videoId", args.get("play_video")[0]));
 	video = parseMediaInfo(iframe);
+	
 	if (video):
 		# finding best video thumbnail, optimal is 480 x 360 by default
 		video_thumb = None;
@@ -185,19 +186,36 @@ elif (mode[0] == "videourl"):
 					video_thumb = thumbnail;
 				elif(video_thumb["width"] <= thumbnail["width"] and video_thumb["height"] <= thumbnail["height"]):
 					video_thumb = thumbnail;
-		
+					
+		userQuality = settings.getSetting("video.quality");
+		# xbmc.log("["+_(30006)+"]: Will look for video at quality "+userQuality, 0);
 		for deliveryRules in video["deliveryRules"]:
 			if (deliveryRules["rule"]["ruleName"] == "r1"):
+				listItem = None;
+				defaultListItem = None;
 				for output in deliveryRules["outputList"]:
-					if (output["labelText"] == "480p"):
-						listitem = xbmcgui.ListItem(video["title"]);
-						listitem.setInfo("video", {"Title" : video["title"], "Plot" : video["description"]});
+					# xbmc.log("["+_(30006)+"]: Video quality "+output["labelText"], 0);
+					if (output["labelText"] == userQuality):
+						# xbmc.log("["+_(30006)+"]: Match for user quality", 0);
+						listItem = xbmcgui.ListItem(video["title"]);
+						listItem.setInfo("video", {"Title" : video["title"], "Plot" : video["description"]});
 						if (video_thumb != None): # setting thubmnail and icon image, if any
-							listitem.setIconImage(video_thumb["url"]);
-							listitem.setThumbnailImage(video_thumb["url"]);
-							
-						xbmc.Player().play(output["url"], listitem);
+							listItem.setIconImage(video_thumb["url"]);
+							listItem.setThumbnailImage(video_thumb["url"]);
 						break;
+					if (output["labelText"] == "480p"):
+						# xbmc.log("["+_(30006)+"]: Match for default quality", 0);
+						defaultListItem = xbmcgui.ListItem(video["title"]);
+						defaultListItem.setInfo("video", {"Title" : video["title"], "Plot" : video["description"]});
+						if (video_thumb != None): # setting thubmnail and icon image, if any
+							defaultListItem.setIconImage(video_thumb["url"]);
+							defaultListItem.setThumbnailImage(video_thumb["url"]);
+				if (listItem != None):
+					# xbmc.log("["+_(30006)+"]: Playing user video quality", 0);
+					xbmc.Player().play(output["url"], listItem);
+				elif(defaultListItem != None):
+					# xbmc.log("["+_(30006)+"]: Playing default video quality", 0);
+					xbmc.Player().play(output["url"], defaultListItem);
 				break;
 	else:
 		xbmc.log("["+_(30006)+"]: Unable to find video for ID "+args.get("play_video")[0], 0);
@@ -241,18 +259,30 @@ elif (mode[0] == "episodeurl"):
 					elif(video_thumb["width"] <= thumbnail["width"] and video_thumb["height"] <= thumbnail["height"]):
 						video_thumb = thumbnail;
 		
+			userQuality = settings.getSetting("video.quality");
 			for deliveryRules in video["deliveryRules"]:
 				if (deliveryRules["rule"]["ruleName"] == "r1"):
+					listItem = None;
+					defaultListItem = None;
 					for output in deliveryRules["outputList"]:
-						if (output["labelText"] == "480p"):
-							listitem = xbmcgui.ListItem(video["title"]);
-							listitem.setInfo("video", {"Title" : video["title"], "Plot" : video["description"]});
+						if (output["labelText"] == userQuality):
+							listItem = xbmcgui.ListItem(video["title"]);
+							listItem.setInfo("video", {"Title" : video["title"], "Plot" : video["description"]});
 							if (video_thumb != None): # setting thubmnail and icon image, if any
-								listitem.setIconImage(video_thumb["url"]);
-								listitem.setThumbnailImage(video_thumb["url"]);
-							
-							xbmcPlaylist.add(output["url"], listitem);
+								listItem.setIconImage(video_thumb["url"]);
+								listItem.setThumbnailImage(video_thumb["url"]);
 							break;
+						if (output["labelText"] == "480p"):
+							defaultListItem = xbmcgui.ListItem(video["title"]);
+							defaultListItem.setInfo("video", {"Title" : video["title"], "Plot" : video["description"]});
+							if (video_thumb != None): # setting thubmnail and icon image, if any
+								defaultListItem.setIconImage(video_thumb["url"]);
+								defaultListItem.setThumbnailImage(video_thumb["url"]);
+					
+					if (listItem != None):
+						xbmcPlaylist.add(output["url"], listItem);
+					elif(defaultListItem != None):
+						xbmcPlaylist.add(output["url"], defaultListItem);
 					break;
 		else:
 			xbmc.log("["+_(30006)+"]: Unable to find video for ID "+args.get("play_video")[0], 0);
