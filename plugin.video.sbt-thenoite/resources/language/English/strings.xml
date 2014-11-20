@@ -13,4 +13,8 @@
 	<string id="30006">SBT The Noite</string>
 	<string id="30007">No video on this category</string>
 	<string id="30008">SBT API is currently offline</string>
+	
+	<!-- Settings messages -->
+	<string id="30900">Video Settings</string>
+	<string id="30901">Video quality</string>
 </strings>
