@@ -126,7 +126,7 @@ class GlobosatBackends(Backends):
         expiration = now + datetime.timedelta(days=7)
         r5 = requests.get(self.AUTH_TOKEN_URL % (provider_id,
                                                  token,
-                                                 calendar.timegm(now.timetuple())
+                                                 calendar.timegm(now.timetuple()),
                                                  expiration.strftime('%a, %d %b %Y %H:%M:%S GMT')))
         return dict(r5.cookies)
 
