@@ -16,6 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
+import calendar
 import datetime
 import re
 import requests
@@ -125,7 +126,7 @@ class GlobosatBackends(Backends):
         expiration = now + datetime.timedelta(days=7)
         r5 = requests.get(self.AUTH_TOKEN_URL % (provider_id,
                                                  token,
-                                                 now.strftime('%s'),
+                                                 calendar.timegm(now.timetuple())
                                                  expiration.strftime('%a, %d %b %Y %H:%M:%S GMT')))
         return dict(r5.cookies)
 
@@ -162,13 +163,14 @@ class net(GlobosatBackends):
             'selectedSecurityType': 'public',
             'username': self.username,
         })
-        req = self.session.post('https://idm.netcombo.com.br/IDM/SamlAuthnServlet', data=qs)
+        url = 'https://idm.netcombo.com.br/IDM/SamlAuthnServlet'
+        req = self.session.post(url, data=qs)
         ipt_values_regex = r'%s=["\'](.*)["\'] '
         try:
             action = re.findall(ipt_values_regex % 'action', req.text)[0]
             value = re.findall(ipt_values_regex[:-1] % 'value', req.text)[0]
         except IndexError:
             return {}
-        self.debug('action: %s, value: %s' % (action,value))
+        self.debug('action: %s, value: %s' % (action, value))
         return self.session.post(action, data={'SAMLResponse': value})
 
