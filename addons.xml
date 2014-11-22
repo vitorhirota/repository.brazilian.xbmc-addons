@@ -2,7 +2,7 @@
 <addons>
 <addon id="plugin.video.globo.com"
 		name="Globo.com"
-		version="0.1.2.2"
+		version="0.1.2.3"
 		provider-name="vitorhirota">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0"/>
