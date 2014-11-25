@@ -147,7 +147,7 @@ def play(video_id):
         item['path'] = api.resolve_video_url(_id)
         plugin.set_resolved_url(item, 'video/mp4')
     except Exception as e:
-        plugin.log.error(str(e))
+        plugin.log.exception(e, exc_info=1)
         plugin.notify(str(e))
 
 
