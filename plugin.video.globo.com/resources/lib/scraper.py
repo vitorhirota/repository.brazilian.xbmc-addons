@@ -82,10 +82,10 @@ def get_globo_shows():
     soup = bs(get_page(GLOBOTV_MAIS_URL))
     content = soup.findAll('div', attrs={'class': re.compile('trilho-tag')})
     categories = [c.find('h2').text for c in content]
-    shows = [[(util.slugify(img['alt']),
-               img['alt'],
-               img['data-src'].replace(img['data-src'][7:img['data-src'].index('=/')+2], ''))
-              for img in c.findAll('img') if '=/' in img['data-src']]
+    shows = [dict([(util.slugify(img['alt']),
+                    (img['alt'],
+                     img['data-src'].replace(img['data-src'][7:img['data-src'].index('=/')+2], '')))
+                    for img in c.findAll('img') if '=/' in img['data-src']])
              for c in content]
     return (categories, shows)
 

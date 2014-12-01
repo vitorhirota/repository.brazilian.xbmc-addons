@@ -94,7 +94,6 @@ def channels():
 @plugin.route('/<channel>', name='list_shows')
 @plugin.route('/globo/<category>', name='list_globo_categories', options={'channel': 'globo'})
 def list_shows(channel, category=None):
-    # import pydevd; pydevd.settrace()
     index = api.get_path(category or channel)
     return [{
         'label': name,
