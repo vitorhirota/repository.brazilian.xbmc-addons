@@ -174,3 +174,21 @@ class net(GlobosatBackends):
         self.debug('action: %s, value: %s' % (action, value))
         return self.session.post(action, data={'SAMLResponse': value})
 
+
+class sky(GlobosatBackends):
+    PROVIDER_ID = 80
+
+    def _provider_auth(self, url, qs):
+        qs.update({
+            'login': self.username,
+            'senha': self.password,
+            'clientId': '',
+            'chave': 'e82947ce-9d0d-4eb0-af87-ae1fe493b602',
+        })
+        url = 'http://www1.skyonline.com.br/Modal/Logar'
+        req = self.session.post(url, data=qs)
+        match = re.search('^"(http.*)"$', req.text)
+        if match:
+            return self.session.get(match.group(1))
+        else:
+            return None
