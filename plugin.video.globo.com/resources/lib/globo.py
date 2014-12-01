@@ -188,7 +188,7 @@ class GloboApi(object):
         # page_size = int(self.plugin.get_setting('page_size') or 10)
         self.plugin.log.debug('getting episodes for %s/%s, page %s' % (channel, show, page))
         # define scraper method
-        method_strs =        {
+        method_strs = {
             'megapix': 'get_megapix_episodes',
             'globo':'get_globo_episodes',
         }

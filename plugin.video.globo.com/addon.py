@@ -79,11 +79,16 @@ def index():
 
 @plugin.route('/favorites')
 def favorites():
+    # import pydevd; pydevd.settrace()
     index = api.get_path('channels')
     favorites = api.get_path('favorites')
     return [{
-        'label': '[%s] %s' % ((index.get(channel) or index.get('globo'))[0], api.get_path(channel)[slug][0]),
-        'path': plugin.url_for('list_episodes', channel=channel, show=slug, page=1),
+        'label': '[%s] %s' % ((index.get(channel) or index.get('globo'))[0],
+                              api.get_path(channel)[slug][0]),
+        'path': plugin.url_for('list_episodes',
+                               channel=(channel if index.get(channel) else 'globo'),
+                               show=slug,
+                               page=1),
         'thumbnail': api.get_path(channel)[slug][1],
         'context_menu': [
             make_remove_favorite_ctx(channel, slug),
