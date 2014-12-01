@@ -28,9 +28,11 @@
   <string id="31300">Addon Settings</string>
   <string id="31310">Video Quality</string>
   <string id="31311">SD Only</string>
-  <string id="31312">HD When Available</string>
+  <string id="31312">480p When Available</string>
+  <string id="31313">HD When Available</string>
   <string id="31400">Videos Per Page</string>
   <string id="31500">Debug</string>
+  <string id="31600">Clear data</string>
   <!-- Notifications messages -->
   <string id="32001">Authentication error. Invalid username or password.</string>
   <string id="32002">Provider %s not implemented yet.</string>

@@ -28,7 +28,8 @@
   <string id="31300">Configurações do Addon</string>
   <string id="31310">Qualidade de Video</string>
   <string id="31311">SD Apenas</string>
-  <string id="31312">HD Quando Disponível</string>
+  <string id="31312">480p Quando Disponível</string>
+  <string id="31313">HD Quando Disponível</string>
   <string id="31400">Videos Por Página</string>
   <string id="31500">Debug</string>
   <!-- Notifications messages -->

@@ -13,11 +13,6 @@ try:
 except:
     import pickle
 
-try:
-    from StorageServer import StorageServer
-except:
-    from test.storageserverdummy import StorageServer
-
 
 class struct(object):
     '''
@@ -39,18 +34,6 @@ class struct(object):
 
     def get(self, key):
         return self.__dict__.get(key)
-
-
-class Cache(StorageServer):
-    '''
-        StorageServer class specialization that always serializes objects upon
-        set.
-    '''
-    def set(self, key, value):
-        StorageServer.set(self, key, pickle.dumps(value, -1))
-
-    def get(self, key):
-        return pickle.loads(StorageServer.get(self, key))
 
 
 def slugify(string):

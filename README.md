@@ -28,7 +28,7 @@ não funcionais. Note que mesmo se funcionais, acesso ao conteúdo é dependente
 de um pacote de assinatura correspondente (como Combate, Premiere e Telecine
 Play). Por favor, relate os devidos problemas caso os encontre.
 
-*Videos from channels and services from globo.com: Globo+ e GlobosatPlay.*
+*Videos from channels and services from globo.com: Globo+ and GlobosatPlay.*
 
 ### Globo.tv
 
@@ -37,18 +37,18 @@ Play). Por favor, relate os devidos problemas caso os encontre.
 Vídeos do website [globo.tv][1]. Suporta também assinantes do serviço Globo+,
 que fornece vídeos de programas na íntegra (novelas, jornais, seriados).
 
-*Videos from [globo.tv][1]. Also supports Globo+ subscribers, wich provides
+*Videos from [globo.tv][1]. Also supports Globo+ subscribers, which provides
 full episodes of original shows.*
 
 ### SBT-TheNoite
 
-Este é um Video Add-on para o XBMC aonde você pode assistir os programas na 
+Este é um Video Add-on para o XBMC aonde você pode assistir os programas na
 íntegra do [The Noite][9].
 
-O plugin busca os vídeos direto no site do SBT, assim você não tem os cortes 
+O plugin busca os vídeos direto no site do SBT, assim você não tem os cortes
 que acontecem nos vídeos do canal do The Noite no Youtube.
 
-*This video addon for XBMC allows you to watch full episodes of The Noite 
+*This video addon for XBMC allows you to watch full episodes of The Noite
 tv program.*
 
 #### Idéias
