@@ -26,31 +26,48 @@ from resources.lib import util
 plugin = Plugin()
 api = globo.GloboApi(plugin)
 
+# background views
 @plugin.route('/clear_index')
 def clear_index():
     api._clear_index()
-    # TBD: set image to info instead of error
-    plugin.notify('Data cleared.')
+    plugin.notify('Data cleared.', image=None)
 
-
-def make_favorite_ctx(channel, show):
-    label = 'Add show to add-on favorites'
-    new_url = plugin.url_for('add_show_to_favs', channel=channel, show=show)
-    return (label, actions.background(new_url))
-
-@plugin.route('/favorites/add/<channel>/<show>')
+@plugin.route('/favorites/del/<channel>/<show>')
 def add_show_to_favs(channel, show):
     # this is a background view
     plugin.log.debug('adding (%s, %s) to favorites' % (channel, show))
     try:
         api.favorites.add((channel, show))
         # show_name =
-        plugin.notify('[%s] %s added to favorites.' % (channel, show))
+        plugin.notify('[%s] %s added to favorites.' % (channel, show), image=None)
     except AttributeError as e:
         plugin.log.error(e)
         plugin.notify('Error while adding to favorites. You might need to '
                       'clear the addon data in the addon settings',
                       delay=7500)
+
+@plugin.route('/favorites/add/<channel>/<show>')
+def del_show_from_favs(channel, show):
+    plugin.log.debug('removing (%s, %s) to favorites' % (channel, show))
+    try:
+        api.favorites.remove((channel, show))
+        # show_name =
+        plugin.notify('[%s] %s removed from favorites.' % (channel, show), image=None)
+    except AttributeError as e:
+        plugin.log.error(e)
+
+
+# context menu helpers
+def make_favorite_ctx(channel, show):
+    label = 'Add show to add-on favorites'
+    new_url = plugin.url_for('add_show_to_favs', channel=channel, show=show)
+    return (label, actions.background(new_url))
+
+def make_remove_favorite_ctx(channel, show):
+    label = 'Remove show from favorites'
+    new_url = plugin.url_for('del_show_from_favs', channel=channel, show=show)
+    return (label, actions.background(new_url))
+
 
 @plugin.route('/')
 def index():
@@ -65,10 +82,13 @@ def favorites():
     index = api.get_path('channels')
     favorites = api.get_path('favorites')
     return [{
-        'label': '[%s] %s' % (index[channel][0], api.get_path(channel)[slug][0]),
+        'label': '[%s] %s' % ((index.get(channel) or index.get('globo'))[0], api.get_path(channel)[slug][0]),
         'path': plugin.url_for('list_episodes', channel=channel, show=slug, page=1),
-        'thumbnail': api.get_path(channel)[slug][1]
-    } for channel, slug in favorites]
+        'thumbnail': api.get_path(channel)[slug][1],
+        'context_menu': [
+            make_remove_favorite_ctx(channel, slug),
+        ],
+    } for channel, slug in sorted(favorites)]
 
 
 @plugin.route('/live')
@@ -101,7 +121,7 @@ def list_shows(channel, category=None):
                  plugin.url_for('list_episodes', channel=channel, show=slug, page=1)),
         'thumbnail': img,
         'context_menu': [
-            make_favorite_ctx(channel, slug),
+            make_favorite_ctx(category or channel, slug),
         ],
     } for slug, (name, img) in sorted(index.items())]
 

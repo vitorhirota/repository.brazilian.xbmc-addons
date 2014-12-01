@@ -176,7 +176,7 @@ class GloboApi(object):
 
     def get_path(self, key):
         data = self.index.get(key)
-        if not data:
+        if data == None:
             method = '_build_%s' % (key if key == 'globo' else 'globosat')
             data = getattr(self, method)(key)
             self.index.update(data)
