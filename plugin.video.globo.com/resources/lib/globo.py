@@ -16,17 +16,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
-import itertools
 import re
-import requests
 
 import backends
 import scraper
 import util
-
-# xhrsession = requests.session()
-# xhrsession.headers['User-Agent'] = 'xbmc.org'
-# xhrsession.headers['X-Requested-With'] = 'XMLHttpRequest'
 
 # url masks
 BASE_URL = 'http://%s.globo.com'
@@ -50,14 +44,24 @@ JSAPI_URL = 'http://s.videos.globo.com/p2/j/api.min.js'
 
 class GloboApi(object):
 
-    def __init__(self, plugin, cache):
-        # import pydevd; pydevd.settrace()
+    def __init__(self, plugin):
         self.plugin = plugin
-        self.cache = cache
         self.index = plugin.get_storage('index')
+        if not isinstance(self.index.get('favorites'), set):
+            # needed for v1.3
+            # TBD: remove in the future
+            self.index.clear()
         if not any(self.index.items()):
+            # kick start index for first runs
             self.index.update(self._build_index())
         self.index.sync()
+        self.favorites = self.index['favorites']
+
+    def _clear_index(self):
+        self.plugin.log.debug('clearing data')
+        self.index.clear()
+        self.index.sync()
+        self.plugin.log.debug('data cleared')
 
     def _get_hashes(self, video_id, resource_ids, auth_retry=False, player_retry=False):
         playerVersion = self.plugin.get_setting('player_version')
@@ -122,12 +126,10 @@ class GloboApi(object):
     def _build_index(self):
         # get gplay channels
         channels, live = scraper.get_gplay_channels()
-        # adjusts
-        globo = [('globo', 'Rede Globo', 'http://s.glbimg.com/vi/mk/channel/196/logotipo/4/149x84.png')]
-        # channels = globo + channels[:-1]
-        channels = globo + channels
-
-        # channels['live'] = channels['live'][:-2]
+        # add globo
+        channels.update({
+            'globo': ('Rede Globo', 'http://s.glbimg.com/vi/mk/channel/196/logotipo/4/149x84.png'),
+        })
 
         return {
             'index': [
@@ -137,7 +139,7 @@ class GloboApi(object):
             ],
             'channels': channels,
             'live': live,
-            'favorites': self.plugin.get_setting('favorites'),
+            'favorites': set(),
         }
 
     def _build_globo(self, channel=None):
@@ -159,8 +161,9 @@ class GloboApi(object):
             pos = pos_show[channel]
         except:
             pos = 2
-        data = { channel: [(slug.split('/')[pos],
-                           name, img) for slug, name, img in shows] }
+        data = {
+            channel: dict([(slug.split('/')[pos], (name, img))
+                           for slug, name, img in shows]) }
         return data
 
     def authenticate(self, provider):
@@ -178,7 +181,6 @@ class GloboApi(object):
             data = getattr(self, method)(key)
             self.index.update(data)
             data = self.index.get(key)
-            # self.cache.set('index', self.index)
         return data
 
     def get_episodes(self, channel, show, page):
@@ -209,20 +211,25 @@ class GloboApi(object):
 
     def resolve_video_url(self, video_id):
         # which index to look in the list
-        hd_first = int(self.plugin.get_setting('hd_video_quality') or 0)
+        heights = [360, 480, 720]
+        video_quality = int(self.plugin.get_setting('video_quality') or 0)
+        # get video info
         data = self._get_video_info(video_id)
         self.plugin.log.debug('resolving video: %s' % video_id)
         # this method assumes there's no children
         if 'children' in data:
             raise Exception('Invalid video id: %s' % video_id)
-
-        resources = sorted(data['resources'],
-                           key=lambda v: v.get('height') or 0,
-                           reverse=(not bool(hd_first)))
+        # build resources dict based on height
+        resources = dict((d['height'], d) for d in data['resources']
+                         if 'players' in d and 'flash' in d['players'])
+        # get resource based on video quality setting
         while True:
-            r = resources.pop()
-            if r.has_key('players') and 'flash' in r['players']:
+            try:
+                r = resources[heights[video_quality]]
                 break
+            except:
+                video_quality -= 1
+        # get hashes
         hashes = self._get_hashes(video_id, [r['_id']])
         signed_hashes = util.get_signed_hashes(hashes)
         query_string = re.sub(r'{{([a-z]*)}}',
@@ -231,6 +238,7 @@ class GloboApi(object):
                                 'hash': signed_hashes[0],
                                 'key': 'html5'
                               }
+        # build resolved url
         url = '?'.join([r['url'], query_string])
         self.plugin.log.debug('video url: %s' % url)
         return url

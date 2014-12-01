@@ -57,23 +57,23 @@ def get_gplay_channels():
     # uls = soup.find('ul', attrs={'id': 'mobile-submenu-canais-on-demand'}).findAll('li')[1:]
     uls = soup.findAll('ul', attrs={'class': 'submenu-desktop'})
     # get children tags and filter as and imgs
-    channels = [[(util.slugify(img['alt']),
-                  img['alt'],
-                  img['src'].replace(img['src'][7:img['src'].index('=/')+2], ''))
-                 for img in ul.findChildren()[2::3]]
+    channels = [dict([(util.slugify(img['alt']),
+                       (img['alt'],
+                        img['src'].replace(img['src'][7:img['src'].index('=/')+2], '')))
+                       for img in ul.findChildren()[2::3]])
                 for ul in uls]
 
-    live_data = get_page(GLOBOSAT_LIVE_JSON)
-    live = [{
-                'slug': slug,
-                'name': name,
-                'logo': img,
-                'thumb': item['midia']['thumb'],
-                'plot': (', '.join(reversed(item['programacao'].values()))
-                         if item.get('programacao') else None)
-            } for (slug, name, img), item in zip(channels[1], live_data)
-            if item['status'] == 'ativa']
-    channels[1] = live
+    # live_data = get_page(GLOBOSAT_LIVE_JSON)
+    # live = [{
+    #             'slug': slug,
+    #             'name': name,
+    #             'logo': img,
+    #             'thumb': item['midia']['thumb'],
+    #             'plot': (', '.join(reversed(item['programacao'].values()))
+    #                      if item.get('programacao') else None)
+    #         } for (slug, (name, img)), item in zip(channels[1].items(), live_data)
+    #         if item['status'] == 'ativa']
+    # channels[1] = live
 
     return channels
 
