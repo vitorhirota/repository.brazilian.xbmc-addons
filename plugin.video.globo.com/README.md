@@ -19,10 +19,12 @@ funcionais, acesso ao conteúdo é dependente de um pacote de assinatura
 correspondente (como Combate, Premiere e Telecine Play). Por favor, relate os
 devidos problemas caso os encontre.
 
+Compre uma cerveja para o desenvolvedor pelo [paypal][paypalVitorHirota].
+
+Thread de discussão oficial em [forum.kodi.tv][kodiGlobo].
+
 *Videos from channels and services from globo.com: Globo+ and GlobosatPlay.*
 
-Compre uma cerveja para o desenvolvedor pelo [paypal][paypalVitorHirota].
 *Buy a beer for the developer at [paypal][paypalVitorHirota].*
 
-Thread de discussão oficial em [forum.kodi.tv][kodiGlobo].*
 *Official discussion thread at [forum.kodi.tv][kodiGlobo].*

@@ -4,7 +4,7 @@ Repositório de addons brasileiros para XBMC
 Este repositório tem por objetivo prover addons que forneçam conteúdo
 brasileiro para streaming.
 
-*This repository is focused around providing Brazilian streaming content.*
+*This repository is focused in providing Brazilian streaming content.*
 
 ## Addons
 
@@ -29,17 +29,21 @@ funcionais, acesso ao conteúdo é dependente de um pacote de assinatura
 correspondente (como Combate, Premiere e Telecine Play). Por favor, relate os
 devidos problemas caso os encontre.
 
+Compre uma cerveja para o desenvolvedor pelo [paypal][paypalVitorHirota].
+
+Thread de discussão oficial em [forum.kodi.tv][kodiGlobo].
+
 *Videos from channels and services from globo.com: Globo+ and GlobosatPlay.*
 
-Compre uma cerveja para o desenvolvedor pelo [paypal][paypalVitorHirota].
 *Buy a beer for the developer at [paypal][paypalVitorHirota].*
 
-Thread de discussão oficial em [forum.kodi.tv][kodiGlobo].*
 *Official discussion thread at [forum.kodi.tv][kodiGlobo].*
 
 ### Globo.tv
 
 **Este plugin foi substituído pelo Globo.com e não sofrerá mais alterações**
+
+*This plugin has been superseeded by Globo.com and won't be updated any longer*
 
 Vídeos do website [globo.tv][globotv]. Suporta também assinantes do serviço Globo+,
 que fornece vídeos de programas na íntegra (novelas, jornais, seriados).
