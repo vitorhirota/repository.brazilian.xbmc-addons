@@ -17,14 +17,15 @@
   <string id="31120">Senha</string>
   <string id="31200">Configurações Globosat Play</string>
   <string id="31210">Operador de TV</string>
-  <string id="31211">CTBC</string>
+  <string id="31211">Algar Telecom</string>
   <string id="31212">GVT</string>
   <string id="31213">Multiplay</string>
   <string id="31214">NET</string>
   <string id="31215">NET Angra</string>
   <string id="31216">TV Oi</string>
-  <string id="31217">Vivo</string>
-  <string id="31218">Globosat Convidado</string>
+  <string id="31217">Sky</string>
+  <string id="31218">Vivo</string>
+  <string id="31219">Globosat Guest</string>
   <string id="31300">Configurações do Addon</string>
   <string id="31310">Qualidade de Video</string>
   <string id="31311">SD Apenas</string>
@@ -32,9 +33,10 @@
   <string id="31313">HD Quando Disponível</string>
   <string id="31400">Videos Por Página</string>
   <string id="31500">Debug</string>
-  <!-- Notifications messages -->
+  <string id="31600">Limpar dados</string>
+ <!-- Notifications messages -->
   <string id="32001">Erro na authenticação. Usuário ou senha inválidos.</string>
-  <string id="32002">Operador %s não disponível ainda.</string>
+  <string id="32002">Operador %s ainda não disponível.</string>
   <!-- Misc -->
   <string id="33001">Próxima página</string>
 </strings>
