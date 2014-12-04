@@ -212,7 +212,6 @@ class sky(GlobosatBackends):
             'login': self.username,
             'senha': self.password,
             'clientId': '',
-            'chave': 'e82947ce-9d0d-4eb0-af87-ae1fe493b602',
         })
         url = 'http://www1.skyonline.com.br/Modal/Logar'
         req = self.session.post(url, data=qs)
