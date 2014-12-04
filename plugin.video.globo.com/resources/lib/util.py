@@ -114,18 +114,18 @@ def L():
 def M(a):
     b, c, d, e = (a[0:2], a[2:12], a[12:22], a[22:44])
     f, g = (int(c) + G, L())
-    h = J(e + str(f) + g)
-    return ''.join(map(str, ['05', b, c, d, f, g, h]))
+    h = J('%s'*3 % (e, f, g))
+    return '%s'*7 % ('05', b, c, d, f, g, h)
 
 def N():
-    return int(time.time() / 1e3)
+    return int(time.time())
 
 def O(a):
     b, c, d, e, f, g, h = (
             a[0:2], a[2:3], a[3:13], a[13:23], a[24:46],
             N() + G, L())
-    i = J(f+g+h)
-    return b + c + d + e + g + h + i
+    i = J('%s'*3 % (f, g, h))
+    return '%s'*7 % (b, c, d, e, g, h, i)
 
 def P(a):
     b, c, d, e, f = ('04', '03', '02', '', a[0:2])

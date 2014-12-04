@@ -100,10 +100,14 @@ def favorites():
 def live():
     index = api.get_path('live')
     return [{
-        'label': name,
+        'label': data['name'],
         'path': plugin.url_for('play_live', channel=slug),
-        'thumbnail': img
-    } for slug, (name, img) in sorted(index.items())]
+        'thumbnail': data['logo'],
+        'is_playable': True,
+        'info': {
+            'plot': data['plot'],
+        },
+    } for slug, data in sorted(index.items())]
 
 
 @plugin.route('/channels')
@@ -202,43 +206,27 @@ def play(video_id):
 
 @plugin.route('/live/<channel>')
 def play_live(channel):
-    print channel
-    return
-    # videos = api.get_videos(vid)
-    # items = [{
-    #     'label': video.title,
-    #     'label2': video.subtitle,
-    #     'icon': video.thumb,
-    #     'thumbnail': video.thumb,
-    #     'path': plugin.url_for('play', vid=str(video.id)),  # video.url,
-    #     'is_playable': True,
-    #     'info': {
-    #         'date': video.date,
-    #         'plot': video.plot,
-    #         'plotoutline': video.plot,
-    #         'title': video.title,
-    #         'id': video.id
-    #     },
-    #     'stream_info': {
-    #         'duration': video.duration,
-    #     }
-    # } for video in videos]
-
-    # if len(items) > 1:
-    #     plugin.log.debug('playlist found, adding %s items: %s' %
-    #                      (len(items), [i['info']['id'] for i in items]))
-    #     xbmc.PlayList(1).clear()
-    #     plugin.add_to_playlist(items)
-
-    # item = items[0]
-    # _id = item['info']['id']
-    # plugin.log.debug('setting resolved url for first item %s' % _id)
-    # try:
-    #     item['path'] = api.resolve_video_url(_id)
-    #     plugin.set_resolved_url(item, 'video/mp4')
-    # except Exception as e:
-    #     # plugin.notify(plugin.get_string(32001))
-    #     plugin.notify(e.message)
+    video_index = api.get_path('live')[channel]
+    video_id = video_index['id']
+    video_info = api.get_videos(video_id)[0]
+    plugin.log.debug('setting live url for %s' % video_id)
+    try:
+        item = {
+            'label': video_info.title,
+            'thumbnail': video_index['logo'],
+            'path': api.resolve_video_url(video_id),
+            'is_playable': True,
+            'info': {
+                'date': video_info.date,
+                'plot': video_index['plot'],
+                'title': video_info.title,
+                'id': video_id
+            },
+        }
+        plugin.set_resolved_url(item, 'video/mp4')
+    except Exception as e:
+        # plugin.notify(plugin.get_string(32001))
+        plugin.notify(e.message)
 
 
 if __name__ == '__main__':
