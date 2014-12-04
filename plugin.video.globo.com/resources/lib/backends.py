@@ -203,3 +203,20 @@ class tv_oi(GlobosatBackends):
             raise Exception('Invalid user name or password.')
         return self.session.get(url)
 
+
+class sky(GlobosatBackends):
+    PROVIDER_ID = 80
+
+    def _provider_auth(self, url, qs):
+        qs.update({
+            'login': self.username,
+            'senha': self.password,
+            'clientId': '',
+        })
+        url = 'http://www1.skyonline.com.br/Modal/Logar'
+        req = self.session.post(url, data=qs)
+        match = re.search('^"(http.*)"$', req.text)
+        if match:
+            return self.session.get(match.group(1))
+
+        raise Exception('Invalid user name or password.')
