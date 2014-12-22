@@ -14,8 +14,16 @@
 	<string id="30007">Nenhum vídeo nesta categoria</string>
 	<string id="30008">A API do SBT está offline</string>
 	
+	<!-- Welcome message -->
+	<string id="30009">Bem-vindo</string>
+	<string id="30010">Olá meu querido usuário,[CR]Este plugin usa Analytics pra ajudar a decidir aonde mexer na próxima atualização. Mais detalhes na descrição do plugin.[CR]Você gostaria de participar desta jornada épica?</string>
+	<string id="30011">Não. To de boa.</string>
+	<string id="30012">Sim! Conte comigo!</string>
+		
 	<!-- Settings messages -->
 	<string id="30900">Configurações de Vídeo</string>
 	<string id="30901">Qualidade de vídeo</string>
+	<string id="30902">Analytics do Plugin</string>
+	<string id="30903">Gostaria de ajudar os desenvolvedores a melhorar este plugin enviando[CR]estatísticas anônimas de uso. (Mais detalhes na descrição do plugin)</string>
 	
 </strings>

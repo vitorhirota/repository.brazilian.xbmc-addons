@@ -2,4 +2,6 @@
 <settings>
     <setting label="30900" type="lsep"/>
 	<setting label="30901" type="labelenum" id="video.quality" values="480p|240p|360p|720p|_RAW"/>
+    <setting label="30902" type="lsep"/>
+	<setting label="30903" type="bool" id="analytics" default="false"/>
 </settings>

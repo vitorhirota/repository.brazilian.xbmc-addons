@@ -14,7 +14,15 @@
 	<string id="30007">No video on this category</string>
 	<string id="30008">SBT API is currently offline</string>
 	
+	<!-- Welcome message -->
+	<string id="30009">Welcome</string>
+	<string id="30010">Hello dear fellow user,[CR]This plugin uses Analytics to help me decide what to improve on the next update. More details at the plugin's description.[CR]Do you want to take part on this epic journey?</string>
+	<string id="30011">No. I'll pass, bro</string>
+	<string id="30012">Yes! Count me in!</string>
+		
 	<!-- Settings messages -->
 	<string id="30900">Video Settings</string>
 	<string id="30901">Video quality</string>
+	<string id="30902">Plugin Analytics</string>
+	<string id="30903">I want to help the developers to better improve this plugin by sending[CR]anonymous usage statistics. (More details on the plugin's description)</string>
 </strings>
