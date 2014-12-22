@@ -9,19 +9,59 @@ import urlparse;
 import json;
 import re;
 import base64;
+from time import time;
+import pickle;
 
 # getting settings strings
 settings = xbmcaddon.Addon("plugin.video.sbt-thenoite");
 _ = settings.getLocalizedString;
+ga = {
+	"enabled" : False,
+	"UA" : 'UA-18146963-3',
+	"appName" : settings.getAddonInfo("name"),
+	"appVersion" : settings.getAddonInfo("version"),
+	"appId" : settings.getAddonInfo("id")
+}
+
+if (settings.getSetting("analytics") == "true"):
+	from UniversalAnalytics import Tracker;
+	tracker = Tracker.create(ga["UA"]);
+	tracker.set("appName", ga["appName"]);
+	tracker.set("appVersion", ga["appVersion"]);
+	tracker.set("appId", ga["appId"]);
+	ga["enabled"] = True;
+	if (settings.getSetting("uuid") == ""):
+		settings.setSetting("uuid", tracker.params["cid"]);
+	else:
+		tracker.set("clientId", settings.getSetting("uuid"));
 
 # setting SBT urls
 thenoite_urls = {};
-thenoite_urls["menu_api"] = "http://api.sbt.com.br/1.4.5/medias/key=AE8C984EECBA4F7F835C585D5CB6AB4B&fields=id,title,thumbnail,author&idsite=198&idSiteArea=1011&limit=100&orderBy=ordem&sort=asc";
-thenoite_urls["media_api"] = "http://api.sbt.com.br/1.4.5/videos/key=AE8C984EECBA4F7F835C585D5CB6AB4B&fields=id,title,thumbnail,publishdate,secondurl&program=400&limit=300&orderBy=publishdate&category=$authorId&sort=desc";
+# thenoite_urls["menu_api"] = "http://api.sbt.com.br/1.4.5/medias/key=AE8C984EECBA4F7F835C585D5CB6AB4B&fields=id,title,thumbnail,author&idsite=198&idSiteArea=1011&limit=100&orderBy=ordem&sort=asc";
+# thenoite_urls["media_api"] = "http://api.sbt.com.br/1.4.5/videos/key=AE8C984EECBA4F7F835C585D5CB6AB4B&fields=id,title,thumbnail,publishdate,secondurl&program=400&limit=300&orderBy=publishdate&category=$authorId&sort=desc";
+thenoite_urls["menu_api"] = "http://api.sbt.com.br/1.5.0/medias/key=AE8C984EECBA4F7F835C585D5CB6AB4B&fields=id,title,description,thumbnail,author,opcional&idsite=211&idSiteArea=1068&idPlaylist=3435&limit=100&orderby=ordem&sort=ASC";
+thenoite_urls["media_api"] = "http://api.sbt.com.br/1.5.0/videos/key=AE8C984EECBA4F7F835C585D5CB6AB4B&fields=id,title,idcategory,idprogram,program,thumbnail,publishdatestring,secondurl,playerkey,total&program=400&category=$authorId&limit=100&orderBy=publishdate&sort=desc";
 thenoite_urls["video_url"] = 'http://fast.player.liquidplatform.com/pApiv2/embed/25ce5b8513c18a9eae99a8af601d0943/$videoId';
 
-thenoite_authors_slug = {};
-thenoite_authors_slug["4526"] = "naintegra";
+myCache = {};
+if (settings.getSetting("cache") != ""):
+	myCache = pickle.loads(settings.getSetting("cache"));
+
+thenoite_authors_slug = {
+	"4526" : "naintegra",
+	"4529" : "entrevistas",
+	"4527" : "melhoresmomentos",
+	"4769" : "roommates",
+	"4670" : "musical",
+	"4521" : "omestremandou",
+	"4597" : "recordesincriveis",
+	"4620" : "desenhosdodanilo",
+	"4519" : "leiteshow",
+	"4517" : "ohomemdoqi200",
+	"4518" : "rodadadanoite",
+	"4520" : "cyberbullying",
+	"4528" : "chamadas"
+};
 
 base_url = sys.argv[0];
 addon_handle = int(sys.argv[1]);
@@ -33,10 +73,33 @@ def invertDates(date):
 	return "/".join(date);
 
 def fetchUrl(url):
-	req = urllib2.Request(url);
-	response = urllib2.urlopen(req);
-	data = response.read();
-	response.close();
+	# if url timestamp is less than 24-hour, return cached data
+	if (myCache.has_key(url) and time() - myCache[url]["timestamp"] < 1 * 24 * 3600):
+		return myCache[url]["data"];
+	else:
+		header = {
+			"User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:34.0) Gecko/20100101 Firefox/34.0",
+			"Accept" : "application/json, text/javascript, */*; q=0.01",
+			"Origin" : "http://www.sbt.com.br",
+			"Referer" : "http://www.sbt.com.br/sbtvideos/programa/400/The-Noite-com-Danilo-Gentili/"
+		};
+		req = urllib2.Request(url, None, header);
+		try:
+			response = urllib2.urlopen(req);
+			data = response.read();
+			response.close();
+			myCache[url] = {
+				"timestamp" : time(),
+				"data" : data
+			};
+			settings.setSetting("cache", pickle.dumps(myCache));
+		except urllib2.URLError:
+			# ignore the timestamp if there is an error on the API
+			if (myCache.has_key(url)): 
+				return myCache[url]["data"];
+			else:
+				# Internet error
+				data = "";
 	return data;
 
 def makeUrl(query = {}):
@@ -72,17 +135,63 @@ def parseMediaInfo(html):
 
 	return None;
 
+def clearCacheFor(url):
+	myCache.pop(url, None);
+	settings.setSetting("cache", pickle.dumps(myCache));
+
 mode = args.get("mode", None);
 
 if mode is None:
+	# settings.setSetting("welcome", "");
+	if (settings.getSetting("welcome") == ""): 
+		welcome = xbmcgui.Dialog();
+		opt = welcome.yesno(_(30009), _(30010), None, None, _(30011), _(30012));
+		if (opt == True):
+			settings.setSetting("analytics", "true");
+		else:
+			settings.setSetting("analytics", "false");
+		settings.setSetting("welcome", "True");
+		
+		try:
+			Tracker
+		except NameError:
+			from UniversalAnalytics import Tracker;
+			tracker = Tracker.create(ga["UA"]);
+			tracker.set("appName", ga["appName"]);
+			tracker.set("appVersion", ga["appVersion"]);
+			tracker.set("appId", ga["appId"]);
+			if (settings.getSetting("uuid") == ""):
+				settings.setSetting("uuid", tracker.params["cid"]);
+			else:
+				tracker.set("clientId", settings.getSetting("uuid"));
+			
+		
+		tracker.send("event", "Usage", "install", screenName="Welcome")
+	elif (ga["enabled"]):
+		tracker.send("screenview", screenName="Main Menu")
+
 	xbmcplugin.setContent(addon_handle, 'tvshows');
 	
 	index = fetchUrl(thenoite_urls["menu_api"]);
 	menu = json.loads(index);
 	
+	# try to recover from sbt api error
+	saved = False;
 	if ("error" in menu):
 		xbmc.log("["+_(30006)+"]: "+str(menu["error"]), 0);
 		
+		# taking note from the amount of errors the SBT API may throw
+		if (ga["enabled"]):
+			tracker.send("event", "Usage", "error", screenName="Main Menu");
+			
+		if (myCache.has_key(thenoite_urls["menu_api"])):
+			menu = json.loads(myCache[thenoite_urls["menu_api"]]["data"]);
+			if ("error" in menu):
+				clearCacheFor(thenoite_urls["menu_api"]);
+			else:
+				saved = True;
+	
+	if ("error" in menu and saved == False):
 		# do nothing
 		toaster = xbmcgui.Dialog();
 		try:
@@ -93,7 +202,7 @@ if mode is None:
 	else:
 		# displaying each video category from The Noite website
 		for menuItem in menu["medias"]:
-			url = makeUrl({"mode" : "listitems", "author" : menuItem["author"]});
+			url = makeUrl({"mode" : "listitems", "author" : menuItem["author"], "title" : menuItem["title"].encode('utf8')});
 		
 			li = xbmcgui.ListItem(menuItem["title"], iconImage=menuItem["thumbnail"]);
 			li.setProperty('fanart_image', 'special://home/addons/plugin.video.sbt-thenoite/fanart.jpg');
@@ -103,13 +212,31 @@ if mode is None:
 elif (mode[0] == "listitems"):
 	xbmcplugin.setContent(addon_handle, 'episodes');
 	
-	authorId = args.get("author")[0];
-	index = fetchUrl(thenoite_urls["media_api"].replace("$authorId", authorId));
-	videos = json.loads(index);
+	if (ga["enabled"]):
+		tracker.send("screenview", screenName="Second Menu - "+args.get("title")[0]);
 	
+	authorId = args.get("author")[0];
+	url = thenoite_urls["media_api"].replace("$authorId", authorId);
+	index = fetchUrl(url);
+	videos = json.loads(index);
+
+	# trying to recover from sbt api error
+	saved = False;
 	if ("error" in videos):
 		xbmc.log("["+_(30006)+"]: "+str(videos["error"]), 0);
 		
+		# taking note from the amount of errors the SBT API may throw
+		if (ga["enabled"]):
+			tracker.send("event", "Usage", "error", screenName="Second Menu - "+args.get("title")[0]);
+	
+		if (myCache.has_key(url)):
+			videos = json.loads(myCache[url]["data"]);
+			if ("error" in videos):
+				clearCacheFor(url);
+			else:
+				saved = True;
+	
+	if ("error" in videos and saved == False):
 		# do nothing
 		toaster = xbmcgui.Dialog();
 		try:
@@ -174,6 +301,11 @@ elif (mode[0] == "videourl"):
 	iframe = fetchUrl(thenoite_urls["video_url"].replace("$videoId", args.get("play_video")[0]));
 	video = parseMediaInfo(iframe);
 	
+	if (ga["enabled"]):
+		tracker.send("event", "Usage", "Play Video", "unique", screenName="Play Screen");
+	
+	# Sambatech url never gave an error, so we are skipping error recovery for this part
+	
 	if (video):
 		# finding best video thumbnail, optimal is 480 x 360 by default
 		video_thumb = None;
@@ -220,6 +352,10 @@ elif (mode[0] == "videourl"):
 	else:
 		xbmc.log("["+_(30006)+"]: Unable to find video for ID "+args.get("play_video")[0], 0);
 		
+		# taking note from the amount of errors the SBT API may throw
+		if (ga["enabled"]):
+			tracker.send("event", "Usage", "error", screenName="Play Screen");
+		
 		# do nothing
 		toaster = xbmcgui.Dialog();
 		try:
@@ -232,6 +368,9 @@ elif (mode[0] == "episodeurl"):
 	# Displaying progress dialog
 	pDialog = xbmcgui.DialogProgress();
 	pDialog.create(_(30002), _(30003)); # pDialog.create("Fetching videos", "Loading episode parts...")
+
+	if (ga["enabled"]):
+		tracker.send("event", "Usage", "Play Video", "episode", screenName="Play Screen");
 
 	videos_ids = json.loads(args.get("play_episode")[0]);
 	xbmcPlaylist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO);
@@ -286,6 +425,10 @@ elif (mode[0] == "episodeurl"):
 					break;
 		else:
 			xbmc.log("["+_(30006)+"]: Unable to find video for ID "+args.get("play_video")[0], 0);
+		
+			# taking note from the amount of errors the SBT API may throw
+			if (ga["enabled"]):
+				tracker.send("event", "Usage", "error", screenName="Play Screen");
 		
 			# do nothing
 			toaster = xbmcgui.Dialog();
