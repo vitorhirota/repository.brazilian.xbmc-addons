@@ -6,7 +6,6 @@ def patch():
     xbmcswift2.Plugin.set_resolved_url = set_resolved_url
     # ListItem addStreamInfo implementation
     xbmcswift2.ListItem.add_stream_info = add_stream_info
-    xbmcswift2.listitem.ListItem.from_dict = from_dict
     # for cli only
     try:
         xbmcswift2.mockxbmc.xbmcgui.ListItem.__init__ = __init__
@@ -49,28 +48,6 @@ def add_stream_info(self, type, values):
             from datetime import timedelta
             values['duration'] = str(timedelta(seconds=values['duration']))
         self._listitem.setInfo(type, values)
-
-
-@classmethod
-def from_dict(cls, label=None, label2=None, icon=None, thumbnail=None,
-              path=None, selected=None, info=None, properties=None,
-              context_menu=None, is_playable=None, info_type='video',
-              stream_info=None):
-    listitem = cls(label, label2, icon, thumbnail, path)
-    if selected is not None:
-        listitem.select(selected)
-    if info:
-        listitem.set_info(info_type, info)
-    if is_playable:
-        listitem.set_is_playable(True)
-    if properties:
-        for key, val in properties:
-            listitem.set_property(key, val)
-    if stream_info:
-        listitem.add_stream_info(info_type, stream_info)
-    if context_menu:
-        listitem.add_context_menu_items(context_menu)
-    return listitem
 
 
 def __init__(self, label=None, label2=None, iconImage=None,

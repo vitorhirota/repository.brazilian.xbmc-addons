@@ -70,6 +70,10 @@ class Backends(object):
     def debug(self, msg):
         self.plugin.log.debug('[%s] %s' % (self.__class__.__name__, msg))
 
+    def error(self, msg):
+        self.plugin.log.error('[%s] %s' % (self.__class__.__name__, msg),
+                              exc_info=1)
+
     def notify(self, string_id):
         self.plugin.notify('[%s] %s' % (self.__class__.__name__,
                                         self.plugin.get_string(string_id)))
@@ -107,7 +111,11 @@ class GlobosatBackends(Backends):
         r2 = self.session.post(r1.url, data={'config': self.PROVIDER_ID})
         url, qs = r2.url.split('?', 1)
         # provider authentication
-        r3 = self._provider_auth(url, urlparse.parse_qs(qs))
+        try:
+            r3 = self._provider_auth(url, urlparse.parse_qs(qs))
+        except Exception as e:
+            self.error(str(e))
+            return {}
         # set profile
         post_data = {
             '_method': 'PUT',
@@ -121,7 +129,7 @@ class GlobosatBackends(Backends):
         # for a given playlist (which requires a valid video_id, this is being
         # harcoded for now.
         provider_id = '52dfc02cdd23810590000f57'
-        token = credentials[credentials['b64gplay']]
+        token = credentials[credentials['b64globosatplay']]
         now = datetime.datetime.now()
         expiration = now + datetime.timedelta(days=7)
         r5 = requests.get(self.AUTH_TOKEN_URL % (provider_id,
@@ -147,7 +155,7 @@ class gvt(GlobosatBackends):
             return self.session.get(req.url.split('redirect_uri=', 1)[1])
         except IndexError:
             # if invalid user/pass: IndexError: list index out of range
-            return None
+            raise Exception('Invalid user name or password.')
 
 
 class net(GlobosatBackends):
@@ -169,8 +177,46 @@ class net(GlobosatBackends):
         try:
             action = re.findall(ipt_values_regex % 'action', req.text)[0]
             value = re.findall(ipt_values_regex[:-1] % 'value', req.text)[0]
+            # self.debug('action: %s, value: %s' % (action, value))
         except IndexError:
-            return {}
-        self.debug('action: %s, value: %s' % (action, value))
+            raise Exception('Invalid user name or password.')
         return self.session.post(action, data={'SAMLResponse': value})
 
+
+class tv_oi(GlobosatBackends):
+    PROVIDER_ID = 66
+
+    def _provider_auth(self, url, qs):
+        url += '?sid=0'
+        # prepare auth
+        self.session.post(url + '&id=telecineplay&option=credential')
+        # authenticate
+        post_data = {
+            'option': 'credential',
+            'urlRedirect': url,
+            'Ecom_User_ID': self.username,
+            'Ecom_Password': self.password,
+        }
+        req = self.session.post(url, data=post_data)
+        # if login is successful, response is just a js redirect
+        if int(req.headers['content-length']) > 1500:
+            raise Exception('Invalid user name or password.')
+        return self.session.get(url)
+
+
+class sky(GlobosatBackends):
+    PROVIDER_ID = 80
+
+    def _provider_auth(self, url, qs):
+        qs.update({
+            'login': self.username,
+            'senha': self.password,
+            'clientId': '',
+        })
+        url = 'http://www1.skyonline.com.br/Modal/Logar'
+        req = self.session.post(url, data=qs)
+        match = re.search('^"(http.*)"$', req.text)
+        if match:
+            return self.session.get(match.group(1))
+
+        raise Exception('Invalid user name or password.')

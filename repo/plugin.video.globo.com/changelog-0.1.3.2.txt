@@ -1,11 +1,3 @@
-0.1.5
- PT: adicionado streaming de canais ao vivo
- EN: added live streaming
-
-0.1.4
- PT: adicionado autorização Sky
- EN: added authorization for Sky
-
 0.1.3.2
  PT: corrigido listagem favoritos Rede Globo
  EN: fixed Rede Globo favorites listing

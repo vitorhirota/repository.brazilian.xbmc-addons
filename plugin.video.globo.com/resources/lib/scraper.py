@@ -55,37 +55,32 @@ def get_gplay_channels():
     # get lists
     # uls = soup.find('ul', attrs={'class': 'lista-canais'}).findAll('li')
     # uls = soup.find('ul', attrs={'id': 'mobile-submenu-canais-on-demand'}).findAll('li')[1:]
-    uls = soup.findAll('ul', attrs={'class': 'submenu-desktop'})
-    # get children tags and filter as and imgs
-    channels = [[(util.slugify(img['alt']),
-                  img['alt'],
-                  img['src'].replace(img['src'][7:img['src'].index('=/')+2], ''))
-                 for img in ul.findChildren()[2::3]]
-                for ul in uls]
+    channels, live = soup.findAll('ul', attrs={'class': 'submenu-desktop'})
+    # get children tags and filter as imgs
+    channels = dict([(util.slugify(img['alt']),
+                       (img['alt'],
+                        img['src'].replace(img['src'][7:img['src'].index('=/')+2], '')))
+                       for img in channels.findChildren()[2::3]])
+    # build live data
+    live = dict([(util.slugify(img['alt']), {
+                'name': img['alt'],
+                'logo': json['canal_logotipo'],
+                'plot': ', '.join(reversed(json['programacao'].values())),
+                'id': json['midia']['id_midia'],
+            }) for img, json in zip(live.findChildren()[2::3],
+                                    get_page(GLOBOSAT_LIVE_JSON))])
 
-    live_data = get_page(GLOBOSAT_LIVE_JSON)
-    live = [{
-                'slug': slug,
-                'name': name,
-                'logo': img,
-                'thumb': item['midia']['thumb'],
-                'plot': (', '.join(reversed(item['programacao'].values()))
-                         if item.get('programacao') else None)
-            } for (slug, name, img), item in zip(channels[1], live_data)
-            if item['status'] == 'ativa']
-    channels[1] = live
-
-    return channels
+    return (channels, live)
 
 
 def get_globo_shows():
     soup = bs(get_page(GLOBOTV_MAIS_URL))
     content = soup.findAll('div', attrs={'class': re.compile('trilho-tag')})
     categories = [c.find('h2').text for c in content]
-    shows = [[(util.slugify(img['alt']),
-               img['alt'],
-               img['data-src'].replace(img['data-src'][7:img['data-src'].index('=/')+2], ''))
-              for img in c.findAll('img') if '=/' in img['data-src']]
+    shows = [dict([(util.slugify(img['alt']),
+                    (img['alt'],
+                     img['data-src'].replace(img['data-src'][7:img['data-src'].index('=/')+2], '')))
+                    for img in c.findAll('img') if '=/' in img['data-src']])
              for c in content]
     return (categories, shows)
 
