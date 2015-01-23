@@ -65,7 +65,9 @@ def get_gplay_channels():
     live = dict([(util.slugify(img['alt']), {
                 'name': img['alt'],
                 'logo': json['canal_logotipo'],
-                'plot': ', '.join(reversed(json['programacao'].values())),
+                # 'plot': ', '.join(reversed(json['programacao'].values())),
+                # some items have a null value for programacao
+                'plot': '',
                 'id': json['midia']['id_midia'],
             }) for img, json in zip(live.findChildren()[2::3],
                                     get_page(GLOBOSAT_LIVE_JSON))])

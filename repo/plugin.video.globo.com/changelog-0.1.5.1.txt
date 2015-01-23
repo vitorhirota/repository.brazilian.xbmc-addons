@@ -1,7 +1,3 @@
-0.1.5.1.1
- PT: correção de bug
- EN: bug-fix
-
 0.1.5.1
  PT: correção de bug
  EN: bug-fix
