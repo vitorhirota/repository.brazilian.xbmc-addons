@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
+	<setting label="30904" type="bool" id="randomButtonEnabled" default="true"/>
     <setting label="30900" type="lsep"/>
 	<setting label="30901" type="labelenum" id="video.quality" values="480p|240p|360p|720p|_RAW"/>
     <setting label="30902" type="lsep"/>

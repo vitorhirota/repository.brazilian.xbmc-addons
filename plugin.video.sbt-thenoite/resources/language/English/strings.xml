@@ -8,21 +8,32 @@
 	<string id="30003">Loading episode parts...</string>
 	<string id="30004">Fetching part {0} of {1}</string>
 	<string id="30005">Done</string>
+	<string id="30006">SBT The Noite</string>
+	<string id="30007">Untitled</string>
 	
 	<!-- Error messages -->
-	<string id="30006">SBT The Noite</string>
-	<string id="30007">No video on this category</string>
-	<string id="30008">SBT API is currently offline</string>
+	<string id="30101">No video on this category</string>
+	<string id="30102">SBT API is currently offline</string>
+	<string id="30103">Video is no longer available</string>
 	
+	<!-- Navigation message -->
+	<string id="30201">Next Page</string>
+	<string id="30202">Previous Page</string>
+	<string id="30203">Rand-O-Matic!</string>
+
 	<!-- Welcome message -->
-	<string id="30009">Welcome</string>
-	<string id="30010">Hello dear fellow user,[CR]This plugin uses Analytics to help me decide what to improve on the next update. More details at the plugin's description.[CR]Do you want to take part on this epic journey?</string>
-	<string id="30011">No. I'll pass, bro</string>
-	<string id="30012">Yes! Count me in!</string>
-		
+	<string id="30301">Welcome</string>
+	<string id="30302">Hello dear fellow user,[CR]This plugin uses Analytics to help me decide what to improve on the next update. More details at the plugin's description.[CR]Do you want to take part on this epic journey?</string>
+	<string id="30303">No. I'll pass, bro</string>
+	<string id="30304">Yes! Count me in!</string>
+	<string id="30305">New in version 0.2.1!</string>
+	<string id="30306">Hello dear fellow user,[CR]Thank you for using this plugin, now you can watch every single episode from the program, just navigate through the pages! And how about trying the new Random Movie feature?</string>
+	
 	<!-- Settings messages -->
 	<string id="30900">Video Settings</string>
 	<string id="30901">Video quality</string>
 	<string id="30902">Plugin Analytics</string>
 	<string id="30903">I want to help the developers to better improve this plugin by sending[CR]anonymous usage statistics. (More details on the plugin's description)</string>
+	<string id="30904">Enable the random movie button Rand-O-Matic!</string>
+	
 </strings>

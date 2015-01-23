@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.sbt-thenoite" name="SBT The Noite - Programas na Integra" version="0.2.0" provider-name="vfranchi">
+<addon id="plugin.video.sbt-thenoite" name="SBT The Noite - Programas na Integra" version="0.2.1" provider-name="vfranchi">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0"/>
 	</requires>
@@ -40,9 +40,12 @@
 			* Evento quando o usuário opta por tocar um episódio inteiro (não qual o episódio)[CR]
 			Se você tiver alguma dúvida, um feedback, quer reportar um bug, ou apenas dizer um ou. Por favor, visite a thread oficial do plugin em [http://forum.kodi.tv/showthread.php?tid=203103]
 		</description>
-		<disclaimer lang="en">This plugin comes 'as is'. The authors are not responsible for any problems it may cause.</disclaimer>
+		<disclaimer lang="en">This plugin comes 'as is'. The authors are not responsible for any problems it may cause. For more info, visit the forum.</disclaimer>
 		<language>en pt_BR pt</language>
 		<platform>all</platform>
 		<license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+		<website>http://www.sbt.com.br/thenoite/</website>
+		<forum>http://forum.kodi.tv/showthread.php?tid=203103</forum>
+		<source>https://github.com/vfranchi/plugin.video.sbt-thenoite</source>
 	</extension>
 </addon>
