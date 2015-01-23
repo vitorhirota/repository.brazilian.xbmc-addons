@@ -53,14 +53,24 @@ full episodes of original shows.*
 
 ### SBT-TheNoite
 
-Este é um Video Add-on para o XBMC aonde você pode assistir os programas na
-íntegra do [The Noite][thenoite].
+O plugin SBT The Noite busca os vídeos do programa no [site do SBT][thenoite] para 
+tocá-los no XBMC, uma nova opção para assistir os episódios na Íntegra.
 
-O plugin busca os vídeos direto no site do SBT, assim você não tem os cortes
-que acontecem nos vídeos do canal do The Noite no Youtube.
+O plugin busca os vídeos direto no site do SBT, assim você não tem os cortes que acontecem 
+nos vídeos do canal do The Noite no Youtube.
+
+Se você tiver alguma dúvida, um feedback, quer reportar um bug, ou apenas dizer um oi. 
+Por favor, visite a [thread oficial do plugin][thenoite.forum]
+
+[Doe um café][thenoite.donate] para motivar o desenvolvimento deste plugin.
 
 *This video addon for XBMC allows you to watch full episodes of The Noite
 tv program.*
+
+*[Donate a coffee][thenoite.donate] to support the developer of this plugin.*
+
+*You can discuss this at the [official thread][thenoite.forum].*
+
 
 #### Idéias
 
@@ -98,3 +108,5 @@ and submit an [issue][issues].
 [paypalVitorHirota]: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=C4DH8F642RYEG&lc=US&item_name=Vitor%20Hirota&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted
 [kodiGlobo]: http://forum.kodi.tv/showthread.php?tid=201846
 [thenoite]: http://www.sbt.com.br/thenoite/
+[thenoite.forum]: http://forum.kodi.tv/showthread.php?tid=203103
+[thenoite.donate]: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VAVLZEHSKPF6L
