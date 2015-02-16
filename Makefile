@@ -20,6 +20,10 @@ sbt-thenoite: clean
 	$(eval PLUGIN  := plugin.video.sbt-thenoite)
 	$(rollout)
 
+sbtvideos: clean
+	$(eval PLUGIN  := plugin.video.sbtvideos)
+	$(rollout)
+	
 rollout:
 	$(PLUGIN)
 

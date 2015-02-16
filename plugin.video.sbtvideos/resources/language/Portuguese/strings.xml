@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Translated using Transifex web application. For support, or if you would like to to help out, please visit your language team! -->
+<!-- English language-Team URL: http://www.transifex.com/projects/p/XBMC-Main-Frodo/language/en/ -->
+<!-- Report language file syntax bugs at: http://trac.xbmc.org/ -->
+<strings>
+	<string id="30001">Tocar episódio inteiro</string>
+	<string id="30002">Buscando vídeos</string>
+	<string id="30003">Carregando as partes do episódio...</string>
+	<string id="30004">Buscando parte {0} de {1}</string>
+	<string id="30005">Finalizado</string>
+	<string id="30006">SBT Vídeos</string>
+	<string id="30007">Sem Título</string>
+	
+	<!-- Error messages -->
+	<string id="30101">Nenhum vídeo nesta categoria</string>
+	<string id="30102">A API do SBT está offline</string>
+	<string id="30103">O vídeo não está mais disponível</string>
+	
+	<!-- Navigation message -->
+	<string id="30201">Próxima Página</string>
+	<string id="30202">Página Anterior</string>
+	<string id="30203">Roda a Roleta, Silvio!</string>
+	
+	<!-- Welcome message -->
+	<string id="30301">Bem-vindo</string>
+	<string id="30302">Olá meu querido usuário,</string>
+	<string id="30303">Este plugin usa Analytics pra ajudar a decidir aonde mexer na próxima atualização. Mais detalhes na descrição do plugin. Você gostaria de participar desta jornada épica?</string>
+	<string id="30305">Não. To de boa.</string>
+	<string id="30306">Sim! Conte comigo!</string>
+	<string id="30307">Precisamos do seu feedback</string>
+	<string id="30308">Obrigado por usar este plugin, por favor nos envie qualquer feedback pela thread oficial do plugin no forum. Divirta-se!</string>
+	
+	<!-- Settings messages -->
+	<string id="30900">Configurações de Vídeo</string>
+	<string id="30901">Qualidade de vídeo</string>
+	<string id="30902">Analytics do Plugin</string>
+	<string id="30903">Gostaria de ajudar os desenvolvedores a melhorar este plugin enviando[CR]estatísticas anônimas de uso. (Mais detalhes na descrição do plugin)</string>
+	<string id="30904">Habilitar o botão de vídeo aleatório Roda a Roleta, Silvio!</string>
+	
+</strings>

@@ -30,7 +30,7 @@ Algumas funcionalidades que estão presentes neste plugin:
 * Paginação para visualizar demais vídeos de uma categoria
 * Botão de vídeo aleatório, para quando você quer apenas assistir qualquer episódio.
 
-# Analytics
+# Analytics (Totalmente opcional)
 
 Este plugin utiliza o Google Analytics para me ajudar a ver o que as pessoas estão usando mais, para me ajudar a decidir o que melhorar/desenvolver na próxima atualização. Os eventos exatos que são monitorados são:
 
