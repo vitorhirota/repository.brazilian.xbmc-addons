@@ -71,6 +71,27 @@ tv program.*
 
 *You can discuss this at the [official thread][thenoite.forum].*
 
+### SBT Videos
+
+O plugin SBT Videos busca todos os vídeos de todos os programas do [site do SBT][sbtvideos] 
+para tocá-los no XBMC, uma nova opção para assistir os seus programas prediletos.
+
+O plugin pode conter alguns bugs, pois não consegui testar todos os vídeos de todos os 
+programas. Caso ache algum bug, ou queira dar uma sugestão, por favor, use as threads 
+oficiais do plugin nos forums.
+
+Se você tiver alguma dúvida, um feedback, quer reportar um bug, ou apenas dizer um oi. 
+Por favor, visite a [thread oficial do plugin][sbtvideos.forum]
+
+[Doe um café][thenoite.donate] para motivar o desenvolvimento deste plugin.
+
+*This video addon for XBMC allows you to watch all videos from every tv show from SBT 
+Videos website.*
+
+*[Donate a coffee][thenoite.donate] to support the developer of this plugin.*
+
+*You can discuss this at the [official thread][sbtvideos.forum].*
+
 
 #### Idéias
 
@@ -110,3 +131,5 @@ and submit an [issue][issues].
 [thenoite]: http://www.sbt.com.br/thenoite/
 [thenoite.forum]: http://forum.kodi.tv/showthread.php?tid=203103
 [thenoite.donate]: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VAVLZEHSKPF6L
+[sbtvideos]: http://www.sbt.com.br/sbtvideos/
+[sbtvideos.forum]: http://forum.kodi.tv/showthread.php?tid=218591
