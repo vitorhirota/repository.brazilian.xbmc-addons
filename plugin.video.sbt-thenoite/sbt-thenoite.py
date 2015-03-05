@@ -401,7 +401,7 @@ elif (mode[0] == "listitems"):
 				episode = re.compile("\(?(\d\d\/\d\d\/\d\d)\)?").findall(video["title"]);
 				
 				if (len(episode) == 0): # invent a random date
-					episode = [random.randint(50,99) + "/" + random.randint(50,99) + "/" + random.randint(50,99)];
+					episode = [str(random.randint(50,99)) + "/" + str(random.randint(50,99)) + "/" + str(random.randint(50,99))];
 			
 			part = re.compile("parte \(?(.+?)\)?", re.IGNORECASE).findall(video["title"]);
 			
