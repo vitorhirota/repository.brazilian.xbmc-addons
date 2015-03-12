@@ -10,6 +10,8 @@
 	<string id="30005">Finalizado</string>
 	<string id="30006">SBT The Noite</string>
 	<string id="30007">Sem Título</string>
+	<string id="30008">Marcar como visto</string>
+	<string id="30009">Marcar como não-visto</string>
 	
 	<!-- Error messages -->
 	<string id="30101">Nenhum vídeo nesta categoria</string>
@@ -20,6 +22,7 @@
 	<string id="30201">Próxima Página</string>
 	<string id="30202">Página Anterior</string>
 	<string id="30203">Roda a Roleta, Silvio!</string>
+	<string id="30204">Recarregar lista</string>
 	
 	<!-- Welcome message -->
 	<string id="30301">Bem-vindo</string>

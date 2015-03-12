@@ -10,6 +10,8 @@
 	<string id="30005">Done</string>
 	<string id="30006">SBT The Noite</string>
 	<string id="30007">Untitled</string>
+	<string id="30008">Mark as watched</string>
+	<string id="30009">Mark as unwatched</string>
 	
 	<!-- Error messages -->
 	<string id="30101">No video on this category</string>
@@ -20,6 +22,7 @@
 	<string id="30201">Next Page</string>
 	<string id="30202">Previous Page</string>
 	<string id="30203">Rand-O-Matic!</string>
+	<string id="30204">Refresh listing</string>
 
 	<!-- Welcome message -->
 	<string id="30301">Welcome</string>
