@@ -308,6 +308,9 @@ if mode is None:
 		
 	if (ga["enabled"]):
 		tracker.send("screenview", screenName="Main Menu")
+		
+	# saving the initial video per page to reset pagination when it changes
+	addon.setSetting("saved.video.perpage", addon.getSetting("video.perpage"));
 
 	xbmcplugin.setContent(addon_handle, 'tvshows');
 	
@@ -352,10 +355,18 @@ elif (mode[0] == "listitems"):
 	xbmcplugin.setContent(addon_handle, 'episodes');
 	
 	authorId = args.get("author")[0];
-	currentPage = args.get("page", ["0"])[0]
-
 	if (int(authorId) == 0):
 		authorId = "";
+	
+	currentPage = args.get("page", ["0"])[0]
+	currentSubPage = int(args.get("sub-page", ["0"])[0]);
+	videosPerSubPage = int(addon.getSetting("video.perpage") or "100");
+	
+	# if user changed videos per page, reset pagination
+	if (addon.getSetting("video.perpage") != addon.getSetting("saved.video.perpage")):
+		addon.setSetting("saved.video.perpage", addon.getSetting("video.perpage"));
+		currentPage = "0";
+		currentSubPage = 0;
 	
 	url = thenoite_urls["media_api"].replace("$authorId", authorId).replace("$page", currentPage);
 	
@@ -384,8 +395,14 @@ elif (mode[0] == "listitems"):
 				log("Recovered from error");
 				saved = True;
 	
-	if (int(currentPage) > 0):
-		url = makeUrl({"mode" : "listitems", "author" : args.get("author")[0], "title" : args.get("title")[0], "thumb" : args.get("thumb")[0], "page" : (int(currentPage)-1), "updating" : "true"});
+	if (int(currentPage) > 0 or currentSubPage > 0):
+		if (currentSubPage > 0):
+			# decrement sub page
+			url = makeUrl({"mode" : "listitems", "author" : args.get("author")[0], "title" : args.get("title")[0], "thumb" : args.get("thumb")[0], "page" : currentPage, "updating" : "true", "sub-page" : currentSubPage-1});
+		else:
+			prevCurrentSubPage = 100 / videosPerSubPage - 1;
+			# decrement current page
+			url = makeUrl({"mode" : "listitems", "author" : args.get("author")[0], "title" : args.get("title")[0], "thumb" : args.get("thumb")[0], "page" : (int(currentPage)-1), "updating" : "true", "sub-page" : prevCurrentSubPage});
 	
 		li = xbmcgui.ListItem(_(30202), iconImage=args.get("thumb")[0]);
 		li.setProperty('fanart_image', 'special://home/addons/plugin.video.sbt-thenoite/fanart.jpg');
@@ -410,7 +427,8 @@ elif (mode[0] == "listitems"):
 	elif ((authorId in thenoite_authors_slug) and thenoite_authors_slug[authorId] == "naintegra"):
 		# grouping urls by episodes
 		episodes = {};
-		for video in videos["videos"]:
+		videoCount = 0;
+		for video in videos["videos"][currentSubPage*videosPerSubPage:]:
 			#get the episode number by the secondurl info
 			if ("secondurl" in video and video["secondurl"].strip() != ""):
 				# correcting typos
@@ -450,6 +468,10 @@ elif (mode[0] == "listitems"):
 				
 			else:
 				episodes[episode[0]] = [video];
+				
+			videoCount = videoCount + 1;
+			if (videoCount == videosPerSubPage):
+				break;
 	
 		if (randomButtonEnabled):
 			addon.setSetting("random.dump", pickle.dumps(episodes));
@@ -488,8 +510,13 @@ elif (mode[0] == "listitems"):
 				xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li);
 		
 		#add a Next Page button at the end
-		if (len(videos["videos"]) == 100):
-			url = makeUrl({"mode" : "listitems", "author" : args.get("author")[0], "title" : args.get("title")[0], "thumb" : args.get("thumb")[0], "page" : (int(currentPage)+1), "updating" : "true"});
+		if (videoCount == videosPerSubPage):
+			if ((currentSubPage+1)*videosPerSubPage == 100):
+				# increment currentPage
+				url = makeUrl({"mode" : "listitems", "author" : args.get("author")[0], "title" : args.get("title")[0], "thumb" : args.get("thumb")[0], "page" : (int(currentPage)+1), "updating" : "true"});
+			else:
+				# increment currentSubPage
+				url = makeUrl({"mode" : "listitems", "author" : args.get("author")[0], "title" : args.get("title")[0], "thumb" : args.get("thumb")[0], "page" : currentPage, "updating" : "true", "sub-page" : currentSubPage+1});
 	
 			li = xbmcgui.ListItem(_(30201), iconImage=args.get("thumb")[0]);
 			li.setProperty('fanart_image', 'special://home/addons/plugin.video.sbt-thenoite/fanart.jpg');
@@ -506,7 +533,8 @@ elif (mode[0] == "listitems"):
 
 			xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li);
 	
-		for video in videos["videos"]:
+		videoCount = 0;
+		for video in videos["videos"][currentSubPage*videosPerSubPage:]:
 			url = makeUrl({"mode" : "videourl", "play_video" : video["id"]});
 	
 			li = xbmcgui.ListItem(video["title"], iconImage=video["thumbnail"]);
@@ -520,10 +548,18 @@ elif (mode[0] == "listitems"):
 				li.addContextMenuItems([(_(30008), 'XBMC.RunPlugin('+updateSeenUrl+')')]);
 
 			xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li);
+			videoCount = videoCount + 1;
+			if (videoCount == videosPerSubPage):
+				break;
 			
 		#add a Next Page button at the end
-		if (len(videos["videos"]) == 100):
-			url = makeUrl({"mode" : "listitems", "author" : args.get("author")[0], "title" : args.get("title")[0], "thumb" : args.get("thumb")[0], "page" : (int(currentPage)+1), "updating" : "true"});
+		if (videoCount == videosPerSubPage):
+			if ((currentSubPage+1)*videosPerSubPage == 100):
+				# increment currentPage
+				url = makeUrl({"mode" : "listitems", "author" : args.get("author")[0], "title" : args.get("title")[0], "thumb" : args.get("thumb")[0], "page" : (int(currentPage)+1), "updating" : "true"});
+			else:
+				# increment currentSubPage
+				url = makeUrl({"mode" : "listitems", "author" : args.get("author")[0], "title" : args.get("title")[0], "thumb" : args.get("thumb")[0], "page" : currentPage, "updating" : "true", "sub-page" : currentSubPage+1});
 	
 			li = xbmcgui.ListItem(_(30201), iconImage=args.get("thumb")[0]);
 			li.setProperty('fanart_image', 'special://home/addons/plugin.video.sbt-thenoite/fanart.jpg');

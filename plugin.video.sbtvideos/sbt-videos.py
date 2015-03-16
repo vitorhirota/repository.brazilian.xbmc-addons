@@ -12,30 +12,31 @@ import base64;
 import pickle;
 import random;
 from http import network;
+import settings;
 
-# getting settings strings
-settings = xbmcaddon.Addon("plugin.video.sbtvideos");
-_ = settings.getLocalizedString;
+# getting addon strings
+addon = settings.Settings("plugin.video.sbtvideos");
+_ = addon.getLocalizedString;
 ga = {
 	"enabled" : False,
 	"UA" : 'UA-18146963-3',
-	"appName" : settings.getAddonInfo("name"),
-	"appVersion" : settings.getAddonInfo("version"),
-	"appId" : settings.getAddonInfo("id")
+	"appName" : addon.getAddonInfo("name"),
+	"appVersion" : addon.getAddonInfo("version"),
+	"appId" : addon.getAddonInfo("id")
 }
-randomButtonEnabled = False if (settings.getSetting("randomButtonEnabled") == "false") else True;
+randomButtonEnabled = False if (addon.getSetting("randomButtonEnabled") == "false") else True;
 
-if (settings.getSetting("analytics") == "true"):
+if (addon.getSetting("analytics") == "true"):
 	from UniversalAnalytics import Tracker;
 	tracker = Tracker.create(ga["UA"]);
 	tracker.set("appName", ga["appName"]);
 	tracker.set("appVersion", ga["appVersion"]);
 	tracker.set("appId", ga["appId"]);
 	ga["enabled"] = True;
-	if (settings.getSetting("uuid") == ""):
-		settings.setSetting("uuid", tracker.params["cid"]);
+	if (addon.getSetting("uuid") == ""):
+		addon.setSetting("uuid", tracker.params["cid"]);
 	else:
-		tracker.set("clientId", settings.getSetting("uuid"));
+		tracker.set("clientId", addon.getSetting("uuid"));
 
 # setting SBT urls
 urls = {};
@@ -123,7 +124,7 @@ def getVideoThumbnail(video):
 
 def getXbmcVideoFromVideo(video, video_thumb):
 	ret = None;
-	userQuality = settings.getSetting("video.quality");
+	userQuality = addon.getSetting("video.quality");
 	for deliveryRules in video["deliveryRules"]:
 		if (deliveryRules["rule"]["ruleName"] == "r1"):
 			listItem = None;
@@ -187,6 +188,7 @@ def playVideoList(videos_ids):
 				toaster.ok(_(30006), _(30103));
 			pass
 		else:
+			addon.setWatched(video_id, True);
 			video_thumb = getVideoThumbnail(video);
 			xbmcVideo = getXbmcVideoFromVideo(video, video_thumb);
 			if (xbmcVideo != None):
@@ -196,6 +198,7 @@ def playVideoList(videos_ids):
 	pDialog.update(100, _(30005));
 	pDialog.close();
 	xbmc.Player().play(xbmcPlaylist);
+	xbmc.executebuiltin("Container.Refresh");
 	
 def playVideo(video_id):
 	iframe = network.fetchUrl(urls["video"].replace("$videoId", video_id));
@@ -220,11 +223,13 @@ def playVideo(video_id):
 			toaster.ok(_(30006), _(30103));
 		pass
 	else:
+		addon.setWatched(video_id, True);
 		video_thumb = getVideoThumbnail(video);
 		xbmcVideo = getXbmcVideoFromVideo(video, video_thumb);
 		if (xbmcVideo != None):
 			xbmc.Player().play(xbmcVideo["url"], xbmcVideo["listitem"]);
-
+	
+	xbmc.executebuiltin("Container.Refresh");
 #
 # starting main thread run
 #
@@ -232,16 +237,17 @@ mode = args.get("mode", None);
 
 if mode is None:
 	from bs4 import BeautifulSoup;
-	# settings.setSetting("welcome", "");
-	# settings.setSetting("0.0.1", "");
-	if (settings.getSetting("welcome") == ""): 
+	# addon.setSetting("welcome", "");
+	# addon.setSetting("0.0.1", "");
+	# addon.setSetting("0.0.3", "");
+	if (addon.getSetting("welcome") == ""): 
 		welcome = xbmcgui.Dialog();
 		opt = welcome.yesno(_(30301), _(30302), _(30303), None, _(30305), _(30306));
 		if (opt == True):
-			settings.setSetting("analytics", "true");
+			addon.setSetting("analytics", "true");
 		else:
-			settings.setSetting("analytics", "false");
-		settings.setSetting("welcome", "True");
+			addon.setSetting("analytics", "false");
+		addon.setSetting("welcome", "True");
 		
 		try:
 			Tracker
@@ -251,17 +257,21 @@ if mode is None:
 			tracker.set("appName", ga["appName"]);
 			tracker.set("appVersion", ga["appVersion"]);
 			tracker.set("appId", ga["appId"]);
-			if (settings.getSetting("uuid") == ""):
-				settings.setSetting("uuid", tracker.params["cid"]);
+			if (addon.getSetting("uuid") == ""):
+				addon.setSetting("uuid", tracker.params["cid"]);
 			else:
-				tracker.set("clientId", settings.getSetting("uuid"));
+				tracker.set("clientId", addon.getSetting("uuid"));
 			
 		
 		tracker.send("event", "Usage", "install", screenName="Welcome");
-	elif (settings.getSetting("0.0.1") == ""):
+	elif (addon.getSetting("0.0.1") == ""):
 		dialog = xbmcgui.Dialog();
 		dialog.ok(_(30307), _(30302), _(30308));
-		settings.setSetting("0.0.1", "True");
+		addon.setSetting("0.0.1", "True");
+# 	elif (addon.getSetting("0.0.3") == ""):
+# 		dialog = xbmcgui.Dialog();
+# 		dialog.ok(_(30309), _(30302), _(30310), _(30311));
+# 		addon.setSetting("0.0.3", "True");
 		
 	if (ga["enabled"]):
 		tracker.send("screenview", screenName="Main Menu")
@@ -319,7 +329,10 @@ elif (mode[0] == "programmenu"):
 	
 	if (ga["enabled"]):
 		tracker.send("screenview", screenName="Program Menu - "+programTitle);
-	
+
+	# saving the initial video per page to reset pagination when it changes
+	addon.setSetting("saved.video.perpage", addon.getSetting("video.perpage"));
+		
 	index = network.fetchUrl(urls["playlist"].replace("$programId", str(programId)));
 	obj = json.loads(index);	
 	# log("programId: "+programId);
@@ -369,9 +382,20 @@ elif (mode[0] == "listitems"):
 	
 	programId = args.get("programId")[0];
 	authorId = args.get("author", [""])[0];
+	if (authorId != "" and int(authorId) == 0):
+		authorId = "";
 	currentPage = args.get("page", ["0"])[0]
+	currentSubPage = int(args.get("sub-page", ["0"])[0]);
+	videosPerSubPage = int(addon.getSetting("video.perpage") or "100");
 	categoryTitle = args.get("title", [_(30007)])[0];
 	categoryThumb = args.get("thumb", ["DefaultFolder.png"])[0];
+	
+	# if user changed videos per page, reset pagination
+	if (addon.getSetting("video.perpage") != addon.getSetting("saved.video.perpage")):
+		addon.setSetting("saved.video.perpage", addon.getSetting("video.perpage"));
+		currentPage = "0";
+		currentSubPage = 0;
+	
 	url = urls["media"].replace("$programId", programId).replace("$authorId", authorId).replace("$page", currentPage);
 	
 	if (ga["enabled"]):
@@ -397,8 +421,14 @@ elif (mode[0] == "listitems"):
 			else:
 				saved = True;
 	
-	if (int(currentPage) > 0):
-		url = makeUrl({"mode" : "listitems", "programId" : programId, "author" : authorId, "title" : categoryTitle, "thumb" : categoryThumb, "page" : (int(currentPage)-1), "updating" : "true"});
+	if (int(currentPage) > 0 or currentSubPage > 0):
+		if (currentSubPage > 0):
+			# decrement sub page
+			url = makeUrl({"mode" : "listitems", "programId" : programId, "author" : authorId, "title" : categoryTitle, "thumb" : categoryThumb, "page" : currentPage, "updating" : "true", "sub-page" : currentSubPage-1});
+		else:
+			prevCurrentSubPage = 100 / videosPerSubPage - 1;
+			# decrement current page
+			url = makeUrl({"mode" : "listitems", "programId" : programId, "author" : authorId, "title" : categoryTitle, "thumb" : categoryThumb, "page" : (int(currentPage)-1), "updating" : "true", "sub-page" : prevCurrentSubPage});
 	
 		li = xbmcgui.ListItem(_(30202), iconImage=categoryThumb);
 		programImgFolder = "special://home/addons/plugin.video.sbtvideos/program/"+programId+"/";
@@ -408,13 +438,25 @@ elif (mode[0] == "listitems"):
 			li.setProperty('fanart_image', 'special://home/addons/plugin.video.sbtvideos/fanart.jpg');
 
 		xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True);
+	else:
+		url = makeUrl({"mode" : "refresh-listing", "url" : url});
+	
+		li = xbmcgui.ListItem(_(30204), iconImage=categoryThumb);
+		programImgFolder = "special://home/addons/plugin.video.sbtvideos/program/"+programId+"/";
+		if (xbmcvfs.exists(programImgFolder)):
+			li.setProperty('fanart_image', programImgFolder+'fanart.jpg');
+		else:
+			li.setProperty('fanart_image', 'special://home/addons/plugin.video.sbtvideos/fanart.jpg');
+
+		xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li);
 		
 	if ("error" in videos and saved == False):
 		logError(str(videos["error"]));
 	elif (authorId in group_by_episodes):
 		# grouping urls by episodes
 		episodes = {};
-		for video in videos["videos"]:
+		videoCount = 0;
+		for video in videos["videos"][currentSubPage*videosPerSubPage:]:
 			#get the episode number by the secondurl info
 			if ("secondurl" in video and video["secondurl"].strip() != ""):
 				# correcting typos
@@ -424,8 +466,17 @@ elif (mode[0] == "listitems"):
 				#try to get the episode date from the title
 				episode = re.compile("\(?(\d\d\/\d\d\/\d\d)\)?").findall(video["title"]);
 				
-				if (len(episode) == 0): # invent a random date
-					episode = [str(random.randint(50,99)) + "/" + str(random.randint(50,99)) + "/" + str(random.randint(50,99))];
+				if (len(episode) == 0):
+					if ("publishdatestring" in video and video["publishdatestring"].strip() != ""):
+						#get the day from the publish date string
+						from datetime import datetime, timedelta;
+						import time;
+						publishdate = datetime(*(time.strptime(video["publishdatestring"], "%Y-%m-%dT%H:%M:%S")[0:6]));
+						publishdate = publishdate - timedelta(1);
+						episode = [publishdate.strftime("%d/%m/%y")];
+					else:
+						# invent a random date
+						episode = [str(random.randint(50,99)) + "/" + str(random.randint(50,99)) + "/" + str(random.randint(50,99))];
 			
 			part = re.compile("parte \(?(.+?)\)?", re.IGNORECASE).findall(video["title"]);
 			
@@ -446,9 +497,13 @@ elif (mode[0] == "listitems"):
 				
 			else:
 				episodes[episode[0]] = [video];
+				
+			videoCount = videoCount + 1;
+			if (videoCount == videosPerSubPage):
+				break;
 	
 		if (randomButtonEnabled):
-			settings.setSetting("random.dump", pickle.dumps(episodes));
+			addon.setSetting("random.dump", pickle.dumps(episodes));
 			url = url = makeUrl({"mode" : "randomitem", "option" : "episode", "title" : args.get("title")[0], "page" : currentPage});
 	
 			programImgFolder = "special://home/addons/plugin.video.sbtvideos/program/"+programId+"/";
@@ -473,17 +528,33 @@ elif (mode[0] == "listitems"):
 				url = makeUrl({"mode" : "videourl", "play_video" : video["id"]});
 			
 				li = xbmcgui.ListItem(video["title"], iconImage=video["thumbnail"]);
-				li.addContextMenuItems([(_(30001), 'XBMC.RunPlugin('+whole_url+')')]);
 				programImgFolder = "special://home/addons/plugin.video.sbtvideos/program/"+programId+"/";
 				if (xbmcvfs.exists(programImgFolder)):
 					li.setProperty('fanart_image', programImgFolder+'fanart.jpg');
 				else:
 					li.setProperty('fanart_image', 'special://home/addons/plugin.video.sbtvideos/fanart.jpg');
+					
+				contextMenu = [];
+				if (addon.getWatched(video["id"])):
+					li.setInfo("video", {"playcount" : 1});
+					updateSeenUrl = makeUrl({"mode" : "mark-unseen", "video_id" : video["id"]});
+					contextMenu.append((_(30009), 'XBMC.RunPlugin('+updateSeenUrl+')'));
+				else:
+					updateSeenUrl = makeUrl({"mode" : "mark-seen", "video_id" : video["id"]});
+					contextMenu.append((_(30008), 'XBMC.RunPlugin('+updateSeenUrl+')'));
+				
+				contextMenu.append((_(30001), 'XBMC.RunPlugin('+whole_url+')'));
+				li.addContextMenuItems(contextMenu);
 				xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li);
 				
 		#add a Next Page button at the end
-		if (len(videos["videos"]) == 100):
-			url = makeUrl({"mode" : "listitems", "programId" : programId, "author" : authorId, "title" : categoryTitle, "thumb" : categoryThumb, "page" : (int(currentPage)+1), "updating" : "true"});
+		if (videoCount == videosPerSubPage):
+			if ((currentSubPage+1)*videosPerSubPage == 100):
+				# increment currentPage
+				url = makeUrl({"mode" : "listitems", "programId" : programId, "author" : authorId, "title" : categoryTitle, "thumb" : categoryThumb, "page" : (int(currentPage)+1), "updating" : "true"});
+			else:
+				# increment currentSubPage
+				url = makeUrl({"mode" : "listitems", "programId" : programId, "author" : authorId, "title" : categoryTitle, "thumb" : categoryThumb, "page" : currentPage, "updating" : "true", "sub-page" : currentSubPage+1});
 		
 			li = xbmcgui.ListItem(_(30201), iconImage=categoryThumb);
 			programImgFolder = "special://home/addons/plugin.video.sbtvideos/program/"+programId+"/";
@@ -496,7 +567,7 @@ elif (mode[0] == "listitems"):
 		
 	else:
 		if (randomButtonEnabled):
-			settings.setSetting("random.dump", pickle.dumps(videos["videos"]));
+			addon.setSetting("random.dump", pickle.dumps(videos["videos"]));
 			url = url = makeUrl({"mode" : "randomitem", "option" : "video", "title" : categoryTitle, "page" : currentPage});
 	
 			programImgFolder = "special://home/addons/plugin.video.sbtvideos/program/"+programId+"/";
@@ -509,7 +580,8 @@ elif (mode[0] == "listitems"):
 
 			xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li);
 	
-		for video in videos["videos"]:
+		videoCount = 0;
+		for video in videos["videos"][currentSubPage*videosPerSubPage:]:
 			url = makeUrl({"mode" : "videourl", "play_video" : video["id"]});
 	
 			li = xbmcgui.ListItem(video["title"], iconImage=video["thumbnail"]);
@@ -519,11 +591,28 @@ elif (mode[0] == "listitems"):
 			else:
 				li.setProperty('fanart_image', 'special://home/addons/plugin.video.sbtvideos/fanart.jpg');
 
+			if (addon.getWatched(video["id"])):
+				li.setInfo("video", {"playcount" : 1});
+				updateSeenUrl = makeUrl({"mode" : "mark-unseen", "video_id" : video["id"]});
+				li.addContextMenuItems([(_(30009), 'XBMC.RunPlugin('+updateSeenUrl+')')]);
+			else:
+				updateSeenUrl = makeUrl({"mode" : "mark-seen", "video_id" : video["id"]});
+				li.addContextMenuItems([(_(30008), 'XBMC.RunPlugin('+updateSeenUrl+')')]);
+
 			xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li);
+			videoCount = videoCount + 1;
+			if (videoCount == videosPerSubPage):
+				break;
+			
 	
 		#add a Next Page button at the end
-		if (len(videos["videos"]) == 100):
-			url = makeUrl({"mode" : "listitems", "programId" : programId, "author" : authorId, "title" : categoryTitle, "thumb" : categoryThumb, "page" : (int(currentPage)+1), "updating" : "true"});
+		if (videoCount == videosPerSubPage):
+			if ((currentSubPage+1)*videosPerSubPage == 100):
+				# increment currentPage
+				url = makeUrl({"mode" : "listitems", "programId" : programId, "author" : authorId, "title" : categoryTitle, "thumb" : categoryThumb, "page" : (int(currentPage)+1), "updating" : "true"});
+			else:
+				# increment currentSubPage
+				url = makeUrl({"mode" : "listitems", "programId" : programId, "author" : authorId, "title" : categoryTitle, "thumb" : categoryThumb, "page" : currentPage, "updating" : "true", "sub-page" : currentSubPage+1});
 		
 			li = xbmcgui.ListItem(_(30201), iconImage=categoryThumb);
 			programImgFolder = "special://home/addons/plugin.video.sbtvideos/program/"+programId+"/";
@@ -551,7 +640,7 @@ elif (mode[0] == "randomitem"):
 	
 	option = args.get("option", [""])[0];
 	if (option == "episode"):
-		episodes = pickle.loads(settings.getSetting("random.dump"));
+		episodes = pickle.loads(addon.getSetting("random.dump"));
 		randomIndex = random.choice(episodes.keys());
 		videos_ids = [];
 		for video in episodes[randomIndex]:
@@ -560,7 +649,21 @@ elif (mode[0] == "randomitem"):
 		playVideoList(videos_ids);
 
 	elif (option == "video"):
-		videos = pickle.loads(settings.getSetting("random.dump"));
+		videos = pickle.loads(addon.getSetting("random.dump"));
 		video = random.choice(videos);
 		playVideo(video["id"]);
-	
+elif (mode[0] == "mark-unseen"):
+	videoId = args.get("video_id", [""])[0];
+	if (videoId != ""):
+		addon.setWatched(videoId, False);
+	xbmc.executebuiltin("Container.Refresh");
+elif (mode[0] == "mark-seen"):
+	videoId = args.get("video_id", [""])[0];
+	if (videoId != ""):
+		addon.setWatched(videoId, True);
+	xbmc.executebuiltin("Container.Refresh");
+elif (mode[0] == "refresh-listing"):
+	url = args.get("url", [""])[0];
+	if (url != ""):
+		network.cache.delKey(url);
+	xbmc.executebuiltin("Container.Refresh");
