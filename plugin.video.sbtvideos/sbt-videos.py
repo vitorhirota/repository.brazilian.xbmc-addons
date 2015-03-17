@@ -80,23 +80,25 @@ def makeUrl(query = {}):
 def parseMediaInfo(html):
 	match = re.compile("window.mediaJson = (.+?);").findall(html);
 	if len(match) > 0:
+		log("found media json: "+match[0]);
 		return json.loads(match[0]);
 		
 	match = re.compile("window.mediaToken = (.+?);").findall(html);
 	if len(match) > 0:
+		log("found media token: "+match[0]);
 		# getting max-width from body tag
 		maxWidth = re.compile("<body .*max-width:(.*);.*>").findall(html);
-		# xbmc.log("["+_(30006)+"]: Found maxWidth "+str(maxWidth), 0);
+		log("Found maxWidth "+str(maxWidth));
 		if len(maxWidth) > 0:
 			# xbmc.log("["+_(30006)+"]: Found token "+match[0], 0);
 			maxWidth = maxWidth[0].strip().replace("px", "");
 			# xbmc.log("["+_(30006)+"]: max-width "+maxWidth, 0);
 			maxWidth = int((int(maxWidth) ^ 345) - 1E4) + 1;
-			# discard = match[0][0:maxWidth]; #keeping this for debug purposes
-			# xbmc.log("["+_(30006)+"]: Will discard "+discard, 0);
+			discard = match[0][0:maxWidth]; #keeping this for debug purposes
+			log("Will discard "+discard);
 			
 			encodedToken = match[0][maxWidth:-maxWidth];
-			# xbmc.log("["+_(30006)+"]: Encoded token "+encodedToken, 0);
+			log("Encoded token "+encodedToken);
 			
 			if(len(encodedToken) % 4 == 2):
 				encodedToken = encodedToken + "==";
@@ -126,7 +128,8 @@ def getXbmcVideoFromVideo(video, video_thumb):
 	ret = None;
 	userQuality = addon.getSetting("video.quality");
 	for deliveryRules in video["deliveryRules"]:
-		if (deliveryRules["rule"]["ruleName"] == "r1"):
+		if (deliveryRules["rule"]["ruleName"] == "r1" or 
+			deliveryRules["rule"]["ruleName"] == "default"):
 			listItem = None;
 			videoUrl = "";
 			for output in deliveryRules["outputList"]:
@@ -201,6 +204,7 @@ def playVideoList(videos_ids):
 	xbmc.executebuiltin("Container.Refresh");
 	
 def playVideo(video_id):
+	log("video url: "+urls["video"].replace("$videoId", video_id));
 	iframe = network.fetchUrl(urls["video"].replace("$videoId", video_id));
 	video = parseMediaInfo(iframe);
 	
@@ -208,6 +212,7 @@ def playVideo(video_id):
 		tracker.send("event", "Usage", "Play Video", "unique", screenName="Play Screen");
 	
 	# Sambatech url never gave an error, so we are skipping error recovery for this part
+	log("video: "+json.dumps(video));
 	if ("error" in video and video["error"] == True):
 		xbmc.log("["+_(30006)+"]: Unable to find video for ID "+video_id, 0);
 		

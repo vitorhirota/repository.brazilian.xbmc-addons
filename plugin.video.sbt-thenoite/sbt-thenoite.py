@@ -164,7 +164,8 @@ def getXbmcVideoFromVideo(video, video_thumb):
 	ret = None;
 	userQuality = addon.getSetting("video.quality");
 	for deliveryRules in video["deliveryRules"]:
-		if (deliveryRules["rule"]["ruleName"] == "r1"):
+		if (deliveryRules["rule"]["ruleName"] == "r1" or 
+			deliveryRules["rule"]["ruleName"] == "default"):
 			listItem = None;
 			videoUrl = "";
 			for output in deliveryRules["outputList"]:
