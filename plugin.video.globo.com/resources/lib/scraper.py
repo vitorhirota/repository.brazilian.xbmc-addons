@@ -87,9 +87,13 @@ def get_globo_shows():
     return (categories, shows)
 
 def get_gplay_shows(channel):
+    if channel == "telecine-play":
+        channel = "telecine"
+
     soup = bs(get_page(GLOBOSAT_SHOW_URL % channel))
     search_strs = {
         'megapix':'submenu-generos',
+        'telecine':'submenu-generos',
         'combate':'submenu-competicoes',
     }
     try:
@@ -167,4 +171,20 @@ def get_megapix_episodes(channel, show, page):
         # self.cache.set('video|%s' % video.id, repr(video))
         videos.append(video)
     page = (page+1 if page < 1 else None)
+    return videos, page
+
+def get_telecine_episodes(channel, show, page):
+    videos = []
+    TELECINE_JSON = 'http://globosatplay.globo.com/telecine/generos/%s/videos/pagina/%s.json'
+    properties = ('id', 'title','thumb', 'url')
+    prop_data = ('id', 'titulo', 'poster', 'url')
+
+    data = get_page( TELECINE_JSON % (show, page));
+
+    for item in data:
+        video = util.struct(dict(zip(properties,
+                                     [item.get(p) for p in prop_data])))
+        video.url = video.url.replace(GLOBOSAT_URL,'')
+        videos.append(video)
+    page += 1
     return videos, page

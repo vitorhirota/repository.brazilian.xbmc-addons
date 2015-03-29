@@ -145,7 +145,7 @@ def list_episodes(channel, show, page=1):
         'path': plugin.url_for('play', video_id=video.id),
         'is_playable': True,
         'info': {
-            'date': video.date.replace('/', '.'),
+            'date': video.date is not None and video.date.replace('/', '.'),
             # 'duration': video.duration,
             'plot': video.plot,
             'plotoutline': video.plot,

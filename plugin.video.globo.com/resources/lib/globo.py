@@ -166,6 +166,7 @@ class GloboApi(object):
         # define scraper method
         method_strs = {
             'megapix': 'get_megapix_episodes',
+            'telecine-play': 'get_telecine_episodes',
             'globo':'get_globo_episodes',
         }
         method = method_strs.get(channel) or 'get_gplay_episodes'
