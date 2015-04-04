@@ -220,3 +220,14 @@ class sky(GlobosatBackends):
             return self.session.get(match.group(1))
 
         raise Exception('Invalid user name or password.')
+
+class vivo(GlobosatBackends):
+    PROVIDER_ID = 68
+
+    def _provider_auth(self, url, qs):
+        qs.update({
+            'cpf': self.username,
+            'senha': self.password,
+        })
+        req = self.session.post(url, data=qs)
+        return req
