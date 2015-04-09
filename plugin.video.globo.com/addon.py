@@ -23,6 +23,8 @@ from xbmcswift2 import xbmc
 from resources.lib import globo
 from resources.lib import util
 
+import urllib
+
 plugin = Plugin()
 api = globo.GloboApi(plugin)
 
@@ -145,7 +147,7 @@ def list_episodes(channel, show, page=1):
         'path': plugin.url_for('play', video_id=video.id),
         'is_playable': True,
         'info': {
-            'date': video.date.replace('/', '.'),
+            'date': video.date is not None and video.date.replace('/', '.'),
             # 'duration': video.duration,
             'plot': video.plot,
             'plotoutline': video.plot,
@@ -202,7 +204,17 @@ def play(video_id):
     except Exception as e:
         plugin.log.error(e, exc_info=1)
         plugin.notify(str(e))
+        TELECINEPLAY_VIDEO_URL = "http://globosatplay.globo.com/telecine/v/%s"
+        MEGAPIX_VIDEO_URL = "http://globosatplay.globo.com/megapix/v/%s"
+        VIDEO_URL = None
 
+        if videos[0].channel == "Telecine Play":
+            VIDEO_URL = TELECINEPLAY_VIDEO_URL
+        if videos[0].channel == "Megapix":
+            VIDEO_URL = MEGAPIX_VIDEO_URL
+
+        if VIDEO_URL is not None:
+            xbmc.executebuiltin("RunPlugin(plugin://plugin.program.chrome.launcher/?url="+urllib.quote_plus(VIDEO_URL % video_id)+"&mode=showSite&kiosk=yes)")
 
 @plugin.route('/live/<channel>')
 def play_live(channel):
