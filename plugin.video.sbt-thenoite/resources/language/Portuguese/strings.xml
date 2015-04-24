@@ -12,6 +12,7 @@
 	<string id="30007">Sem Título</string>
 	<string id="30008">Marcar como visto</string>
 	<string id="30009">Marcar como não-visto</string>
+	<string id="30010">Tocar apenas este vídeo</string>
 	
 	<!-- Error messages -->
 	<string id="30101">Nenhum vídeo nesta categoria</string>
@@ -29,8 +30,10 @@
 	<string id="30302">Olá meu querido usuário,[CR]Este plugin usa Analytics pra ajudar a decidir aonde mexer na próxima atualização. Mais detalhes na descrição do plugin.[CR]Você gostaria de participar desta jornada épica?</string>
 	<string id="30303">Não. To de boa.</string>
 	<string id="30304">Sim! Conte comigo!</string>
-	<string id="30305">O que tem de novo? v0.2.1</string>
-	<string id="30306">Olá meu querido usuário,[CR]Obrigado por usar este plugin, agora você pode assistir à TODOS os episódios do programa, navegando pelas páginas! E que tal tentar o novo botão Roda a Roleta, Silvio!</string>
+	<string id="30305">O que tem de novo? v0.2.6</string>
+	<string id="30306">Olá meu querido usuário,</string>
+	<string id="30307">Se você mora fora do Brasil e os vídeos não estão carregando,[CR]ative a nova opção na tela de configurações do plugin.</string>
+	<string id="30308">Não se esqueça de doar caso você ame este plugin :-)</string>
 	
 	<!-- Settings messages -->
 	<string id="30900">Configurações de Vídeo</string>
@@ -39,5 +42,7 @@
 	<string id="30903">Gostaria de ajudar os desenvolvedores a melhorar este plugin enviando[CR]estatísticas anônimas de uso. (Mais detalhes na descrição do plugin)</string>
 	<string id="30904">Habilitar o botão de vídeo aleatório Roda a Roleta, Silvio!</string>
 	<string id="30905">Número de vídeos por página</string>
+	<string id="30906">Tocar episódio inteiro por padrão</string>
+	<string id="30907">Eu moro fora do Brasil e os vídeos não estão funcionando para mim</string>
 	
 </strings>

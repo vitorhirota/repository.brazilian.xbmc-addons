@@ -25,6 +25,7 @@ ga = {
 	"appId" : addon.getAddonInfo("id")
 }
 randomButtonEnabled = False if (addon.getSetting("randomButtonEnabled") == "false") else True;
+playFullEpisodesByDefault = False if (addon.getSetting("playFullEpisodesByDefault") == "false") else True;
 
 if (addon.getSetting("analytics") == "true"):
 	from UniversalAnalytics import Tracker;
@@ -43,6 +44,10 @@ thenoite_urls = {};
 thenoite_urls["menu_api"] = "http://api.sbt.com.br/1.5.0/medias/key=AE8C984EECBA4F7F835C585D5CB6AB4B&fields=id,title,description,thumbnail,author,opcional&idsite=211&idSiteArea=1068&idPlaylist=3435&limit=100&orderby=ordem&sort=ASC";
 thenoite_urls["media_api"] = "http://api.sbt.com.br/1.5.0/videos/key=AE8C984EECBA4F7F835C585D5CB6AB4B&fields=id,title,idcategory,idprogram,program,thumbnail,publishdatestring,secondurl,playerkey,total&program=400&category=$authorId&limit=100&orderBy=publishdate&sort=desc&page=$page";
 thenoite_urls["video_url"] = 'http://fast.player.liquidplatform.com/pApiv2/embed/25ce5b8513c18a9eae99a8af601d0943/$videoId';
+
+# Unblock Brazil URL
+unblockBrazilHome = "http://brazilunblock.info/";
+unblockBrazilUrl = unblockBrazilHome+"browse.php?u=$videoUrl";
 
 myCache = {};
 if (addon.getSetting("cache") != ""):
@@ -186,7 +191,15 @@ def getXbmcVideoFromVideo(video, video_thumb):
 						listItem.setThumbnailImage(video_thumb["url"]);
 			if (listItem != None):
 				ret = {};
-				ret["url"] = videoUrl;
+				if (addon.getSetting("useUnblockBrazil") == "true"):
+					header = {
+						"Host" : "brazilunblock.info"
+					};
+					ret["url"] = unblockBrazilUrl.replace("$videoUrl", urllib.quote(videoUrl))+"|"+urllib.urlencode(header);
+				else:
+					ret["url"] = videoUrl;
+					
+				# log("Video URL: "+ret["url"]);
 				ret["listitem"] = listItem;
 			break;
 			
@@ -238,6 +251,12 @@ def playVideoList(videos_ids):
 	# Closing progress dialog
 	pDialog.update(100, _(30005));
 	pDialog.close();
+	
+	if (addon.getSetting("useUnblockBrazil") == "true"):
+		# first we cheat XMBC into saving the correct cookie from Unblock Brazil website
+		xbmc.Player().play(unblockBrazilHome);
+		# then we pass the redirected video url for XBMC
+	
 	xbmc.Player().play(xbmcPlaylist);
 	
 def playVideo(video_id):
@@ -267,6 +286,11 @@ def playVideo(video_id):
 		video_thumb = getVideoThumbnail(video);
 		xbmcVideo = getXbmcVideoFromVideo(video, video_thumb);
 		if (xbmcVideo != None):
+			if (addon.getSetting("useUnblockBrazil") == "true"):
+				# first we cheat XMBC into saving the correct cookie from Unblock Brazil website
+				xbmc.Player().play(unblockBrazilHome);
+				# then we pass the redirected video url for XBMC
+
 			xbmc.Player().play(xbmcVideo["url"], xbmcVideo["listitem"]);
 
 	xbmc.executebuiltin("Container.Refresh");
@@ -277,7 +301,7 @@ mode = args.get("mode", None);
 
 if mode is None:
 	# addon.setSetting("welcome", "");
-	# addon.setSetting("0.2.1", "");
+	# addon.setSetting("0.2.6", "");
 	if (addon.getSetting("welcome") == ""): 
 		welcome = xbmcgui.Dialog();
 		opt = welcome.yesno(_(30301), _(30302), None, None, _(30303), _(30304));
@@ -302,10 +326,10 @@ if mode is None:
 			
 		
 		tracker.send("event", "Usage", "install", screenName="Welcome");
-	elif (addon.getSetting("0.2.1") == ""):
+	elif (addon.getSetting("0.2.6") == ""):
 		dialog = xbmcgui.Dialog();
-		dialog.ok(_(30305), _(30306));
-		addon.setSetting("0.2.1", "True");
+		dialog.ok(_(30305), _(30306), _(30307), _(30308));
+		addon.setSetting("0.2.6", "True");
 		
 	if (ga["enabled"]):
 		tracker.send("screenview", screenName="Main Menu")
@@ -492,8 +516,6 @@ elif (mode[0] == "listitems"):
 			whole_url = makeUrl({"mode" : "episodeurl", "play_episode" : json.dumps(video_ids)});
 		
 			for video in episodes[episode]:
-				url = makeUrl({"mode" : "videourl", "play_video" : video["id"]});
-			
 				li = xbmcgui.ListItem(video["title"], iconImage=video["thumbnail"]);
 				li.setProperty('fanart_image', 'special://home/addons/plugin.video.sbt-thenoite/fanart.jpg');
 
@@ -505,8 +527,15 @@ elif (mode[0] == "listitems"):
 				else:
 					updateSeenUrl = makeUrl({"mode" : "mark-seen", "video_id" : video["id"]});
 					contextMenu.append((_(30008), 'XBMC.RunPlugin('+updateSeenUrl+')'));
-
-				contextMenu.append((_(30001), 'XBMC.RunPlugin('+whole_url+')'));
+			
+				if (playFullEpisodesByDefault):
+					url = makeUrl({"mode" : "videourl", "play_video" : video["id"]});
+					contextMenu.append((_(30010), 'XBMC.RunPlugin('+url+')'));
+					url = whole_url;
+				else:
+					url = makeUrl({"mode" : "videourl", "play_video" : video["id"]});
+					contextMenu.append((_(30001), 'XBMC.RunPlugin('+whole_url+')'));
+				
 				li.addContextMenuItems(contextMenu);
 				xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li);
 		

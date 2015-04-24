@@ -5,7 +5,7 @@ class Settings(xbmcaddon.Addon):
 	videosWatched = {};
 	
 	def __init__(self, appId):
-		super(Settings, self).__init__(appId);
+		super(Settings, self).__init__();
 		if (self.getSetting("videos_watched") != ""):
 			self.videosWatched = pickle.loads(self.getSetting("videos_watched"));
 		

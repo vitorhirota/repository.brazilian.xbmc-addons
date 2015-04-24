@@ -1,4 +1,8 @@
-﻿v0.1.1
+﻿v0.1.2
+- Added option to play full episode by default
+- Added support to play videos outside of Brazil
+
+v0.1.1
 - Fixed major bug that caused videos to not play
 
 v0.1.0

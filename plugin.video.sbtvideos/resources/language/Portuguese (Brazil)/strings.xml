@@ -12,6 +12,7 @@
 	<string id="30007">Sem Título</string>
 	<string id="30008">Marcar como visto</string>
 	<string id="30009">Marcar como não-visto</string>
+	<string id="30010">Tocar apenas este vídeo</string>
 	
 	<!-- Error messages -->
 	<string id="30101">Nenhum vídeo nesta categoria</string>
@@ -30,11 +31,13 @@
 	<string id="30303">Este plugin usa Analytics pra ajudar a decidir aonde mexer na próxima atualização. Mais detalhes na descrição do plugin. Você gostaria de participar desta jornada épica?</string>
 	<string id="30305">Não. To de boa.</string>
 	<string id="30306">Sim! Conte comigo!</string>
-	<string id="30307">Precisamos do seu feedback</string>
-	<string id="30308">Obrigado por usar este plugin, por favor nos envie qualquer feedback pela thread oficial do plugin no forum. Divirta-se!</string>
-	<string id="30309">Compartilhe o momento</string>
-	<string id="30310">Você tem R$1,00 sobrando ai no seu bolso? Já pensou em</string>
-	<string id="30311">doar para vfranchi para ajudar o desenvolvimento deste e de outros plugins?</string>
+	<string id="30307">O que tem de novo? v0.1.2</string>
+	<string id="30308">Olá meu querido usuário,</string>
+	<string id="30309">Se você mora fora do Brasil e os vídeos não estão carregando,[CR]ative a nova opção na tela de configurações do plugin.</string>
+	<string id="30310">Não se esqueça de doar caso você ame este plugin :-)</string>
+	<string id="30397">Compartilhe o momento</string>
+	<string id="30398">Você tem R$1,00 sobrando ai no seu bolso? Já pensou em</string>
+	<string id="30399">doar para vfranchi para ajudar o desenvolvimento deste e de outros plugins?</string>
 	
 	<!-- Settings messages -->
 	<string id="30900">Configurações de Vídeo</string>
@@ -43,5 +46,7 @@
 	<string id="30903">Gostaria de ajudar os desenvolvedores a melhorar este plugin enviando[CR]estatísticas anônimas de uso. (Mais detalhes na descrição do plugin)</string>
 	<string id="30904">Habilitar o botão de vídeo aleatório Roda a Roleta, Silvio!</string>
 	<string id="30905">Número de vídeos por página</string>
+	<string id="30906">Tocar episódio inteiro por padrão</string>
+	<string id="30907">Eu moro fora do Brasil e os vídeos não estão funcionando para mim</string>
 	
 </strings>
