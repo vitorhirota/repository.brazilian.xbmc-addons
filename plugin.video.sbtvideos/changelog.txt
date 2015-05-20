@@ -1,0 +1,18 @@
+﻿v0.1.2
+- Added option to play full episode by default
+- Added support to play videos outside of Brazil
+
+v0.1.1
+- Fixed major bug that caused videos to not play
+
+v0.1.0
+- Added art to more SBT programs
+- Added watched video feature
+- Added limit to number of videos on list in the plugin settings
+- Fixed minor bugs
+
+v0.0.2
+- Fixed minor bug that caused a crash when a video didn't have a date string
+
+v0.0.1
+- Initial version

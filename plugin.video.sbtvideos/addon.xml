@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.sbtvideos" name="SBT Videos" version="0.1.2" provider-name="vfranchi">
+	<requires>
+		<import addon="xbmc.python" version="2.1.0"/>
+	</requires>
+	<extension point="xbmc.python.pluginsource" library="sbt-videos.py">
+		<provides>video</provides>
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<summary lang="en">SBT Videos plugin fetches videos from the brazilian SBT tv network and opens them on XBMC</summary>
+		<summary lang="pt_BR">O plugin SBT Videos busca os todos os vídeos do site do SBT para tocá-los no XBMC</summary>
+		<summary lang="pt">O plugin SBT Videos busca os todos os vídeos do site do SBT para tocá-los no XBMC</summary>
+		<description lang="en">
+			SBT Videos plugin fetches videos from the brazilian SBT tv network and opens them on XBMC.[CR]
+			This plugin uses Google Analytics to help me decide see what people are using so I can better decide what should I develop on next updates. The exact events that are tracked are:[CR]
+			* Track when user installs the plugin[CR]
+			* Track when user uses the plugin (sees the Main Menu)[CR]
+			* Track what video category people see the most[CR]
+			* Track when user choose to play one video (not which video)[CR]
+			* Track when user choose to play the whole episode (not which episode)[CR][CR]
+			If you have any questions, feedback, want to report a bug, or just say hello. Please visit the official plugin thread at [http://forum.kodi.tv/showthread.php?tid=218591]
+		</description>
+		<description lang="pt_BR">
+			O plugin SBT Videos busca todos os vídeos no site do SBT para tocá-los no XBMC, uma nova opção para assistir os seus programas prediletos.[CR]
+			Este plugin utiliza o Google Analytics para me ajudar a ver o que as pessoas estão usando mais, para me ajudar a decidir o que melhorar/desenvolver na próxima atualização. Os eventos exatos que são monitorados são:[CR]
+			* Evento quando o usuário instala o plugin[CR]
+			* Evento quando o usuário utiliza o plugin (visualiza o Menu principal)[CR]
+			* Evento de qual categoria é mais vista pelo usuário[CR]
+			* Evento quando o usuário opta por tocar um único vídeo (não qual vídeo específico)[CR]
+			* Evento quando o usuário opta por tocar um episódio inteiro (não qual o episódio)[CR]
+			Se você tiver alguma dúvida, um feedback, quer reportar um bug, ou apenas dizer um ou. Por favor, visite a thread oficial do plugin em [http://forum.kodi.tv/showthread.php?tid=218591]
+		</description>
+		<description lang="pt">
+			O plugin SBT Videos busca todos os vídeos no site do SBT para tocá-los no XBMC, uma nova opção para assistir os seus programas prediletos.[CR]
+			Este plugin utiliza o Google Analytics para me ajudar a ver o que as pessoas estão usando mais, para me ajudar a decidir o que melhorar/desenvolver na próxima atualização. Os eventos exatos que são monitorados são:[CR]
+			* Evento quando o usuário instala o plugin[CR]
+			* Evento quando o usuário utiliza o plugin (visualiza o Menu principal)[CR]
+			* Evento de qual categoria é mais vista pelo usuário[CR]
+			* Evento quando o usuário opta por tocar um único vídeo (não qual vídeo específico)[CR]
+			* Evento quando o usuário opta por tocar um episódio inteiro (não qual o episódio)[CR]
+			Se você tiver alguma dúvida, um feedback, quer reportar um bug, ou apenas dizer um ou. Por favor, visite a thread oficial do plugin em [http://forum.kodi.tv/showthread.php?tid=218591]
+		</description>
+		<disclaimer lang="en">This plugin comes 'as is'. The authors are not responsible for any problems it may cause. For more info, visit the forum.</disclaimer>
+		<language>en pt_BR pt</language>
+		<platform>all</platform>
+		<license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+		<website>http://www.sbt.com.br/sbtvideos/</website>
+		<forum>http://forum.kodi.tv/showthread.php?tid=218591</forum>
+		<source>https://github.com/vfranchi/plugin.video.sbtvideos</source>
+	</extension>
+</addon>

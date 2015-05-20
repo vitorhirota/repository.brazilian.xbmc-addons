@@ -1,0 +1,34 @@
+v0.2.1
+- Added pagination! Now you can watch every single video from any category
+- Added a random video feature, it chooses for you what will you watch
+- Fixed minor bugs
+
+v0.2.0
+- Added metrics system to improve plugin development
+- Changed SBT API version from 1.4.5 to 1.5.0
+- Added cache to help recover from errors and speed up navigation
+
+v0.1.3
+- Fixed bug where no videos were found on any category
+- Added settings to let users select prefered video quality
+
+v0.1.2
+- Added support for Sambatech mediaToken decrypt
+
+v0.1.1
+- Fixed error when episode name didn’t have the "Part X" text
+
+v0.1.0
+- Added support to other The Noite videos from the site
+- Correctly sort each part of the whole episode
+
+v0.0.3
+- Added progress dialog feedback
+- New icon
+- New fanart
+
+v0.0.2
+- Added playlist support
+
+v0.0.1
+- Initial version

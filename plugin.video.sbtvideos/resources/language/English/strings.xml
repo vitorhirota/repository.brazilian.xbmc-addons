@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Translated using Transifex web application. For support, or if you would like to to help out, please visit your language team! -->
+<!-- English language-Team URL: http://www.transifex.com/projects/p/XBMC-Main-Frodo/language/en/ -->
+<!-- Report language file syntax bugs at: http://trac.xbmc.org/ -->
+<strings>
+	<string id="30001">Play whole episode</string>
+	<string id="30002">Fetching videos</string>
+	<string id="30003">Loading episode parts...</string>
+	<string id="30004">Fetching part {0} of {1}</string>
+	<string id="30005">Done</string>
+	<string id="30006">SBT Videos</string>
+	<string id="30007">Untitled</string>
+	<string id="30008">Mark as watched</string>
+	<string id="30009">Mark as unwatched</string>
+	<string id="30010">Play only this video</string>
+	
+	<!-- Error messages -->
+	<string id="30101">No video on this category</string>
+	<string id="30102">SBT API is currently offline</string>
+	<string id="30103">Video is no longer available</string>
+	
+	<!-- Navigation message -->
+	<string id="30201">Next Page</string>
+	<string id="30202">Previous Page</string>
+	<string id="30203">Rand-O-Matic!</string>
+	<string id="30204">Refresh listing</string>
+
+	<!-- Welcome message -->
+	<string id="30301">Welcome</string>
+	<string id="30302">Hello dear fellow user,</string>
+	<string id="30303">This plugin uses Analytics to help me decide what to improve on the next update. More details at the plugin's description. Do you want to take part on this epic journey?</string>
+	<string id="30305">No. I'll pass, bro</string>
+	<string id="30306">Yes! Count me in!</string>
+	<string id="30307">New in version 0.1.2!</string>
+	<string id="30308">Hello dear fellow user,</string>
+	<string id="30309">If you live outside of Brazil and videos are not loading for you,[CR]enable the new setting for outsiders on the plugin.</string>
+	<string id="30310">Don't forget to donate if you love this plugin :-)</string>
+	<string id="30397">Spread the Love</string>
+	<string id="30398">Do you have U$1,00 to spare in your pocket? How about</string>
+	<string id="30399">donating it to vfranchi to help this and other plugin's development?</string>
+	
+	<!-- Settings messages -->
+	<string id="30900">Video Settings</string>
+	<string id="30901">Video quality</string>
+	<string id="30902">Plugin Analytics</string>
+	<string id="30903">I want to help the developers to better improve this plugin by sending[CR]anonymous usage statistics. (More details on the plugin's description)</string>
+	<string id="30904">Enable the random movie button Rand-O-Matic!</string>
+	<string id="30905">Videos per page</string>
+	<string id="30906">Play full episodes by default</string>
+	<string id="30907">I live outside of Brazil and the videos are not loading for me</string>
+	
+</strings>

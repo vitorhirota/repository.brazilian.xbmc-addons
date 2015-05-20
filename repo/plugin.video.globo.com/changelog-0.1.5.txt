@@ -1,0 +1,51 @@
+0.1.5
+ PT: adicionado streaming de canais ao vivo
+ EN: added live streaming
+
+0.1.4
+ PT: adicionado autorização Sky
+ EN: added authorization for Sky
+
+0.1.3.2
+ PT: corrigido listagem favoritos Rede Globo
+ EN: fixed Rede Globo favorites listing
+
+0.1.3.1
+ PT: corrigido listagem Rede Globo
+ EN: fixed Rede Globo listing
+
+0.1.3
+ PT: adicionado autorização para TV Oi, favoritos, streaming 480p
+ EN: added authorization for TV Oi, favorites, 480p streaming
+
+0.1.2.3.1
+ PT: correção sintática
+ EN: typo fix
+
+0.1.2.3
+ PT: corrigido erro de playback em Windows
+ EN: fixed Windows playback error
+
+0.1.2.2
+ PT: adicionado perfil ao processo de autenticação
+ EN: added profile to authentication process
+
+0.1.2.1
+ PT: correçoes variadas
+ EN: general bug-fixes
+
+0.1.2
+ PT: adicionado autorização para NET
+ EN: added authorization for NET
+
+0.1.1.1
+ PT: correção de erro
+ EN: bugfix
+
+0.1.1
+ PT: correção de erros
+ EN: bugfixes
+
+0.1
+ PT: Primeira versão alpha, apenas alguns vídeos e autorização pela GVT funcionais.
+ EN: First alpha, just some videos and gvt auth working.

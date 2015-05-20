@@ -129,7 +129,7 @@ class GlobosatBackends(Backends):
         # for a given playlist (which requires a valid video_id, this is being
         # harcoded for now.
         provider_id = '52dfc02cdd23810590000f57'
-        token = credentials[credentials['b64gplay']]
+        token = credentials[credentials['b64globosatplay']]
         now = datetime.datetime.now()
         expiration = now + datetime.timedelta(days=7)
         r5 = requests.get(self.AUTH_TOKEN_URL % (provider_id,
@@ -220,3 +220,14 @@ class sky(GlobosatBackends):
             return self.session.get(match.group(1))
 
         raise Exception('Invalid user name or password.')
+
+class vivo(GlobosatBackends):
+    PROVIDER_ID = 68
+
+    def _provider_auth(self, url, qs):
+        qs.update({
+            'cpf': self.username,
+            'senha': self.password,
+        })
+        req = self.session.post(url, data=qs)
+        return req

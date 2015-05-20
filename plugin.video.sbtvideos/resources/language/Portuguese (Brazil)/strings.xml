@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Translated using Transifex web application. For support, or if you would like to to help out, please visit your language team! -->
+<!-- English language-Team URL: http://www.transifex.com/projects/p/XBMC-Main-Frodo/language/en/ -->
+<!-- Report language file syntax bugs at: http://trac.xbmc.org/ -->
+<strings>
+	<string id="30001">Tocar episódio inteiro</string>
+	<string id="30002">Buscando vídeos</string>
+	<string id="30003">Carregando as partes do episódio...</string>
+	<string id="30004">Buscando parte {0} de {1}</string>
+	<string id="30005">Finalizado</string>
+	<string id="30006">SBT Vídeos</string>
+	<string id="30007">Sem Título</string>
+	<string id="30008">Marcar como visto</string>
+	<string id="30009">Marcar como não-visto</string>
+	<string id="30010">Tocar apenas este vídeo</string>
+	
+	<!-- Error messages -->
+	<string id="30101">Nenhum vídeo nesta categoria</string>
+	<string id="30102">A API do SBT está offline</string>
+	<string id="30103">O vídeo não está mais disponível</string>
+	
+	<!-- Navigation message -->
+	<string id="30201">Próxima Página</string>
+	<string id="30202">Página Anterior</string>
+	<string id="30203">Roda a Roleta, Silvio!</string>
+	<string id="30204">Recarregar lista</string>
+	
+	<!-- Welcome message -->
+	<string id="30301">Bem-vindo</string>
+	<string id="30302">Olá meu querido usuário,</string>
+	<string id="30303">Este plugin usa Analytics pra ajudar a decidir aonde mexer na próxima atualização. Mais detalhes na descrição do plugin. Você gostaria de participar desta jornada épica?</string>
+	<string id="30305">Não. To de boa.</string>
+	<string id="30306">Sim! Conte comigo!</string>
+	<string id="30307">O que tem de novo? v0.1.2</string>
+	<string id="30308">Olá meu querido usuário,</string>
+	<string id="30309">Se você mora fora do Brasil e os vídeos não estão carregando,[CR]ative a nova opção na tela de configurações do plugin.</string>
+	<string id="30310">Não se esqueça de doar caso você ame este plugin :-)</string>
+	<string id="30397">Compartilhe o momento</string>
+	<string id="30398">Você tem R$1,00 sobrando ai no seu bolso? Já pensou em</string>
+	<string id="30399">doar para vfranchi para ajudar o desenvolvimento deste e de outros plugins?</string>
+	
+	<!-- Settings messages -->
+	<string id="30900">Configurações de Vídeo</string>
+	<string id="30901">Qualidade de vídeo</string>
+	<string id="30902">Analytics do Plugin</string>
+	<string id="30903">Gostaria de ajudar os desenvolvedores a melhorar este plugin enviando[CR]estatísticas anônimas de uso. (Mais detalhes na descrição do plugin)</string>
+	<string id="30904">Habilitar o botão de vídeo aleatório Roda a Roleta, Silvio!</string>
+	<string id="30905">Número de vídeos por página</string>
+	<string id="30906">Tocar episódio inteiro por padrão</string>
+	<string id="30907">Eu moro fora do Brasil e os vídeos não estão funcionando para mim</string>
+	
+</strings>
