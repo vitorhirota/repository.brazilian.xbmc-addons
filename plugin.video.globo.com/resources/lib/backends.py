@@ -231,3 +231,20 @@ class vivo(GlobosatBackends):
         })
         req = self.session.post(url, data=qs)
         return req
+
+class claro(GlobosatBackends):
+    PROVIDER_ID = 123
+
+    def _provider_auth(self, url, qs):
+        qs.update({
+            'cpf': self.username,
+            'senha': self.password,
+        })
+        req = self.session.post(url, data=qs)
+        ipt_values_regex = r'%s=["\'](.*)["\'] '
+        try:
+            action = re.findall(ipt_values_regex % 'action', req.text)[0]
+            value = re.findall(ipt_values_regex[:-1] % 'value', req.text)[0]
+        except IndexError:
+            raise Exception('Invalid user name or password.')
+        return req

@@ -7,7 +7,7 @@
     <setting id="globo_password" type="text" option="hidden" label="31120" enable="!eq(-1,)" default="" />
     <setting label="31200" type="lsep" />
     <!-- <setting id="play_provider" type="enum" label="31210" lvalues="31211|31212|31213|31214|31215|31216|31217|31218" default="0" /> -->
-    <setting id="play_provider" type="labelenum" label="31210" lvalues="31212|31214|31216|31217|31218" default="0" />
+    <setting id="play_provider" type="labelenum" label="31210" lvalues="31212|31214|31216|31217|31218|31220" default="0" />
     <setting id="play_username" type="text" label="31110" default="" />
     <setting id="play_password" type="text" option="hidden" label="31120" enable="!eq(-1,)" default="" />
     <setting label="31300" type="lsep" />
