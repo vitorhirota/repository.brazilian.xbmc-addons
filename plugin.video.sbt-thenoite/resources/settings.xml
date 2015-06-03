@@ -2,10 +2,12 @@
 <settings>
 	<setting label="30904" type="bool" id="randomButtonEnabled" default="true"/>
 	<setting label="30906" type="bool" id="playFullEpisodesByDefault" default="true"/>
-	<setting label="30907" type="bool" id="useUnblockBrazil" default="false"/>
     <setting label="30900" type="lsep"/>
 	<setting label="30901" type="labelenum" id="video.quality" values="480p|240p|360p|720p|_RAW"/>
 	<setting label="30905" type="labelenum" id="video.perpage" values="100|50|25|10"/>
+	<setting label="30908" type="lsep"/>
+	<setting label="30907" type="bool" id="webproxy" default="false"/>
+	<setting label="30909" type="labelenum" id="webproxy.server" values="Proxy #1|Proxy #2"/>
     <setting label="30902" type="lsep"/>
 	<setting label="30903" type="bool" id="analytics" default="false"/>
 </settings>
