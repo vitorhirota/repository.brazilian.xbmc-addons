@@ -220,7 +220,7 @@ class sky(GlobosatBackends):
         req = self.session.post(url, data=qs)
         match = re.search('^"(http.*)"$', req.text)
         if match:
-            return self.session.get(match.group(1))
+            return self.session.get(match.group(1).replace("\u0026","&"))
 
         raise Exception('Invalid user name or password.')
 
