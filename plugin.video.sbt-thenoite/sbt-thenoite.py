@@ -46,8 +46,24 @@ thenoite_urls["media_api"] = "http://api.sbt.com.br/1.5.0/videos/key=AE8C984EECB
 thenoite_urls["video_url"] = 'http://fast.player.liquidplatform.com/pApiv2/embed/25ce5b8513c18a9eae99a8af601d0943/$videoId';
 
 # Unblock Brazil URL
-unblockBrazilHome = "http://brazilunblock.info/";
-unblockBrazilUrl = unblockBrazilHome+"browse.php?u=$videoUrl";
+webProxyUrl = {
+	"Proxy #1" : {
+		"host" : "brazilunblock.info",
+		"home" : "http://brazilunblock.info/",
+		"proxy" : "http://brazilunblock.info/browse.php?u=$videoUrl"
+	},
+	"Proxy #2" : {
+		"host" : "pepachino.com",
+		"home" : "http://pepachino.com/",
+		"proxy" : "http://pepachino.com/browse.php?u=$videoUrl&b=28"
+	}
+};
+
+if (addon.getSetting("webproxy.server") == ""):
+	addon.setSetting("webproxy.server", "Proxy #1");
+
+useWebProxy = addon.getSetting("webproxy") == "true";
+proxyServer = webProxyUrl[addon.getSetting("webproxy.server")];
 
 myCache = {};
 if (addon.getSetting("cache") != ""):
@@ -191,11 +207,11 @@ def getXbmcVideoFromVideo(video, video_thumb):
 						listItem.setThumbnailImage(video_thumb["url"]);
 			if (listItem != None):
 				ret = {};
-				if (addon.getSetting("useUnblockBrazil") == "true"):
+				if (useWebProxy):
 					header = {
-						"Host" : "brazilunblock.info"
+						"Host" : proxyServer["host"],
 					};
-					ret["url"] = unblockBrazilUrl.replace("$videoUrl", urllib.quote(videoUrl))+"|"+urllib.urlencode(header);
+					ret["url"] = proxyServer["proxy"].replace("$videoUrl", urllib.quote(videoUrl))+"|"+urllib.urlencode(header);
 				else:
 					ret["url"] = videoUrl;
 					
@@ -252,9 +268,9 @@ def playVideoList(videos_ids):
 	pDialog.update(100, _(30005));
 	pDialog.close();
 	
-	if (addon.getSetting("useUnblockBrazil") == "true"):
+	if (useWebProxy):
 		# first we cheat XMBC into saving the correct cookie from Unblock Brazil website
-		xbmc.Player().play(unblockBrazilHome);
+		xbmc.Player().play(proxyServer["home"]);
 		# then we pass the redirected video url for XBMC
 	
 	xbmc.Player().play(xbmcPlaylist);
@@ -286,9 +302,9 @@ def playVideo(video_id):
 		video_thumb = getVideoThumbnail(video);
 		xbmcVideo = getXbmcVideoFromVideo(video, video_thumb);
 		if (xbmcVideo != None):
-			if (addon.getSetting("useUnblockBrazil") == "true"):
+			if (useWebProxy):
 				# first we cheat XMBC into saving the correct cookie from Unblock Brazil website
-				xbmc.Player().play(unblockBrazilHome);
+				xbmc.Player().play(proxyServer["home"]);
 				# then we pass the redirected video url for XBMC
 
 			xbmc.Player().play(xbmcVideo["url"], xbmcVideo["listitem"]);

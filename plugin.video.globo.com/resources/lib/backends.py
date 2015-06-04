@@ -119,7 +119,7 @@ class GlobosatBackends(Backends):
         # set profile
         post_data = {
             '_method': 'PUT',
-            'perfil_id': re.findall('<div data-id="(\d+)" class="avatar', r3.text)
+            'perfil_id': re.findall('<div data-id="(\d+)" class="[\w ]+avatar', r3.text)
         }
         r4 = self.session.post(r3.url, data=post_data)
         # build credentials
@@ -129,7 +129,10 @@ class GlobosatBackends(Backends):
         # for a given playlist (which requires a valid video_id, this is being
         # harcoded for now.
         provider_id = '52dfc02cdd23810590000f57'
-        token = credentials[credentials['b64globosatplay']]
+        try:
+            token = credentials[credentials['b64globosatplay']]
+        except:
+            raise Exception('There was a problem in the authetication process.')
         now = datetime.datetime.now()
         expiration = now + datetime.timedelta(days=7)
         r5 = requests.get(self.AUTH_TOKEN_URL % (provider_id,
