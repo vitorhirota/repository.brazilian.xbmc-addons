@@ -1,7 +1,3 @@
-0.1.9
- PT: correção autorização Sky (by lucasrokam)
- EN: fix authorization for Sky (by lucasrokam)
-
 0.1.8
  PT: corrigido problema de autorização
  EN: fix authorization issue
