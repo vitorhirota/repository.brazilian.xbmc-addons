@@ -251,3 +251,20 @@ class claro(GlobosatBackends):
         except IndexError:
             raise Exception('Invalid user name or password.')
         return req
+
+class globosat_guest(GlobosatBackends):
+    PROVIDER_ID = 50
+
+    def _provider_auth(self, url, qs):
+        qs.update({
+            'login': self.username,
+            'senha': self.password,
+        })
+        req = self.session.post(url, data=qs)
+        ipt_values_regex = r'%s=["\'](.*)["\'] '
+        try:
+            action = re.findall(ipt_values_regex % 'action', req.text)[0]
+            value = re.findall(ipt_values_regex[:-1] % 'value', req.text)[0]
+        except IndexError:
+            raise Exception('Invalid user name or password.')
+        return req
