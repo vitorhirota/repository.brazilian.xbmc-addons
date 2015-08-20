@@ -25,7 +25,7 @@ import util
 # url masks
 INFO_URL = 'http://api.globovideos.com/videos/%s/playlist'
 HASH_URL = ('http://security.video.globo.com/videos/%s/hash?'
-            + 'resource_id=%s&version=%s&player=flash')
+            + 'resource_id=%s&version=%s&player=html5')
 
 
 class GloboApi(object):
@@ -201,13 +201,13 @@ class GloboApi(object):
         try:
             query_string = query_string % {
                 'hash': signed_hashes[0],
-                'key': res['players'][0]
+                'key': 'html5' 
             }
         except KeyError:
             # live videos
             query_string = query_string % {
                 'hash': signed_hashes[0],
-                'key': 'flash',
+                'key': 'html5',
                 'openClosed': 'F',
                 'user': data_hashes['user']
             }
