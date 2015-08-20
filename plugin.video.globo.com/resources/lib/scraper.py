@@ -23,7 +23,7 @@ EPSTHUMB_URL = 'http://s01.video.glbimg.com/x360/%s.jpg'
 # RAIL_URL = SHOW_URL + '/_/trilhos/%(rail)s/page/%(page)s/'
 INFO_URL = 'http://api.globovideos.com/videos/%s/playlist'
 HASH_URL = ('http://security.video.globo.com/videos/%s/hash?'
-            + 'resource_id=%s&version=%s&player=flash')
+            + 'resource_id=%s&version=%s&player=html5')
 LOGIN_URL = 'https://login.globo.com/login/151?tam=widget'
 JSAPI_URL = 'http://s.videos.globo.com/p2/j/api.min.js'
 
