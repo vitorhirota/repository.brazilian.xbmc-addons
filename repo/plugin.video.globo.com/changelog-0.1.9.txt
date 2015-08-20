@@ -1,7 +1,3 @@
-0.1.10
- PT: adicionado autorização para Visitantes (by guilhermegarnier)
- EN: added authorization for Guests (by guilhermegarnier)
-
 0.1.9
  PT: correção autorização Sky (by lucasrokam)
  EN: fix authorization for Sky (by lucasrokam)
