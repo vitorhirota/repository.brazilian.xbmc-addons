@@ -108,7 +108,7 @@ class GlobosatBackends(Backends):
         # https://auth.globosat.tv/oauth/authorize/?redirect_uri=http://globosatplay.globo.com/-/auth/gplay/?callback&response_type=code
         r1 = self.session.get(self.OAUTH_URL)
         # get backend url
-        r2 = self.session.post(r1.url, data={'config': self.PROVIDER_ID})
+        r2 = self.session.post(r1.url + '&duid=None', data={'config': self.PROVIDER_ID})
         url, qs = r2.url.split('?', 1)
         # provider authentication
         try:
@@ -117,11 +117,14 @@ class GlobosatBackends(Backends):
             self.error(str(e))
             return {}
         # set profile
+        urlp, qp = r3.url.split('?', 1)
+        accesstoken = re.findall('<form id="bogus-form" action="/perfis/selecionar/\?access_token=(.*)" method="POST">', r3.text)[0]
         post_data = {
             '_method': 'PUT',
-            'perfil_id': re.findall('<div data-id="(\d+)" class="[\w ]+avatar', r3.text)
+            'duid': 'None',			
+            'perfil_id': re.findall('<div data-id="(\d+)" class="[\w ]+avatar', r3.text)[0]
         }
-        r4 = self.session.post(r3.url, data=post_data)
+        r4 = self.session.post(urlp + '?access_token=' + accesstoken, data=post_data)
         # build credentials
         credentials = dict(r4.cookies)
         # provider_id is a property from a video playlist. Tt seems, however,
@@ -135,7 +138,7 @@ class GlobosatBackends(Backends):
             raise Exception('There was a problem in the authetication process.')
         now = datetime.datetime.now()
         expiration = now + datetime.timedelta(days=7)
-        r5 = requests.get(self.AUTH_TOKEN_URL % (provider_id,
+        r5 = self.session.get(self.AUTH_TOKEN_URL % (provider_id,
                                                  token,
                                                  calendar.timegm(now.timetuple()),
                                                  expiration.strftime('%a, %d %b %Y %H:%M:%S GMT')))
