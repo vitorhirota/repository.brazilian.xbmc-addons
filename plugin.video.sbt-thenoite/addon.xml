@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.sbt-thenoite" name="SBT The Noite - Programas na Integra" version="0.2.7" provider-name="vfranchi">
+<addon id="plugin.video.sbt-thenoite" name="SBT The Noite - Programas na Integra" version="0.2.8" provider-name="vfranchi">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0"/>
 	</requires>

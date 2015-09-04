@@ -102,26 +102,32 @@ def makeUrl(query = {}):
 def parseMediaInfo(html):
 	match = re.compile("window.mediaJson = (.+?);").findall(html);
 	if len(match) > 0:
-		log("found media json: "+match[0]);
+		# log("found media json: "+match[0]);
 		return json.loads(match[0]);
 		
 	match = re.compile("window.mediaToken = (.+?);").findall(html);
 	if len(match) > 0:
-		log("found media token: "+match[0]);
+		# log("found media token: "+match[0]);
+		foundMaxWidth = False;
 		# getting max-width from body tag
 		maxWidth = re.compile("<body .*max-width:(.*);.*>").findall(html);
-		log("Found maxWidth "+str(maxWidth));
 		if len(maxWidth) > 0:
-			# xbmc.log("["+_(30006)+"]: Found token "+match[0], 0);
+			foundMaxWidth = True;
+		else:
+			maxWidth = re.compile("<meta[^>]*name[^>]*caching[^>]*content=\"([^>\"]*)\"[^>]*>").findall(html);
+			if len(maxWidth) > 0:
+				foundMaxWidth = True;
+		
+		if (foundMaxWidth):
+			# log("Found maxWidth "+str(maxWidth));
+			# log("Found token "+match[0]);
 			maxWidth = maxWidth[0].strip().replace("px", "");
-			# xbmc.log("["+_(30006)+"]: max-width "+maxWidth, 0);
 			maxWidth = int((int(maxWidth) ^ 345) - 1E4) + 1;
 			discard = match[0][0:maxWidth]; #keeping this for debug purposes
-			log("Will discard "+discard);
-			
+			# log("Will discard "+discard);
 			encodedToken = match[0][maxWidth:-maxWidth];
-			log("Encoded token "+encodedToken);
-			
+			# log("Encoded token "+encodedToken);
+		
 			if(len(encodedToken) % 4 == 2):
 				encodedToken = encodedToken + "==";
 			elif(len(encodedToken) % 4 == 3):
@@ -134,8 +140,18 @@ def parseMediaInfo(html):
 def getVideoThumbnail(video):
 	# finding best video thumbnail, optimal is 480 x 360 by default
 	video_thumb = None;
-	for thumbnail in video["thumbnailList"]:
-		if (thumbnail["qualifierName"] == "THUMBNAIL"):
+	if ("thumbnailList" in video):
+		for thumbnail in video["thumbnailList"]:
+			if (thumbnail["qualifierName"] == "THUMBNAIL"):
+				if (thumbnail["width"] == 480 and thumbnail["height"] == 360):
+					video_thumb = thumbnail;
+					break;
+				elif (video_thumb == None):
+					video_thumb = thumbnail;
+				elif(video_thumb["width"] <= thumbnail["width"] and video_thumb["height"] <= thumbnail["height"]):
+					video_thumb = thumbnail;
+	elif ("thumbnails" in video):
+		for thumbnail in video["thumbnails"]:
 			if (thumbnail["width"] == 480 and thumbnail["height"] == 360):
 				video_thumb = thumbnail;
 				break;
@@ -150,12 +166,12 @@ def getXbmcVideoFromVideo(video, video_thumb):
 	ret = None;
 	userQuality = addon.getSetting("video.quality");
 	for deliveryRules in video["deliveryRules"]:
-		if (deliveryRules["rule"]["ruleName"] == "r1" or 
-			deliveryRules["rule"]["ruleName"] == "default"):
+		if (deliveryRules["ruleName"] == "r1" or 
+			deliveryRules["ruleName"] == "default"):
 			listItem = None;
 			videoUrl = "";
-			for output in deliveryRules["outputList"]:
-				if (output["labelText"] == userQuality):
+			for output in deliveryRules["outputs"]:
+				if (output["outputName"] == userQuality):
 					videoUrl = output["url"];
 					listItem = xbmcgui.ListItem(video.get("title", _(30007)));
 					listItem.setInfo("video", {"Title" : video.get("title", _(30007)), "Plot" : video.get("description", "")});
@@ -163,7 +179,7 @@ def getXbmcVideoFromVideo(video, video_thumb):
 						listItem.setIconImage(video_thumb["url"]);
 						listItem.setThumbnailImage(video_thumb["url"]);
 					break;
-				elif (output["labelText"] == "480p"):
+				elif (output["outputName"] == "480p"):
 					videoUrl = output["url"];
 					listItem = xbmcgui.ListItem(video.get("title", "Untitled"));
 					listItem.setInfo("video", {"Title" : video.get("title", _(30007)), "Plot" : video.get("description", "")});
@@ -191,6 +207,9 @@ def playVideoList(videos_ids):
 
 	if (ga["enabled"]):
 		tracker.send("event", "Usage", "Play Video", "episode", screenName="Play Screen");
+		if (useWebProxy):
+			tracker.send("event", "Web Proxy", proxyServer["host"], "episode", screenName="Play Screen");
+		
 
 	xbmcPlaylist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO);
 	xbmcPlaylist.clear();
@@ -204,7 +223,7 @@ def playVideoList(videos_ids):
 		iframe = network.fetchUrl(urls["video"].replace("$videoId", video_id));
 		video = parseMediaInfo(iframe);
 		
-		if ("error" in video and video["error"] == True):
+		if (video is None or ("error" in video and video["error"] == True)):
 			xbmc.log("["+_(30006)+"]: Unable to find video for ID "+video_id, 0);
 		
 			# taking note from the amount of errors the SBT API may throw
@@ -237,16 +256,18 @@ def playVideoList(videos_ids):
 	xbmc.executebuiltin("Container.Refresh");
 	
 def playVideo(video_id):
-	log("video url: "+urls["video"].replace("$videoId", video_id));
+	# log("video url: "+urls["video"].replace("$videoId", video_id));
 	iframe = network.fetchUrl(urls["video"].replace("$videoId", video_id));
 	video = parseMediaInfo(iframe);
 	
 	if (ga["enabled"]):
 		tracker.send("event", "Usage", "Play Video", "unique", screenName="Play Screen");
+		if (useWebProxy):
+			tracker.send("event", "Web Proxy", proxyServer["host"], "unique", screenName="Play Screen");
 	
 	# Sambatech url never gave an error, so we are skipping error recovery for this part
-	log("video: "+json.dumps(video));
-	if ("error" in video and video["error"] == True):
+	# log("video: "+json.dumps(video));
+	if (video is None or ("error" in video and video["error"] == True)):
 		xbmc.log("["+_(30006)+"]: Unable to find video for ID "+video_id, 0);
 		
 		# taking note from the amount of errors the SBT API may throw
