@@ -181,7 +181,7 @@ class net(GlobosatBackends):
         req = self.session.post(url, data=qs)
         ipt_values_regex = r'%s=["\'](.*)["\'] '
         try:
-            action = re.findall(ipt_values_regex % 'action', req.text)[0]
+            action = 'https:' + re.findall(ipt_values_regex % 'action', req.text)[0]
             value = re.findall(ipt_values_regex[:-1] % 'value', req.text)[0]
             # self.debug('action: %s, value: %s' % (action, value))
         except IndexError:
