@@ -1,3 +1,7 @@
+0.1.12
+ PT: correção de autorização NET (by lucasrokam)
+ EN: fix authorization for NET (by lucasrokam)
+
 0.1.11
  PT: correção de autorização e atualizado tocador da api globosat (by lucasrokam)
  EN: fixed authorization and updated player in globosat api (by lucasrokam)
