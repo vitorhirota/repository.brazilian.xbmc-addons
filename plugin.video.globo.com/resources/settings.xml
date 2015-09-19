@@ -14,6 +14,7 @@
     <!-- <setting id="video_quality" type="enum" label="31310" lvalues="31311|31312|31313" default="1" /> -->
     <!-- <setting id="page_size" type="labelenum" label="31400" values="10|20|40" default="10" /> -->
     <!-- <setting id="debug" type="bool" label="30150" default="false" /> -->
+	<setting id="bitrate" type="labelenum" label="31700" lvalues="31710|31720|31730|31740|31750|31760|31770" default="31770" />
     <setting id="clear" type="action" label="31600" action="RunPlugin(plugin://plugin.video.globo.com/clear_index)"/>
   </category>
 </settings>

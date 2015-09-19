@@ -35,6 +35,14 @@
   <string id="31400">Videos Por Página</string>
   <string id="31500">Debug</string>
   <string id="31600">Limpar dados</string>
+  <string id="31700">Banda Máxima</string>
+  <string id="31710">250 kbps</string>
+  <string id="31720">500 kbps</string>
+  <string id="31730">750 kbps</string>
+  <string id="31740">1000 kbps</string>
+  <string id="31750">1500 kbps</string>
+  <string id="31760">2000 kbps</string>
+  <string id="31770">3000 kbps</string>
  <!-- Notifications messages -->
   <string id="32001">Erro na authenticação. Usuário ou senha inválidos.</string>
   <string id="32002">Operador %s ainda não disponível.</string>

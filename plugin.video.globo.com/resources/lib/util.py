@@ -35,6 +35,18 @@ class struct(object):
     def get(self, key):
         return self.__dict__.get(key)
 
+def getBestBitrateUrl(plugin, streams):
+    '''
+        Chooses best quality limited to bitrate
+    '''
+    best = 0
+    bitrate = int(plugin.get_setting('bitrate')[:-5])
+    for bit, url in streams.iteritems():
+        if int(bit) > best and int(bit) < bitrate:
+            best = int(bit)
+    plugin.log.debug('video choosen bitrate: %d' % best)
+    plugin.log.debug('video choosen url: %s' % streams[str(best)])
+    return streams[str(best)]
 
 def slugify(string):
     '''

@@ -21,6 +21,9 @@ import re
 import backends
 import scraper
 import util
+import m3u8
+import requests
+import urllib
 
 # url masks
 INFO_URL = 'http://api.globovideos.com/videos/%s/playlist'
@@ -213,5 +216,16 @@ class GloboApi(object):
             }
         # build resolved url
         url = '?'.join([res['url'], query_string])
-        self.plugin.log.debug('video url: %s' % url)
-        return url
+        self.plugin.log.debug('video playlist url: %s' % url)
+        session = requests.Session()
+        req = session.get(url)
+        m3u8_header = { 'Cookie': '; '.join(['%s=%s' % (key, value) for (key, value) in req.cookies.items()]) }
+        m3u8_obj = m3u8.loads(req.text.strip())
+        streams = {}
+        if m3u8_obj.is_variant:  # if this m3u8 contains links to other m3u8s
+            for playlist in m3u8_obj.playlists:
+                bitrate = str(int(playlist.stream_info.bandwidth[:playlist.stream_info.bandwidth.find(' ')])/100)
+                streams[bitrate] = url[:url.rfind('/') + 1] + playlist.uri + '?' + url.split('?')[1] + '|' + urllib.urlencode(m3u8_header)
+        else:
+            return url
+        return util.getBestBitrateUrl(self.plugin, streams)
