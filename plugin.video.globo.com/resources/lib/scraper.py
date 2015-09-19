@@ -19,6 +19,8 @@ GLOBOSAT_LIVE_JSON = GLOBOSAT_URL + '/xhr/transmissoes/ao-vivo.json'
 GLOBOSAT_EPS_JSON = GLOBOSAT_SHOW_URL + '/videos/recentes.json?quantidade=15&pagina=%d'
 GLOBOSAT_SEASON_JSON = GLOBOSAT_SHOW_URL + '/temporada/%d/episodios.json'
 
+PREMIERE_LIVE_JSON = GLOBOSAT_URL + '/premierefc/ao-vivo/add-on/jogos-ao-vivo/%s.json'
+
 EPSTHUMB_URL = 'http://s01.video.glbimg.com/x360/%s.jpg'
 # RAIL_URL = SHOW_URL + '/_/trilhos/%(rail)s/page/%(page)s/'
 INFO_URL = 'http://api.globovideos.com/videos/%s/playlist'
@@ -74,6 +76,17 @@ def get_gplay_channels():
 
     return (channels, live)
 
+
+def get_premiere_live(code, logo):
+    live = dict([(util.slugify(json['time_mandante']['sigla'] + 'x' + json['time_visitante']['sigla']), {
+                'name': json['time_mandante']['sigla'] + 'x' + json['time_visitante']['sigla'],
+                'logo': logo,
+                # 'plot': ', '.join(reversed(json['programacao'].values())),
+                # some items have a null value for programacao
+                'plot': json['campeonato'] + ': ' + json['time_mandante']['nome'] + ' x ' + json['time_visitante']['nome'] + ' (' + json['estadio'] + '). ' + json['data'],
+                'id': json['id_midia'],
+            }) for json in get_page(PREMIERE_LIVE_JSON % code)['jogos']])
+    return live
 
 def get_globo_shows():
     soup = bs(get_page(GLOBOTV_MAIS_URL))
