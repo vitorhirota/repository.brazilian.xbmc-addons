@@ -35,6 +35,14 @@
   <string id="31400">Videos Per Page</string>
   <string id="31500">Debug</string>
   <string id="31600">Clear data</string>
+  <string id="31700">Max Bandwidth</string>
+  <string id="31710">250 kbps</string>
+  <string id="31720">500 kbps</string>
+  <string id="31730">750 kbps</string>
+  <string id="31740">1000 kbps</string>
+  <string id="31750">1500 kbps</string>
+  <string id="31760">2000 kbps</string>
+  <string id="31770">3000 kbps</string>
   <!-- Notifications messages -->
   <string id="32001">Authentication error. Invalid username or password.</string>
   <string id="32002">Provider %s not implemented yet.</string>
