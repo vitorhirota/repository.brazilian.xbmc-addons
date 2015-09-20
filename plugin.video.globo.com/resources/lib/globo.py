@@ -22,14 +22,13 @@ import backends
 import scraper
 import util
 import m3u8
-import requests
 import urllib
+import requests
 
 # url masks
 INFO_URL = 'http://api.globovideos.com/videos/%s/playlist'
 HASH_URL = ('http://security.video.globo.com/videos/%s/hash?'
-            + 'resource_id=%s&version=%s&player=html5')
-
+            + 'resource_id=%s&version=%s&player=%s&udid=null')
 
 class GloboApi(object):
 
@@ -86,18 +85,17 @@ class GloboApi(object):
         self.index.sync()
         self.plugin.log.debug('data cleared')
 
-    def _get_hashes(self, video_id, resource_ids, auth_retry=False, player_retry=False):
+    def _get_hashes(self, video_id, resource_ids, player, auth_retry=False, player_retry=False):
         playerVersion = self.plugin.get_setting('player_version')
 
         video_data = self._get_video_info(video_id)
         provider = ('globo' if video_data['channel_id'] == 196
                     else self.plugin.get_setting('play_provider').lower().replace(' ', '_'))
-        credentials = self.authenticate(provider)
+        credentials = self.authenticate(provider, video_data['provider_id'])
 
-        args = (video_id, '|'.join(resource_ids), playerVersion)
-        data = scraper.get_page(HASH_URL % args, cookies=credentials)
-
+        args = (video_id, '|'.join(resource_ids), playerVersion, player)
         self.plugin.log.debug('hash requested: %s' % (HASH_URL % args))
+        data = scraper.get_page(HASH_URL % args, cookies=credentials)
         self.plugin.log.debug('resource ids: %s' % '|'.join(resource_ids))
         self.plugin.log.debug('return: %s' % repr(data).encode('ascii', 'replace'))
         try:
@@ -120,7 +118,7 @@ class GloboApi(object):
                     playerVersion = scraper.get_player_version()
                     self.plugin.set_setting('player_version', playerVersion)
                     self.plugin.log.debug('retrying with new player version %s' % playerVersion)
-                    return self._get_hashes(video_id, resource_ids, auth_retry, True)
+                    return self._get_hashes(video_id, resource_ids, player, auth_retry, True)
 
             if str(args[0]) == '403' and any(credentials.values()):
                 # If a 403 is returned (authentication needed) and there is an
@@ -131,7 +129,7 @@ class GloboApi(object):
                 self.plugin.set_setting(credentials_key, '')
                 if not auth_retry:
                     self.plugin.log.debug('retrying authentication')
-                    return self._get_hashes(video_id, resource_ids, True, player_retry)
+                    return self._get_hashes(video_id, resource_ids, player, True, player_retry)
             raise Exception(data['message'])
 
     # @util.cacheFunction
@@ -146,13 +144,13 @@ class GloboApi(object):
                                    for x in data.get('children') or [data])
         return data
 
-    def authenticate(self, provider):
+    def authenticate(self, provider, provider_id):
         try:
             backend = getattr(backends, provider)(self.plugin)
         except AttributeError:
             self.plugin.log.error('%s provider unavailable' % provider)
             self.plugin.notify(self.plugin.get_string(32001) % provider)
-        return backend.authenticate()
+        return backend.authenticate(provider_id)
 
     def get_path(self, key):
         data = self.index.get(key)
@@ -169,6 +167,7 @@ class GloboApi(object):
         # define scraper method
         method_strs = {
             'megapix': 'get_megapix_episodes',
+			'telecine': 'get_megapix_episodes',
             'globo':'get_globo_episodes',
         }
         method = method_strs.get(channel) or 'get_gplay_episodes'
@@ -196,7 +195,7 @@ class GloboApi(object):
             if '.m3u8' in res['url']:
                 break
         # get hashes
-        hashes, data_hashes = self._get_hashes(video_id, [res['_id']])
+        hashes, data_hashes = self._get_hashes(video_id, [res['_id']], 'html5')
         signed_hashes = util.get_signed_hashes(hashes)
         # resolve query string template
         query_string = re.sub(r'{{(\w*)}}', r'%(\1)s',
@@ -204,7 +203,7 @@ class GloboApi(object):
         try:
             query_string = query_string % {
                 'hash': signed_hashes[0],
-                'key': 'html5' 
+                'key': 'html5'
             }
         except KeyError:
             # live videos
