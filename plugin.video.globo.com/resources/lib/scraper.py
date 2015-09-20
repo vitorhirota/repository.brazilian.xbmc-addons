@@ -24,8 +24,6 @@ PREMIERE_LIVE_JSON = GLOBOSAT_URL + '/premierefc/ao-vivo/add-on/jogos-ao-vivo/%s
 EPSTHUMB_URL = 'http://s01.video.glbimg.com/x360/%s.jpg'
 # RAIL_URL = SHOW_URL + '/_/trilhos/%(rail)s/page/%(page)s/'
 INFO_URL = 'http://api.globovideos.com/videos/%s/playlist'
-HASH_URL = ('http://security.video.globo.com/videos/%s/hash?'
-            + 'resource_id=%s&version=%s&player=html5')
 LOGIN_URL = 'https://login.globo.com/login/151?tam=widget'
 JSAPI_URL = 'http://s.videos.globo.com/p2/j/api.min.js'
 
@@ -104,6 +102,7 @@ def get_gplay_shows(channel):
     search_strs = {
         'megapix':'submenu-generos',
         'combate':'submenu-competicoes',
+        'telecine':'submenu-generos',
     }
     try:
         search = search_strs[channel]
