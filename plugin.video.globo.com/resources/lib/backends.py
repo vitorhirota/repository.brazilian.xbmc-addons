@@ -21,6 +21,7 @@ import datetime
 import re
 import requests
 import urlparse
+import util
 
 try:
     import cPickle as pickle
@@ -131,19 +132,23 @@ class GlobosatBackends(Backends):
         # the only provider available for now is gplay. Instead of requesting
         # for a given playlist (which requires a valid video_id, this is being
         # harcoded for now.
-        provider_id = '52dfc02cdd23810590000f57'
+        gplay_provider_id = '52dfc02cdd23810590000f57'
+        telecineplay_provider_id = '523c4814dd23810e02000334'
         try:
             token = credentials[credentials['b64globosatplay']]
         except:
             raise Exception('There was a problem in the authetication process.')
         now = datetime.datetime.now()
         expiration = now + datetime.timedelta(days=7)
-        r5 = self.session.get(self.AUTH_TOKEN_URL % (provider_id,
+        r5 = self.session.get(self.AUTH_TOKEN_URL % (gplay_provider_id,
                                                  token,
                                                  calendar.timegm(now.timetuple()),
                                                  expiration.strftime('%a, %d %b %Y %H:%M:%S GMT')))
-        return dict(r5.cookies)
-
+        r6 = self.session.get(self.AUTH_TOKEN_URL % (telecineplay_provider_id,
+                                                 token,
+                                                 calendar.timegm(now.timetuple()),
+                                                 expiration.strftime('%a, %d %b %Y %H:%M:%S GMT')))
+        return util.merge_two_dicts(dict(r5.cookies),dict(r6.cookies))
 
 class gvt(GlobosatBackends):
     PROVIDER_ID = 62
