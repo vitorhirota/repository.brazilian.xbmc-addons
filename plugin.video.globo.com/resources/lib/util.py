@@ -48,6 +48,13 @@ def getBestBitrateUrl(plugin, streams):
     plugin.log.debug('video choosen url: %s' % streams[str(best)])
     return streams[str(best)]
 
+def merge_dicts(x, *argv):
+    '''Given two or more dicts, merge them into a new dict as a shallow copy.'''
+    z = x.copy()
+    for y in argv:
+        z.update(y)
+    return z
+
 def slugify(string):
     '''
         Helper function that slugifies a given string.

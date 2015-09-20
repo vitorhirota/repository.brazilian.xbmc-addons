@@ -21,6 +21,7 @@ import datetime
 import re
 import requests
 import urlparse
+import util
 
 try:
     import cPickle as pickle
@@ -41,25 +42,31 @@ class Backends(object):
         except:
             self.credentials = {}
 
-    def _authenticate(self):
+    def _authenticate(self, provider_id):
         raise Exception('Not implemented.')
 
     def _save_credentials(self):
         self.plugin.set_setting('%s_credentials' % self.SETT_PREFIX,
                                 pickle.dumps(self.credentials))
 
-    def authenticate(self):
-        # import pydevd; pydevd.settrace()
-        if not any(self.credentials.values()) and (self.username and self.password):
+    def is_authenticated(self, provider_id):
+        authProvider = False
+        for key in self.credentials.keys():
+            if provider_id in key:
+                authProvider = True
+        return authProvider
+
+    def authenticate(self, provider_id):
+        if not self.is_authenticated(provider_id) and (self.username and self.password):
             self.debug('username/password set. trying to authenticate')
-            self.credentials = self._authenticate()
-            if any(self.credentials.values()):
+            self.credentials = util.merge_dicts(self.credentials, self._authenticate(provider_id))
+            if self.is_authenticated(provider_id):
                 self.debug('successfully authenticated')
                 self._save_credentials()
             else:
                 self.debug('wrong username or password')
                 self.notify(32001)
-        elif any(self.credentials.values()):
+        elif self.is_authenticated(provider_id):
             self.debug('already authenticated')
         else:
             self.debug('no username set to authenticate')
@@ -83,7 +90,7 @@ class globo(Backends):
     ENDPOINT_URL = 'https://login.globo.com/login/151?tam=widget'
     SETT_PREFIX = 'globo'
 
-    def _authenticate(self):
+    def _authenticate(self, provider_id):
         payload = {
             'botaoacessar': 'acessar',
             'login-passaporte': self.username,
@@ -103,7 +110,7 @@ class GlobosatBackends(Backends):
         super(GlobosatBackends, self).__init__(plugin)
         self.session = requests.Session()
 
-    def _authenticate(self):
+    def _authenticate(self, provider_id):
         # get a client_id token
         # https://auth.globosat.tv/oauth/authorize/?redirect_uri=http://globosatplay.globo.com/-/auth/gplay/?callback&response_type=code
         r1 = self.session.get(self.OAUTH_URL)
@@ -127,11 +134,7 @@ class GlobosatBackends(Backends):
         r4 = self.session.post(urlp + '?access_token=' + accesstoken, data=post_data)
         # build credentials
         credentials = dict(r4.cookies)
-        # provider_id is a property from a video playlist. Tt seems, however,
-        # the only provider available for now is gplay. Instead of requesting
-        # for a given playlist (which requires a valid video_id, this is being
-        # harcoded for now.
-        provider_id = '52dfc02cdd23810590000f57'
+
         try:
             token = credentials[credentials['b64globosatplay']]
         except:
@@ -143,7 +146,6 @@ class GlobosatBackends(Backends):
                                                  calendar.timegm(now.timetuple()),
                                                  expiration.strftime('%a, %d %b %Y %H:%M:%S GMT')))
         return dict(r5.cookies)
-
 
 class gvt(GlobosatBackends):
     PROVIDER_ID = 62
