@@ -134,21 +134,26 @@ class GlobosatBackends(Backends):
         # harcoded for now.
         gplay_provider_id = '52dfc02cdd23810590000f57'
         telecineplay_provider_id = '523c4814dd23810e02000334'
+        premiere_provider_id = '523204a5dd23812d35000002'
         try:
             token = credentials[credentials['b64globosatplay']]
         except:
             raise Exception('There was a problem in the authetication process.')
         now = datetime.datetime.now()
         expiration = now + datetime.timedelta(days=7)
-        r5 = self.session.get(self.AUTH_TOKEN_URL % (gplay_provider_id,
+        rgplay = self.session.get(self.AUTH_TOKEN_URL % (gplay_provider_id,
                                                  token,
                                                  calendar.timegm(now.timetuple()),
                                                  expiration.strftime('%a, %d %b %Y %H:%M:%S GMT')))
-        r6 = self.session.get(self.AUTH_TOKEN_URL % (telecineplay_provider_id,
+        rtelecine = self.session.get(self.AUTH_TOKEN_URL % (telecineplay_provider_id,
                                                  token,
                                                  calendar.timegm(now.timetuple()),
                                                  expiration.strftime('%a, %d %b %Y %H:%M:%S GMT')))
-        return util.merge_two_dicts(dict(r5.cookies),dict(r6.cookies))
+        rpremiere = self.session.get(self.AUTH_TOKEN_URL % (premiere_provider_id,
+                                                 token,
+                                                 calendar.timegm(now.timetuple()),
+                                                 expiration.strftime('%a, %d %b %Y %H:%M:%S GMT')))
+        return util.merge_two_dicts(util.merge_two_dicts(dict(rgplay.cookies),dict(rtelecine.cookies)),dict(rpremiere.cookies))
 
 class gvt(GlobosatBackends):
     PROVIDER_ID = 62
