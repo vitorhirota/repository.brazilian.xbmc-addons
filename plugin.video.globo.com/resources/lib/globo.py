@@ -91,7 +91,7 @@ class GloboApi(object):
         video_data = self._get_video_info(video_id)
         provider = ('globo' if video_data['channel_id'] == 196
                     else self.plugin.get_setting('play_provider').lower().replace(' ', '_'))
-        credentials = self.authenticate(provider)
+        credentials = self.authenticate(provider, video_data['provider_id'])
 
         args = (video_id, '|'.join(resource_ids), playerVersion, player)
         self.plugin.log.debug('hash requested: %s' % (HASH_URL % args))
@@ -144,13 +144,13 @@ class GloboApi(object):
                                    for x in data.get('children') or [data])
         return data
 
-    def authenticate(self, provider):
+    def authenticate(self, provider, provider_id):
         try:
             backend = getattr(backends, provider)(self.plugin)
         except AttributeError:
             self.plugin.log.error('%s provider unavailable' % provider)
             self.plugin.notify(self.plugin.get_string(32001) % provider)
-        return backend.authenticate()
+        return backend.authenticate(provider_id)
 
     def get_path(self, key):
         data = self.index.get(key)
