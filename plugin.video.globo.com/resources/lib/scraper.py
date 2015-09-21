@@ -65,6 +65,7 @@ def get_gplay_channels():
     live = dict([(util.slugify(img['alt']), {
                 'name': img['alt'],
                 'logo': json['canal_logotipo'],
+                'playable': json['status'] == 'ativa',
                 # 'plot': ', '.join(reversed(json['programacao'].values())),
                 # some items have a null value for programacao
                 'plot': '',
@@ -75,15 +76,18 @@ def get_gplay_channels():
     return (channels, live)
 
 
-def get_premiere_live(code, logo):
+def get_premiere_live(logo):
+    #provider_id is hardcoded right now. 
+    provider_id = '520142353f8adb4c90000008'
     live = dict([(util.slugify(json['time_mandante']['sigla'] + 'x' + json['time_visitante']['sigla']), {
-                'name': json['time_mandante']['sigla'] + 'x' + json['time_visitante']['sigla'],
+                'name': json['time_mandante']['sigla'] + ' x ' + json['time_visitante']['sigla'],
                 'logo': logo,
+                'playable': True,
                 # 'plot': ', '.join(reversed(json['programacao'].values())),
                 # some items have a null value for programacao
                 'plot': json['campeonato'] + ': ' + json['time_mandante']['nome'] + ' x ' + json['time_visitante']['nome'] + ' (' + json['estadio'] + '). ' + json['data'],
                 'id': json['id_midia'],
-            }) for json in get_page(PREMIERE_LIVE_JSON % code)['jogos']])
+            }) for json in get_page(PREMIERE_LIVE_JSON % provider_id)['jogos']])
     return live
 
 def get_globo_shows():
