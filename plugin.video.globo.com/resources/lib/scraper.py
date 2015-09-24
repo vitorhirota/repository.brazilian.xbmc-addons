@@ -163,7 +163,7 @@ def get_gplay_episodes(channel, show, page):
 
 
 def get_megapix_episodes(channel, show, page):
-    # page_size = 15
+    page_size = 20
     # import pydevd; pydevd.settrace()
     # 'http://globosatplay.globo.com/megapix/generos/comedia/videos/pagina/1.json'
     MEGAPIX_EPS_JSON = 'http://globosatplay.globo.com/%s/generos/%s/videos/pagina/%s.json'
@@ -182,5 +182,5 @@ def get_megapix_episodes(channel, show, page):
         video.thumb = EPSTHUMB_URL % video.id
         # self.cache.set('video|%s' % video.id, repr(video))
         videos.append(video)
-    page = (page+1 if page < 1 else None)
+    page = (page+1 if len(videos) == page_size else None)
     return videos, page
