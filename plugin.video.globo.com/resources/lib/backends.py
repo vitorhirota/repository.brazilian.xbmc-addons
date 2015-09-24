@@ -52,8 +52,7 @@ class Backends(object):
     def is_authenticated(self, provider_id):
         authProvider = False
         for key in self.credentials.keys():
-            if provider_id in key:
-                authProvider = True
+            authProvider = provider_id in key if provider_id is not None else key == 'GLBID'
         return authProvider
 
     def authenticate(self, provider_id):
