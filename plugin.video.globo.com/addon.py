@@ -96,14 +96,28 @@ def favorites():
     } for channel, slug in sorted(favorites)]
 
 
+@plugin.route('/premiere')
+def premiere():
+    index = api.get_path('premiere')
+    return [{
+        'label': data['name'],
+        'path': plugin.url_for('play_live', channel=slug),
+        'thumbnail': data['logo'],
+        'is_playable': data['playable'],
+        'info': {
+            'plot': data['plot'],
+        },
+    } for slug, data in sorted(index.items())]
+
+
 @plugin.route('/live')
 def live():
     index = api.get_path('live')
     return [{
         'label': data['name'],
-        'path': plugin.url_for('play_live', channel=slug),
+        'path': plugin.url_for('play_live', channel=slug) if slug != 'premiere' else plugin.url_for(slug),
         'thumbnail': data['logo'],
-        'is_playable': True,
+        'is_playable': data['playable'],
         'info': {
             'plot': data['plot'],
         },

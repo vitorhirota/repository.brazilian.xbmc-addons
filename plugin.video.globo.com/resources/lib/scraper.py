@@ -65,6 +65,7 @@ def get_gplay_channels():
     live = dict([(util.slugify(img['alt']), {
                 'name': img['alt'],
                 'logo': json['canal_logotipo'],
+                'playable': json['status'] == 'ativa',
                 # 'plot': ', '.join(reversed(json['programacao'].values())),
                 # some items have a null value for programacao
                 'plot': '',
@@ -75,15 +76,18 @@ def get_gplay_channels():
     return (channels, live)
 
 
-def get_premiere_live(code, logo):
+def get_premiere_live(logo):
+    #provider_id is hardcoded right now. 
+    provider_id = '520142353f8adb4c90000008'
     live = dict([(util.slugify(json['time_mandante']['sigla'] + 'x' + json['time_visitante']['sigla']), {
-                'name': json['time_mandante']['sigla'] + 'x' + json['time_visitante']['sigla'],
+                'name': json['time_mandante']['sigla'] + ' x ' + json['time_visitante']['sigla'],
                 'logo': logo,
+                'playable': True,
                 # 'plot': ', '.join(reversed(json['programacao'].values())),
                 # some items have a null value for programacao
                 'plot': json['campeonato'] + ': ' + json['time_mandante']['nome'] + ' x ' + json['time_visitante']['nome'] + ' (' + json['estadio'] + '). ' + json['data'],
                 'id': json['id_midia'],
-            }) for json in get_page(PREMIERE_LIVE_JSON % code)['jogos']])
+            }) for json in get_page(PREMIERE_LIVE_JSON % provider_id)['jogos']])
     return live
 
 def get_globo_shows():
@@ -159,7 +163,7 @@ def get_gplay_episodes(channel, show, page):
 
 
 def get_megapix_episodes(channel, show, page):
-    # page_size = 15
+    page_size = 20
     # import pydevd; pydevd.settrace()
     # 'http://globosatplay.globo.com/megapix/generos/comedia/videos/pagina/1.json'
     MEGAPIX_EPS_JSON = 'http://globosatplay.globo.com/%s/generos/%s/videos/pagina/%s.json'
@@ -178,5 +182,5 @@ def get_megapix_episodes(channel, show, page):
         video.thumb = EPSTHUMB_URL % video.id
         # self.cache.set('video|%s' % video.id, repr(video))
         videos.append(video)
-    page = (page+1 if page < 1 else None)
+    page = (page+1 if len(videos) == page_size else None)
     return videos, page
