@@ -48,6 +48,7 @@ class GloboApi(object):
     def _build_index(self):
         # get gplay channels
         channels, live = scraper.get_gplay_channels()
+        premiere = scraper.get_premiere_live(live['premiere']['logo'])
         # add globo
         channels.update({
             'globo': ('Rede Globo', 'http://s.glbimg.com/vi/mk/channel/196/logotipo/4/149x84.png'),
@@ -60,6 +61,7 @@ class GloboApi(object):
             ],
             'channels': channels,
             'live': live,
+            'premiere': premiere,
             'favorites': set(),
         }
 

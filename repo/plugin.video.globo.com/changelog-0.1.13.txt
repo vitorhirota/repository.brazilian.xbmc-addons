@@ -1,7 +1,3 @@
-0.1.14
- PT: correção do acesso ao Premiere FC e correção da busca dos filmes no TelecinePlay (by lucasrokam)
- EN: fixed access to Premiere FC and fixed movies listing on TelecinePlay (by lucasrokam)
-
 0.1.13
  PT: inclusão do limite de banda (by lucasrokam)
  EN: added bandwidth limit (by lucasrokam)
