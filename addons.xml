@@ -2,7 +2,7 @@
 <addons>
 <addon id="plugin.video.globo.com"
 		name="Globo.com"
-		version="0.1.12"
+		version="0.1.14"
 		provider-name="vitorhirota">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0"/>
@@ -16,20 +16,20 @@
 	</extension>
 	<extension point="xbmc.addon.metadata">
 		<summary>Globo.com videos for subscribers: Globo+ and Globosat Play</summary>
-		<summary language="pt">Globo+ e Globosat Play no XBMC</summary>
-                <summary language="pt_BR">Globo+ e Globosat Play no XBMC</summary>
-                <description>
-                                Globo+ and Globosat Play on Kodi.
+		<summary language="pt">Globo+ e Globosat Play no Kodi</summary>
+		<summary language="pt-BR">Globo+ e Globosat Play no Kodi</summary>
+		<description>
+						Globo+ and Globosat Play on Kodi.
 
-                                NOTE: before watching the globosat play videos, you need to access the webpage, accept the service use policy and create a profile. This addon will select automatically the first available profile.
-                </description>
-                <description language="pt">
-                                Globo+ e Globosat Play no XBMC.
+						NOTE: before watching the globosat play videos, you need to access the webpage, accept the service use policy and create a profile. This addon will select automatically the first available profile.
+		</description>
+		<description language="pt">
+						Globo+ e Globosat Play no Kodi.
 
-                                AVISO: antes de poder assistir aos vídeos do globosat play, você deve acessar a página web, aceitar a política de uso do serviço e criar um perfil. Este addon selecionará automaticamente o primeiro da lista.
-                </description>
-		<description language="pt_BR">
-				Globo+ e Globosat Play no XBMC.
+						AVISO: antes de poder assistir aos vídeos do globosat play, você deve acessar a página web, aceitar a política de uso do serviço e criar um perfil. Este addon selecionará automaticamente o primeiro da lista.
+		</description>
+		<description language="pt-BR">
+				Globo+ e Globosat Play no Kodi.
 
 				AVISO: antes de poder assistir aos vídeos do globosat play, você deve acessar a página web, aceitar a política de uso do serviço e criar um perfil. Este addon selecionará automaticamente o primeiro da lista.
 		</description>
