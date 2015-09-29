@@ -240,6 +240,7 @@ def play_live(channel):
         plugin.set_resolved_url(item, 'video/mp4')
     except Exception as e:
         # plugin.notify(plugin.get_string(32001))
+        plugin.log.error(e, exc_info=1)
         plugin.notify(e.message)
 
 
