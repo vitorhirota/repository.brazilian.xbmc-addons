@@ -196,7 +196,7 @@ class tv_oi(GlobosatBackends):
     def _provider_auth(self, url, qs):
         url += '?sid=0'
         # prepare auth
-        self.session.post(url + '&id=telecineplay&option=credential')
+        self.session.post(url + '&id=tve&option=credential')
         # authenticate
         post_data = {
             'option': 'credential',
