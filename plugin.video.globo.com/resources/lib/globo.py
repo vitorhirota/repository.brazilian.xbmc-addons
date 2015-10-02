@@ -16,14 +16,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
-import re
-
+import datetime
 import backends
+import m3u8
+import re
+import requests
 import scraper
 import util
-import m3u8
 import urllib
-import requests
 
 # url masks
 INFO_URL = 'http://api.globovideos.com/videos/%s/playlist'
@@ -41,6 +41,8 @@ class GloboApi(object):
             self.index.clear()
         if not any(self.index.items()):
             # kick start index for first runs
+            self.index.update(self._build_index())
+        elif 'loaded' not in self.index.keys() or (datetime.datetime.now() - self.index['loaded']).seconds > 600:
             self.index.update(self._build_index())
         self.index.sync()
         self.favorites = self.index['favorites']
@@ -63,6 +65,7 @@ class GloboApi(object):
             'live': live,
             'premiere': premiere,
             'favorites': set(),
+			'loaded': datetime.datetime.now()
         }
 
     def _build_globo(self, channel=None):
@@ -89,7 +92,6 @@ class GloboApi(object):
 
     def _get_hashes(self, video_id, resource_ids, player, auth_retry=False, player_retry=False):
         playerVersion = self.plugin.get_setting('player_version')
-
         video_data = self._get_video_info(video_id)
         provider = ('globo' if video_data['channel_id'] == 196
                     else self.plugin.get_setting('play_provider').lower().replace(' ', '_'))
