@@ -22,6 +22,10 @@ import re
 import requests
 import urlparse
 import util
+try:
+    import HTMLParser
+except:
+    import html.parser as HTMLParser
 
 try:
     import cPickle as pickle
@@ -124,17 +128,16 @@ class GlobosatBackends(Backends):
             return {}
         # set profile
         urlp, qp = r3.url.split('?', 1)
-        accesstoken = re.findall('<form id="bogus-form" action="/perfis/selecionar/\?access_token=(.*)" method="POST">', r3.text)[0]
-        post_data = {
-            '_method': 'PUT',
-            'duid': 'None',			
-            'perfil_id': re.findall('<div data-id="(\d+)" class="[\w ]+avatar', r3.text)[0]
-        }
-        r4 = self.session.post(urlp + '?access_token=' + accesstoken, data=post_data)
-        # build credentials
-        credentials = dict(r4.cookies)
-
         try:
+            accesstoken = re.findall('<form id="bogus-form" action="/perfis/selecionar/\?access_token=(.*)" method="POST">', r3.text)[0]
+            post_data = {
+                '_method': 'PUT',
+                'duid': 'None',			
+                'perfil_id': re.findall('<div data-id="(\d+)" class="[\w ]+avatar', r3.text)[0]
+            }
+            r4 = self.session.post(urlp + '?access_token=' + accesstoken, data=post_data)
+            # build credentials
+            credentials = dict(r4.cookies)
             token = credentials[credentials['b64globosatplay']]
         except:
             raise Exception('There was a problem in the authetication process.')
@@ -196,7 +199,7 @@ class tv_oi(GlobosatBackends):
     def _provider_auth(self, url, qs):
         url += '?sid=0'
         # prepare auth
-        self.session.post(url + '&id=telecineplay&option=credential')
+        self.session.post(url + '&id=tve&option=credential')
         # authenticate
         post_data = {
             'option': 'credential',
@@ -204,12 +207,16 @@ class tv_oi(GlobosatBackends):
             'Ecom_User_ID': self.username,
             'Ecom_Password': self.password,
         }
-        req = self.session.post(url, data=post_data)
-        # if login is successful, response is just a js redirect
-        if int(req.headers['content-length']) > 1500:
+        r1 = self.session.post(url, data=post_data)
+        r2 = self.session.get(url)
+        try:
+            html_parser = HTMLParser.HTMLParser()
+            #headers = {'Content-Type': 'application/x-www-form-urlencoded' }
+            redirurl = re.findall(r'<form method=\"POST\" enctype=\"application/x-www-form-urlencoded\" action=\"(.*)\">', r2.text)[0]
+            argsre = dict([(match.group(1), html_parser.unescape(match.group(2))) for match in re.finditer(r'<input type=\"hidden\" name=\"(\w+)\" value=\"([^\"]+)\"/>', r2.text)])
+            return self.session.post(redirurl, data=argsre)#, headers=headers)
+        except:
             raise Exception('Invalid user name or password.')
-        return self.session.get(url)
-
 
 class sky(GlobosatBackends):
     PROVIDER_ID = 80
