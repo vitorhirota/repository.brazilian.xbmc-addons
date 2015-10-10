@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import calendar
 import datetime
+import json
 import re
 import requests
 import urlparse
@@ -90,16 +91,20 @@ class Backends(object):
 
 
 class globo(Backends):
-    ENDPOINT_URL = 'https://login.globo.com/login/151?tam=widget'
+    ENDPOINT_URL = 'https://login.globo.com/api/authentication'
     SETT_PREFIX = 'globo'
 
     def _authenticate(self, provider_id):
         payload = {
-            'botaoacessar': 'acessar',
-            'login-passaporte': self.username,
-            'senha-passaporte': self.password
+            'payload': {
+                'email': self.username,
+                'password': self.password,
+                'serviceId': 465
+            }
         }
-        response = requests.post(self.ENDPOINT_URL, data=payload)
+        response = requests.post(self.ENDPOINT_URL,
+                                 data=json.dumps(payload),
+                                 headers={ 'content-type': 'application/json' })
         return { 'GLBID': response.cookies.get('GLBID') }
 
 
@@ -132,7 +137,7 @@ class GlobosatBackends(Backends):
             accesstoken = re.findall('<form id="bogus-form" action="/perfis/selecionar/\?access_token=(.*)" method="POST">', r3.text)[0]
             post_data = {
                 '_method': 'PUT',
-                'duid': 'None',			
+                'duid': 'None',
                 'perfil_id': re.findall('<div data-id="(\d+)" class="[\w ]+avatar', r3.text)[0]
             }
             r4 = self.session.post(urlp + '?access_token=' + accesstoken, data=post_data)
