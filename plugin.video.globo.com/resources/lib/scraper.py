@@ -55,7 +55,7 @@ def get_gplay_channels():
     # get lists
     # uls = soup.find('ul', attrs={'class': 'lista-canais'}).findAll('li')
     # uls = soup.find('ul', attrs={'id': 'mobile-submenu-canais-on-demand'}).findAll('li')[1:]
-    channels, live = soup.findAll('ul', attrs={'class': 'submenu-desktop'})
+    channels, live, dummy = soup.findAll('ul', attrs={'class': 'submenu-desktop'})
     # get children tags and filter as imgs
     channels = dict([(util.slugify(img['alt']),
                        (img['alt'],
