@@ -8,10 +8,11 @@ import util
 # url masks
 BASE_URL = 'http://%s.globo.com'
 
-GLOBOTV_URL = BASE_URL % 'globotv'
-GLOBOTV_MAIS_URL = GLOBOTV_URL + '/mais/'
-GLOBOTV_EPS_JSON = GLOBOTV_URL + '/rede-globo/%s/integras/recentes/%d.json'
-GLOBOTV_PROGIMG_URL = 'http://s.glbimg.com/vi/mk/program/%s/logotipo/2/149x84.png'
+GLOBOPLAY_URL = 'https://api.globoplay.com.br'
+GLOBOPLAY_APIKEY = '4c3f033123840f740508ec49e89e5142'
+GLOBOPLAY_CATEGORIAS = GLOBOPLAY_URL + '/v1/categories/?api_key=' + GLOBOPLAY_APIKEY
+#GLOBOPLAY_EPISODIOS = GLOBOPLAY_URL + '/v2/programs/%d?api_key=' + GLOBOPLAY_APIKEY
+GLOBOPLAY_VIDEOS = GLOBOPLAY_URL + '/v1/programs/%d/videos?order=desc&page=%d&api_key=' + GLOBOPLAY_APIKEY
 
 GLOBOSAT_URL = BASE_URL % 'globosatplay'
 GLOBOSAT_SHOW_URL = GLOBOSAT_URL + '/%s'
@@ -91,14 +92,12 @@ def get_premiere_live(logo):
     return live
 
 def get_globo_shows():
-    soup = bs(get_page(GLOBOTV_MAIS_URL))
-    content = soup.findAll('div', attrs={'class': re.compile('trilho-tag')})
-    categories = [c.find('h2').text for c in content]
-    shows = [dict([(util.slugify(img['alt']),
-                    (img['alt'],
-                     img['data-src'].replace(img['data-src'][7:img['data-src'].index('=/')+2], '')))
-                    for img in c.findAll('img') if '=/' in img['data-src']])
-             for c in content]
+    dic = get_page(GLOBOPLAY_CATEGORIAS)['categories']
+    categories = [json['title'] for json in dic]
+    shows = [dict([(j['id'], (
+                    j['name'],
+                    j['thumb'])) for j in json['programs']
+            ]) for json in dic]
     return (categories, shows)
 
 def get_gplay_shows(channel):
@@ -115,20 +114,19 @@ def get_gplay_shows(channel):
     shows = soup.find('ul', attrs={'id':search }).findAll('a')[1:]
     return [(a['href'], a.text, None) for a in shows]
 
-
 def get_globo_episodes(channel, show, page):
     # page_size = 10
     videos = []
     properties = ('id', 'title', 'plot', 'duration', 'date')
-    prop_data = ('id', 'titulo', 'descricao', 'duracao', 'exibicao')
+    prop_data = ('id', 'title', 'description', 'duration', 'exhibited')
 
-    data = get_page(GLOBOTV_EPS_JSON % (show, page))
-    for item in data:
+    data = get_page(GLOBOPLAY_VIDEOS % (int(show), page))
+    for item in data['videos']:
         try:
             video = util.struct(dict(zip(properties,
                                          [item.get(p) for p in prop_data])))
             # update attrs
-            video.date = util.time_format(video.date, '%d/%m/%Y')
+            video.date = util.time_format(video.date, '%Y-%m-%d')
             video.duration = sum(int(x) * 60 ** i for i, x in
                                  enumerate(reversed(video.duration.split(':'))))
             # video.duration = video.duration.split(':')[0]
@@ -137,7 +135,7 @@ def get_globo_episodes(channel, show, page):
             videos.append(video)
         except:
             break
-    page = (page+1 if len(data) == 10 else None)
+    page = (page+1 if len(data['videos']) >= 10 else None)
     return videos, page
 
 def get_gplay_episodes(channel, show, page):

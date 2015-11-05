@@ -150,6 +150,7 @@ def list_shows(channel, category=None):
 
 
 @plugin.route('/<channel>/<show>/page/<page>')
+@plugin.route('/globo/<show>/page/<page>', name='list_globo_episodes', options={'channel': 'globo'})
 def list_episodes(channel, show, page=1):
     videos = api.get_episodes(channel, show, int(page))
     items = [{

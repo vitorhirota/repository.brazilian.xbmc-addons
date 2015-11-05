@@ -69,12 +69,12 @@ class GloboApi(object):
         }
 
     def _build_globo(self, channel=None):
-        #categories, shows = scraper.get_globo_shows()
+        categories, shows = scraper.get_globo_shows()
         data = { 'globo': {} }
-        #for cat, show_list in zip(categories, shows):
-        #    slug = util.slugify(cat)
-        #    data['globo'].update({slug: (cat, None)})
-        #    data[slug] = show_list
+        for cat, show_list in zip(categories, shows):
+            slug = util.slugify(cat)
+            data['globo'].update({slug: (cat, None)})
+            data[slug] = show_list
         return data
 
     def _build_globosat(self, channel):
