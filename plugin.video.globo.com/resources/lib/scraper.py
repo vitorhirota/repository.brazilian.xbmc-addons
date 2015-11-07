@@ -36,6 +36,8 @@ def get_page(url, **kwargs):
         applicable or regular text otherwise.
     '''
     r = requests.get(url, **kwargs)
+    if r.status_code != 200:
+        r.raise_for_status()
     return ('application/json' in r.headers.get('content-type')
             and json.loads(r.text, object_hook=lambda x: dict((str(k), v) for k, v in x.items()))
             or r.text)
