@@ -1,4 +1,3 @@
-# -*- coding: UTF-8 -*-
 '''
 Globo plugin for XBMC
 
@@ -110,7 +109,7 @@ def premiere():
         index = api.get_path('premiere')
         return [{
             'label': data['name'],
-            'path': plugin.url_for('play_live', channel=slug),
+            'path': plugin.url_for('play_premiere_live', channel=slug),
             'thumbnail': data['logo'],
             'is_playable': data['playable'],
             'info': {
@@ -130,7 +129,7 @@ def live():
             'label': data['name'],
             'path': plugin.url_for('play_live', channel=slug) if slug != 'premiere' else plugin.url_for(slug),
             'thumbnail': data['logo'],
-            'is_playable': data['playable'],
+            'is_playable': slug != 'premiere' and data['playable'],
             'info': {
                 'plot': data['plot'],
             },
@@ -248,8 +247,9 @@ def play(video_id):
 
 
 @plugin.route('/live/<channel>')
-def play_live(channel):
-    video_index = api.get_path('live')[channel]
+@plugin.route('/premiere/<channel>', name='play_premiere_live', options={'index': 'premiere'})
+def play_live(channel, index='live'):
+    video_index = api.get_path(index)[channel]
     video_id = video_index['id']
     video_info = api.get_videos(video_id)[0]
     plugin.log.debug('setting live url for %s' % video_id)
