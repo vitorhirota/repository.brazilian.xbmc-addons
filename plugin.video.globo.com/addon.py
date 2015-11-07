@@ -101,7 +101,7 @@ def premiere():
     index = api.get_path('premiere')
     return [{
         'label': data['name'],
-        'path': plugin.url_for('play_live', channel=slug),
+        'path': plugin.url_for('play_premiere_live', channel=slug),
         'thumbnail': data['logo'],
         'is_playable': data['playable'],
         'info': {
@@ -117,7 +117,7 @@ def live():
         'label': data['name'],
         'path': plugin.url_for('play_live', channel=slug) if slug != 'premiere' else plugin.url_for(slug),
         'thumbnail': data['logo'],
-        'is_playable': data['playable'],
+        'is_playable': slug != 'premiere' and data['playable'],
         'info': {
             'plot': data['plot'],
         },
