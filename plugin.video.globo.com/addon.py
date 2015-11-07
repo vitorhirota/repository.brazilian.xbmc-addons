@@ -71,114 +71,142 @@ def make_remove_favorite_ctx(channel, show):
 
 @plugin.route('/')
 def index():
-    return [{
-        'label': name,
-        'path': plugin.url_for(slug)
-    } for slug, name in api.get_path('index')]
-
+    try:
+        return [{
+            'label': name,
+            'path': plugin.url_for(slug)
+        } for slug, name in api.get_path('index')]
+    except Exception as e:
+        # plugin.notify(plugin.get_string(32001))
+        plugin.log.error(e, exc_info=1)
+        plugin.notify(e.message)
 
 @plugin.route('/favorites')
 def favorites():
-    # import pydevd; pydevd.settrace()
-    index = api.get_path('channels')
-    favorites = api.get_path('favorites')
-    return [{
-        'label': '[%s] %s' % ((index.get(channel) or index.get('globo'))[0],
-                              api.get_path(channel)[slug][0]),
-        'path': plugin.url_for('list_episodes',
-                               channel=(channel if index.get(channel) else 'globo'),
-                               show=slug,
-                               page=1),
-        'thumbnail': api.get_path(channel)[slug][1],
-        'context_menu': [
-            make_remove_favorite_ctx(channel, slug),
-        ],
-    } for channel, slug in sorted(favorites)]
-
+    try:
+        # import pydevd; pydevd.settrace()
+        index = api.get_path('channels')
+        favorites = api.get_path('favorites')
+        return [{
+            'label': '[%s] %s' % ((index.get(channel) or index.get('globo'))[0],
+                                  api.get_path(channel)[slug][0]),
+            'path': plugin.url_for('list_episodes',
+                                   channel=(channel if index.get(channel) else 'globo'),
+                                   show=slug,
+                                   page=1),
+            'thumbnail': api.get_path(channel)[slug][1],
+            'context_menu': [
+                make_remove_favorite_ctx(channel, slug),
+            ],
+        } for channel, slug in sorted(favorites)]
+    except Exception as e:
+        # plugin.notify(plugin.get_string(32001))
+        plugin.log.error(e, exc_info=1)
+        plugin.notify(e.message)
 
 @plugin.route('/premiere')
 def premiere():
-    index = api.get_path('premiere')
-    return [{
-        'label': data['name'],
-        'path': plugin.url_for('play_live', channel=slug),
-        'thumbnail': data['logo'],
-        'is_playable': data['playable'],
-        'info': {
-            'plot': data['plot'],
-        },
-    } for slug, data in sorted(index.items())]
-
+    try:
+        index = api.get_path('premiere')
+        return [{
+            'label': data['name'],
+            'path': plugin.url_for('play_live', channel=slug),
+            'thumbnail': data['logo'],
+            'is_playable': data['playable'],
+            'info': {
+                'plot': data['plot'],
+            },
+        } for slug, data in sorted(index.items())]
+    except Exception as e:
+        # plugin.notify(plugin.get_string(32001))
+        plugin.log.error(e, exc_info=1)
+        plugin.notify(e.message)
 
 @plugin.route('/live')
 def live():
-    index = api.get_path('live')
-    return [{
-        'label': data['name'],
-        'path': plugin.url_for('play_live', channel=slug) if slug != 'premiere' else plugin.url_for(slug),
-        'thumbnail': data['logo'],
-        'is_playable': data['playable'],
-        'info': {
-            'plot': data['plot'],
-        },
-    } for slug, data in sorted(index.items())]
-
+    try:
+        index = api.get_path('live')
+        return [{
+            'label': data['name'],
+            'path': plugin.url_for('play_live', channel=slug) if slug != 'premiere' else plugin.url_for(slug),
+            'thumbnail': data['logo'],
+            'is_playable': data['playable'],
+            'info': {
+                'plot': data['plot'],
+            },
+        } for slug, data in sorted(index.items())]
+    except Exception as e:
+        # plugin.notify(plugin.get_string(32001))
+        plugin.log.error(e, exc_info=1)
+        plugin.notify(e.message)
 
 @plugin.route('/channels')
 def channels():
-    index = api.get_path('channels')
-    return [{
-        'label': name,
-        'path': plugin.url_for('list_shows', channel=slug),
-        'thumbnail': img
-    } for slug, (name, img) in sorted(index.items())]
-
+    try:
+        index = api.get_path('channels')
+        return [{
+            'label': name,
+            'path': plugin.url_for('list_shows', channel=slug),
+            'thumbnail': img
+        } for slug, (name, img) in sorted(index.items())]
+    except Exception as e:
+        # plugin.notify(plugin.get_string(32001))
+        plugin.log.error(e, exc_info=1)
+        plugin.notify(e.message)
 
 @plugin.route('/<channel>', name='list_shows')
 @plugin.route('/globo/<category>', name='list_globo_categories', options={'channel': 'globo'})
 def list_shows(channel, category=None):
-    index = api.get_path(category or channel)
-    return [{
-        'label': name,
-        'path': (plugin.url_for('list_globo_categories', category=slug) if channel == 'globo' and not category else
-                 plugin.url_for('list_episodes', channel=channel, show=slug, page=1)),
-        'thumbnail': img,
-        'context_menu': [
-            make_favorite_ctx(category or channel, slug),
-        ],
-    } for slug, (name, img) in sorted(index.items())]
-
+    try:
+        index = api.get_path(category or channel)
+        return [{
+            'label': name,
+            'path': (plugin.url_for('list_globo_categories', category=slug) if channel == 'globo' and not category else
+                     plugin.url_for('list_episodes', channel=channel, show=slug, page=1)),
+            'thumbnail': img,
+            'context_menu': [
+                make_favorite_ctx(category or channel, slug),
+            ],
+        } for slug, (name, img) in sorted(index.items())]
+    except Exception as e:
+        # plugin.notify(plugin.get_string(32001))
+        plugin.log.error(e, exc_info=1)
+        plugin.notify(e.message)
 
 @plugin.route('/<channel>/<show>/page/<page>')
 @plugin.route('/globo/<show>/page/<page>', name='list_globo_episodes', options={'channel': 'globo'})
 def list_episodes(channel, show, page=1):
-    videos = api.get_episodes(channel, show, int(page))
-    items = [{
-        'label': video.title,
-        'icon': video.thumb,
-        'thumbnail': video.thumb,
-        'path': plugin.url_for('play', video_id=video.id),
-        'is_playable': True,
-        'info': {
-            'date': video.date.replace('/', '.'),
-            # 'duration': video.duration,
-            'plot': video.plot,
-            'plotoutline': video.plot,
-            'title': video.title,
-        },
-        'stream_info': {
-            'duration': video.duration,
-        }
-    } for video in videos.list]
-    if videos.next:
-        items.append({
-            'label': plugin.get_string(33001),
-            'path': plugin.url_for('list_episodes',
-                                   channel=channel, show=show,
-                                   page=str(videos.next))
-        })
-    return items
-
+    try:
+        videos = api.get_episodes(channel, show, int(page))
+        items = [{
+            'label': video.title,
+            'icon': video.thumb,
+            'thumbnail': video.thumb,
+            'path': plugin.url_for('play', video_id=video.id),
+            'is_playable': True,
+            'info': {
+                'date': video.date.replace('/', '.'),
+                # 'duration': video.duration,
+                'plot': video.plot,
+                'plotoutline': video.plot,
+                'title': video.title,
+            },
+            'stream_info': {
+                'duration': video.duration,
+            }
+        } for video in videos.list]
+        if videos.next:
+            items.append({
+                'label': plugin.get_string(33001),
+                'path': plugin.url_for('list_episodes',
+                                       channel=channel, show=show,
+                                       page=str(videos.next))
+            })
+        return items
+    except Exception as e:
+        # plugin.notify(plugin.get_string(32001))
+        plugin.log.error(e, exc_info=1)
+        plugin.notify(e.message)
 
 @plugin.route('/play/<video_id>')
 def play(video_id):
