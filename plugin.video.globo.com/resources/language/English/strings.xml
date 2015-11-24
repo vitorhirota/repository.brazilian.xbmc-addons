@@ -46,6 +46,8 @@
   <!-- Notifications messages -->
   <string id="32001">Authentication error. Invalid username or password.</string>
   <string id="32002">Provider %s not implemented yet.</string>
+  <string id="32003">Unexpected Error: %s</string>
+  <string id="32004">Data cleared.</string>
   <!-- Misc -->
   <string id="33001">Next Page</string>
 </strings>
