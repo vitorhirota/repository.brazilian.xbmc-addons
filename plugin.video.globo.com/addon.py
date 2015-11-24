@@ -29,7 +29,7 @@ api = globo.GloboApi(plugin)
 @plugin.route('/clear_index')
 def clear_index():
     api._clear_index()
-    plugin.notify('Data cleared.', image=None)
+    plugin.notify(plugin.get_string(32004), image=None)
 
 @plugin.route('/favorites/del/<channel>/<show>')
 def add_show_to_favs(channel, show):
@@ -78,7 +78,7 @@ def index():
     except Exception as e:
         # plugin.notify(plugin.get_string(32001))
         plugin.log.error(e, exc_info=1)
-        plugin.notify(e.message)
+        plugin.notify(plugin.get_string(32003) % e.message)
 
 @plugin.route('/favorites')
 def favorites():
@@ -101,7 +101,7 @@ def favorites():
     except Exception as e:
         # plugin.notify(plugin.get_string(32001))
         plugin.log.error(e, exc_info=1)
-        plugin.notify(e.message)
+        plugin.notify(plugin.get_string(32003) % e.message)
 
 @plugin.route('/premiere')
 def premiere():
@@ -119,7 +119,7 @@ def premiere():
     except Exception as e:
         # plugin.notify(plugin.get_string(32001))
         plugin.log.error(e, exc_info=1)
-        plugin.notify(e.message)
+        plugin.notify(plugin.get_string(32003) % e.message)
 
 @plugin.route('/live')
 def live():
@@ -137,7 +137,7 @@ def live():
     except Exception as e:
         # plugin.notify(plugin.get_string(32001))
         plugin.log.error(e, exc_info=1)
-        plugin.notify(e.message)
+        plugin.notify(plugin.get_string(32003) % e.message)
 
 @plugin.route('/channels')
 def channels():
@@ -151,7 +151,7 @@ def channels():
     except Exception as e:
         # plugin.notify(plugin.get_string(32001))
         plugin.log.error(e, exc_info=1)
-        plugin.notify(e.message)
+        plugin.notify(plugin.get_string(32003) % e.message)
 
 @plugin.route('/<channel>', name='list_shows')
 @plugin.route('/globo/<category>', name='list_globo_categories', options={'channel': 'globo'})
@@ -170,7 +170,7 @@ def list_shows(channel, category=None):
     except Exception as e:
         # plugin.notify(plugin.get_string(32001))
         plugin.log.error(e, exc_info=1)
-        plugin.notify(e.message)
+        plugin.notify(plugin.get_string(32003) % e.message)
 
 @plugin.route('/<channel>/<show>/page/<page>')
 @plugin.route('/globo/<show>/page/<page>', name='list_globo_episodes', options={'channel': 'globo'})
@@ -205,7 +205,7 @@ def list_episodes(channel, show, page=1):
     except Exception as e:
         # plugin.notify(plugin.get_string(32001))
         plugin.log.error(e, exc_info=1)
-        plugin.notify(e.message)
+        plugin.notify(plugin.get_string(32003) % e.message)
 
 @plugin.route('/play/<video_id>')
 def play(video_id):
@@ -243,7 +243,7 @@ def play(video_id):
         plugin.set_resolved_url(item, 'video/mp4')
     except Exception as e:
         plugin.log.error(e, exc_info=1)
-        plugin.notify(str(e))
+        plugin.notify(plugin.get_string(32003) % e.message)
 
 
 @plugin.route('/live/<channel>')
@@ -270,7 +270,7 @@ def play_live(channel, index='live'):
     except Exception as e:
         # plugin.notify(plugin.get_string(32001))
         plugin.log.error(e, exc_info=1)
-        plugin.notify(e.message)
+        plugin.notify(plugin.get_string(32003) % e.message)
 
 
 if __name__ == '__main__':

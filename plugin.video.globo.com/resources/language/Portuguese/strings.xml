@@ -46,6 +46,8 @@
  <!-- Notifications messages -->
   <string id="32001">Erro na authenticação. Usuário ou senha inválidos.</string>
   <string id="32002">Operador %s ainda não disponível.</string>
+  <string id="32003">Erro inexperado: %s</string>
+  <string id="32004">Dados limpos.</string>
   <!-- Misc -->
   <string id="33001">Próxima página</string>
 </strings>
