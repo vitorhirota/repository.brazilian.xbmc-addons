@@ -106,6 +106,7 @@ def favorites():
 @plugin.route('/premiere')
 def premiere():
     try:
+        plugin.set_content('movies')
         index = api.get_path('premiere')
         return [{
             'label': data['name'],
@@ -124,6 +125,7 @@ def premiere():
 @plugin.route('/live')
 def live():
     try:
+        plugin.set_content('movies')
         index = api.get_path('live')
         return [{
             'label': data['name'],
@@ -157,6 +159,7 @@ def channels():
 @plugin.route('/globo/<category>', name='list_globo_categories', options={'channel': 'globo'})
 def list_shows(channel, category=None):
     try:
+        plugin.set_content('tvshows')
         index = api.get_path(category or channel)
         return [{
             'label': name,
@@ -176,6 +179,7 @@ def list_shows(channel, category=None):
 @plugin.route('/globo/<show>/page/<page>', name='list_globo_episodes', options={'channel': 'globo'})
 def list_episodes(channel, show, page=1):
     try:
+        plugin.set_content('episodes')
         videos = api.get_episodes(channel, show, int(page))
         items = [{
             'label': video.title,
