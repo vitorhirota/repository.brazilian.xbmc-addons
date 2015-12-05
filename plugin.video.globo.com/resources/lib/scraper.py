@@ -71,9 +71,7 @@ def get_gplay_channels():
                 'name': img['alt'],
                 'logo': json['canal_logotipo'],
                 'playable': json['status'] == 'ativa',
-                # 'plot': ', '.join(reversed(json['programacao'].values())),
-                # some items have a null value for programacao
-                'plot': '',
+                'plot': ', '.join(reversed(json['programacao'].values())) if json['programacao'] != None else '',
                 'id': json['midia']['id_midia'],
             }) for img, json in zip(live.findChildren()[2::3],
                                     get_page(GLOBOSAT_LIVE_JSON))])
@@ -88,8 +86,6 @@ def get_premiere_live(logo):
                 'name': json['time_mandante']['sigla'] + ' x ' + json['time_visitante']['sigla'],
                 'logo': logo,
                 'playable': True,
-                # 'plot': ', '.join(reversed(json['programacao'].values())),
-                # some items have a null value for programacao
                 'plot': json['campeonato'] + ': ' + json['time_mandante']['nome'] + ' x ' + json['time_visitante']['nome'] + ' (' + json['estadio'] + '). ' + json['data'],
                 'id': json['id_midia'],
             }) for json in get_page(PREMIERE_LIVE_JSON % provider_id)['jogos']])
@@ -143,9 +139,6 @@ def get_globo_episodes(channel, show, page):
     return videos, page
 
 def get_gplay_episodes(channel, show, page):
-    # page_size = 15
-    #import rpdb2; rpdb2.start_embedded_debugger('pw')
-    # import pydevd; pydevd.settrace()
     videos = []
     properties = ('id', 'title', 'plot', 'duration', 'date', 'episode', 'season', 'mpaa', 'tvshowtitle')
     prop_data = ('id', 'titulo', 'descricao', 'duracao_original', 'data_exibicao', 'episodio', 'temporada', 'classificacao_indicativa', 'programa')
@@ -169,12 +162,10 @@ def get_gplay_episodes(channel, show, page):
 
 def get_megapix_episodes(channel, show, page):
     page_size = 20
-    # import pydevd; pydevd.settrace()
-    # 'http://globosatplay.globo.com/megapix/generos/comedia/videos/pagina/1.json'
     MEGAPIX_EPS_JSON = 'http://globosatplay.globo.com/%s/generos/%s/videos/pagina/%s.json'
     videos = []
-    properties = ('id', 'title', 'plot', 'duration', 'date')
-    prop_data = ('id', 'titulo')
+    properties = ('id', 'title', 'icon', 'plot', 'duration', 'date')
+    prop_data = ('id', 'titulo', 'poster')
 
     data = get_page( MEGAPIX_EPS_JSON % (channel, show, page) )
 
