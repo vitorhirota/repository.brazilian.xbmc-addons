@@ -106,7 +106,7 @@ def favorites():
 @plugin.route('/premiere')
 def premiere():
     try:
-        plugin.set_content('movies')
+        plugin.set_content('LiveTV')
         index = api.get_path('premiere')
         return [{
             'label': data['name'],
@@ -125,7 +125,7 @@ def premiere():
 @plugin.route('/live')
 def live():
     try:
-        plugin.set_content('movies')
+        plugin.set_content('LiveTV')
         index = api.get_path('live')
         return [{
             'label': data['name'],
@@ -179,7 +179,15 @@ def list_shows(channel, category=None):
 @plugin.route('/globo/<show>/page/<page>', name='list_globo_episodes', options={'channel': 'globo'})
 def list_episodes(channel, show, page=1):
     try:
-        plugin.set_content('episodes')
+        content_strs = {
+            'megapix':'movies',
+            'telecine':'movies',
+        }
+        try:
+            content = content_strs[channel]
+        except:
+            content = 'episodes'
+        plugin.set_content(content)
         videos = api.get_episodes(channel, show, int(page))
         items = [{
             'label': video.title,
@@ -265,14 +273,14 @@ def play_live(channel, index='live'):
     plugin.log.debug('setting live url for %s' % video_id)
     try:
         item = {
-            'label': video_info.title,
+            'label': video_index['name'],
             'thumbnail': video_index['logo'],
             'path': api.resolve_video_url(video_id),
             'is_playable': True,
             'info': {
                 'date': video_info.date,
                 'plot': video_index['plot'],
-                'title': video_info.title,
+                'title': video_index['name'],
                 'id': video_id
             },
         }
