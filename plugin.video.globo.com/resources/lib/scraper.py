@@ -12,6 +12,7 @@ GLOBOPLAY_URL = 'https://api.globoplay.com.br'
 GLOBOPLAY_APIKEY = '***REMOVED***'
 GLOBOPLAY_CATEGORIAS = GLOBOPLAY_URL + '/v1/categories/?api_key=' + GLOBOPLAY_APIKEY
 #GLOBOPLAY_EPISODIOS = GLOBOPLAY_URL + '/v2/programs/%d?api_key=' + GLOBOPLAY_APIKEY
+GLOBOPLAT_DAYS = GLOBOPLAY_URL + '/v1/programs/%d/days?api_key=' + GLOBOPLAY_APIKEY
 GLOBOPLAY_VIDEOS = GLOBOPLAY_URL + '/v1/programs/%d/videos?order=desc&page=%d&api_key=' + GLOBOPLAY_APIKEY
 
 GLOBOSAT_URL = BASE_URL % 'globosatplay'
@@ -22,7 +23,8 @@ GLOBOSAT_SEASON_JSON = GLOBOSAT_SHOW_URL + '/temporada/%d/episodios.json'
 
 PREMIERE_LIVE_JSON = GLOBOSAT_URL + '/premierefc/ao-vivo/add-on/jogos-ao-vivo/%s.json'
 
-EPSTHUMB_URL = 'http://s01.video.glbimg.com/x360/%s.jpg'
+EPSTHUMB_URL = 'http://s01.video.glbimg.com/x720/%s.jpg'
+
 # RAIL_URL = SHOW_URL + '/_/trilhos/%(rail)s/page/%(page)s/'
 INFO_URL = 'http://api.globovideos.com/videos/%s/playlist'
 LOGIN_URL = 'https://login.globo.com/login/151?tam=widget'
@@ -142,10 +144,11 @@ def get_globo_episodes(channel, show, page):
 
 def get_gplay_episodes(channel, show, page):
     # page_size = 15
+    #import rpdb2; rpdb2.start_embedded_debugger('pw')
     # import pydevd; pydevd.settrace()
     videos = []
-    properties = ('id', 'title', 'plot', 'duration', 'date')
-    prop_data = ('id', 'titulo', 'descricao', 'duracao_original', 'data_exibicao')
+    properties = ('id', 'title', 'plot', 'duration', 'date', 'episode', 'season', 'mpaa', 'tvshowtitle')
+    prop_data = ('id', 'titulo', 'descricao', 'duracao_original', 'data_exibicao', 'episodio', 'temporada', 'classificacao_indicativa', 'programa')
 
     data = get_page(GLOBOSAT_EPS_JSON % ('%s/%s' % (channel, show), page))
 
@@ -154,6 +157,8 @@ def get_gplay_episodes(channel, show, page):
                                      [item.get(p) for p in prop_data])))
         # update attrs
         video.date = util.time_format(video.date[:10], '%Y-%m-%d')
+        video.mpaa = util.getMPAAFromCI(video.mpaa)
+        video.tvshowtitle = video.tvshowtitle['titulo']
         video.duration = int(video.duration/1000)
         video.thumb = EPSTHUMB_URL % video.id
         # self.cache.set('video|%s' % video.id, repr(video))

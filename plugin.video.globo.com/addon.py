@@ -189,10 +189,16 @@ def list_episodes(channel, show, page=1):
             'is_playable': True,
             'info': {
                 'date': video.date.replace('/', '.'),
-                # 'duration': video.duration,
+                'duration': video.duration,
                 'plot': video.plot,
                 'plotoutline': video.plot,
                 'title': video.title,
+                'originaltitle': video.title,
+                'mpaa': video.mpaa,
+                'episode': video.episode,
+                'season': video.season,
+                'tvshowtitle': video.tvshowtitle,
+                'aired': video.date.replace('/', '-'),
             },
             'stream_info': {
                 'duration': video.duration,

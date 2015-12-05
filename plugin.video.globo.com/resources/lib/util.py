@@ -35,6 +35,18 @@ class struct(object):
     def get(self, key):
         return self.__dict__.get(key)
 
+CI_MPAA_Dict = {
+    'L':'G',
+    '10':'PG',
+    '12':'PG',
+    '14':'PG-13',
+    '16':'R',
+    '18':'NC-17'
+    }
+
+def getMPAAFromCI(ci):
+    return CI_MPAA_Dict[ci]
+
 def getBestBitrateUrl(plugin, streams):
     '''
         Chooses best quality limited to bitrate
