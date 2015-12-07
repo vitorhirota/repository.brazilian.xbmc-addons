@@ -2,7 +2,7 @@
 <addon id="plugin.video.globo.com"
 		name="Globo.com"
 		version="0.1.22"
-		provider-name="vitorhirota">
+		provider-name="vitorhirota, lucasrokam">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0"/>
 		<import addon="script.module.beautifulsoup" version="3.2.1"/>
@@ -33,5 +33,7 @@
 				AVISO: antes de poder assistir aos vídeos do globosat play, você deve acessar a página web, aceitar a política de uso do serviço e criar um perfil. Este addon selecionará automaticamente o primeiro da lista.
 		</description>
 		<platform>all</platform>
+    <license>GPL3</license>
+    <source>https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons</source>
 	</extension>
 </addon>
