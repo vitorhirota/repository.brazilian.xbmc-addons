@@ -12,8 +12,8 @@ GLOBOPLAY_URL = 'https://api.globoplay.com.br'
 GLOBOPLAY_APIKEY = '4c3f033123840f740508ec49e89e5142'
 GLOBOPLAY_CATEGORIAS = GLOBOPLAY_URL + '/v1/categories/?api_key=' + GLOBOPLAY_APIKEY
 #GLOBOPLAY_EPISODIOS = GLOBOPLAY_URL + '/v2/programs/%d?api_key=' + GLOBOPLAY_APIKEY
-GLOBOPLAT_DAYS = GLOBOPLAY_URL + '/v1/programs/%d/days?api_key=' + GLOBOPLAY_APIKEY
-GLOBOPLAY_VIDEOS = GLOBOPLAY_URL + '/v1/programs/%d/videos?order=desc&page=%d&api_key=' + GLOBOPLAY_APIKEY
+GLOBOPLAT_DAYS = GLOBOPLAY_URL + '/v1/programs/%d/videos/days?api_key=' + GLOBOPLAY_APIKEY
+GLOBOPLAY_VIDEOS = GLOBOPLAY_URL + '/v1/programs/%d/videos?day=%s&order=desc&page=%d&api_key=' + GLOBOPLAY_APIKEY
 
 GLOBOSAT_URL = BASE_URL % 'globosatplay'
 GLOBOSAT_SHOW_URL = GLOBOSAT_URL + '/%s'
@@ -115,27 +115,30 @@ def get_gplay_shows(channel):
     return [(a['href'], a.text, None) for a in shows]
 
 def get_globo_episodes(channel, show, page):
-    # page_size = 10
+    page_size = 10
     videos = []
     properties = ('id', 'title', 'plot', 'duration', 'date')
     prop_data = ('id', 'title', 'description', 'duration', 'exhibited')
-
-    data = get_page(GLOBOPLAY_VIDEOS % (int(show), page))
-    for item in data['videos']:
+    days = get_page(GLOBOPLAT_DAYS % int(show))['days']
+    for i in range((page-1)*page_size, page*page_size) :
         try:
-            video = util.struct(dict(zip(properties,
-                                         [item.get(p) for p in prop_data])))
-            # update attrs
-            video.date = util.time_format(video.date, '%Y-%m-%d')
-            video.duration = sum(int(x) * 60 ** i for i, x in
-                                 enumerate(reversed(video.duration.split(':'))))
-            # video.duration = video.duration.split(':')[0]
-            video.thumb = EPSTHUMB_URL % video.id
-            # self.cache.set('video|%s' % video.id, repr(video))
-            videos.append(video)
+            data = get_page(GLOBOPLAY_VIDEOS % (int(show), days[i], 1))
+            for item in data['videos']:
+                if item['full_episode']:
+                    video = util.struct(dict(zip(properties,
+                                                [item.get(p) for p in prop_data])))
+                    # update attrs
+                    video.date = util.time_format(video.date, '%Y-%m-%d')
+                    video.duration = sum(int(x) * 60 ** i for i, x in
+                                        enumerate(reversed(video.duration.split(':'))))
+                    # video.duration = video.duration.split(':')[0]
+                    video.thumb = EPSTHUMB_URL % video.id
+                    # self.cache.set('video|%s' % video.id, repr(video))
+                    videos.append(video)
+                    break
         except:
             break
-    page = (page+1 if len(data['videos']) >= 10 else None)
+    page = (page+1 if (page*page_size) < len(days) else None)
     return videos, page
 
 def get_gplay_episodes(channel, show, page):
