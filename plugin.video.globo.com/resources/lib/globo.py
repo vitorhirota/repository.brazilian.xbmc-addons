@@ -53,7 +53,7 @@ class GloboApi(object):
         premiere = scraper.get_premiere_live(live['premiere']['logo'])
         # add globo
         channels.update({
-            'globo': ('Rede Globo', 'http://s.glbimg.com/vi/mk/channel/196/logotipo/4/149x84.png'),
+            'globo': ('Rede Globo', 'http://s3.glbimg.com/v1/AUTH_180b9dd048d9434295d27c4b6dadc248/media_kit/a7/d4/6e79a7ac4657bc9344dac0604c12.png'),
         })
         return {
             'index': [
