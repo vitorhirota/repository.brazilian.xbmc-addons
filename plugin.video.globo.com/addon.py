@@ -214,7 +214,7 @@ def list_episodes(channel, show, page=1):
         } for video in videos.list]
         if videos.next:
             items.append({
-                'label': plugin.get_string(33001),
+                'label': plugin.get_string(33001) if channel <> 'globo' else plugin.get_string(33002),
                 'path': plugin.url_for('list_episodes',
                                        channel=channel, show=show,
                                        page=str(videos.next))
