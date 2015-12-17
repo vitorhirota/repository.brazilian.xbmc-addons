@@ -32,8 +32,8 @@
 
 				AVISO: antes de poder assistir aos vídeos do globosat play, você deve acessar a página web, aceitar a política de uso do serviço e criar um perfil. Este addon selecionará automaticamente o primeiro da lista.
 		</description>
-    <platform>all</platform>
-    <license>GPL3</license>
-    <source>https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons</source>
+		<platform>all</platform>
+		<license>GPL3</license>
+		<source>https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons</source>
 	</extension>
 </addon>
