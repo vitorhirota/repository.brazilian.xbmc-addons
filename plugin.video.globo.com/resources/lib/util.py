@@ -37,6 +37,7 @@ class struct(object):
 
 CI_MPAA_Dict = {
     'L':'G',
+    'ER':'PG',
     '10':'PG',
     '12':'PG',
     '14':'PG-13',
