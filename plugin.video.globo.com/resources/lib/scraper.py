@@ -124,7 +124,7 @@ def get_globo_episodes(channel, show, page):
     page_num = 1
     while size_videos >= video_page_size:
         try:
-            data = get_page(GLOBOPLAY_VIDEOS % (int(show), days[page], page_num))
+            data = get_page(GLOBOPLAY_VIDEOS % (int(show), days[page-1], page_num))
             size_videos = len(data['videos'])
             for item in data['videos']:
                 video = util.struct(dict(zip(properties,
