@@ -220,6 +220,9 @@ class GloboApi(object):
         # build resolved url
         url = '?'.join([res['url'], query_string])
         self.plugin.log.debug('video playlist url: %s' % url)
+        return url
+        # removed choose bitrate for now (it forces the cookie and the video fails after few minutes)
+'''
         session = requests.Session()
         req = session.get(url)
         m3u8_header = { 'Cookie': '; '.join(['%s=%s' % (key, value) for (key, value) in req.cookies.items()]) }
@@ -232,3 +235,4 @@ class GloboApi(object):
         else:
             return url
         return util.getBestBitrateUrl(self.plugin, streams)
+'''
