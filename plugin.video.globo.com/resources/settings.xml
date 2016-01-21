@@ -1,20 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <settings>
-  <!-- General -->
-  <category label="31000">
-    <setting label="31100" type="lsep" />
+  <!-- Globo.tv -->
+  <category label="31100">
     <setting id="globo_username" type="text" label="31110" default="" />
     <setting id="globo_password" type="text" option="hidden" label="31120" enable="!eq(-1,)" default="" />
-    <setting label="31200" type="lsep" />
+  </category>
+  <!-- Globosat -->
+  <category label="31200">
     <!-- <setting id="play_provider" type="enum" label="31210" lvalues="31211|31212|31213|31214|31215|31216|31217|31218" default="0" /> -->
     <setting id="play_provider" type="labelenum" label="31210" lvalues="31212|31214|31216|31217|31218|31219|31220" default="0" />
     <setting id="play_username" type="text" label="31110" default="" />
     <setting id="play_password" type="text" option="hidden" label="31120" enable="!eq(-1,)" default="" />
-    <setting label="31300" type="lsep" />
-    <!-- <setting id="video_quality" type="enum" label="31310" lvalues="31311|31312|31313" default="1" /> -->
+  </category>
+  <category label="31300">
     <!-- <setting id="page_size" type="labelenum" label="31400" values="10|20|40" default="10" /> -->
     <!-- <setting id="debug" type="bool" label="30150" default="false" /> -->
-    <setting id="bitrate" type="labelenum" label="31700" lvalues="31710|31720|31730|31740|31750|31760|31770" default="31770" enable="false" />
+    <setting id="use_m3u8" type="bool" label="31800" default="false" />
+    <setting id="video_quality" type="enum" label="31310" lvalues="31311|31312|31313" enable="eq(-1,false)" default="1" />
+    <setting type="lsep" />
+    <setting id="bitrate" type="labelenum" label="31700" lvalues="31710|31720|31730|31740|31750|31760|31770" default="31770" visible="false" />
+    <setting type="lsep" />
     <setting id="clear" type="action" label="31600" action="RunPlugin(plugin://plugin.video.globo.com/clear_index)"/>
+    <setting type="lsep" />
+    <setting type="lsep" />
+    <setting label="31810" type="lsep" />
+    <setting label="31820" type="lsep" />
+    <setting label="31830" type="lsep" />
+    <setting label="31840" type="lsep" />
+    <setting label="31850" type="lsep" />
   </category>
 </settings>
