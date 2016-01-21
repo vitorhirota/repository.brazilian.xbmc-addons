@@ -187,7 +187,49 @@ class GloboApi(object):
             items = [util.struct(data)]
         return items
 
-    def resolve_video_url(self, video_id):
+    def resolve_video_url(self, video_id):       
+        use_playlist_m3u8 = self.plugin.get_setting('use_m3u8') == 'true'
+        if use_playlist_m3u8:
+            url = self.resolve_video_url_m3u8(video_id)
+        else:
+            url = self.resolve_video_url_mp4(video_id)
+        return url
+
+    def resolve_video_url_mp4(self, video_id):
+         # which index to look in the list
+        heights = [360, 480, 720]
+        video_res = int(self.plugin.get_setting('video_quality') or 0)
+        # get video info
+        data = self._get_video_info(video_id)
+        self.plugin.log.debug('resolving video: %s' % video_id)
+        # this method assumes there's no children
+        if 'children' in data:
+            raise Exception('Invalid video id: %s' % video_id)
+        # build resources dict based on heights
+        resources = dict((d['height'], d) for d in data['resources']
+                        if 'players' in d and 'flash' in d['players'])
+        # get resource based on video quality setting
+        while True:
+            try:
+                r = resources[heights[video_res]]
+                break
+            except:
+                video_res -= 1
+        # get hashes
+        hashes, data_hashes = self._get_hashes(video_id, [r['_id']], 'html5')
+        signed_hashes = util.get_signed_hashes(hashes)
+        query_string = re.sub(r'{{([a-z]*)}}',
+                              r'%(\1)s',
+                              r['query_string_template']) % {
+                                'hash': signed_hashes[0],
+                                'key': 'html5'
+                              }
+        # build resolved url
+        url = '?'.join([r['url'], query_string])
+        self.plugin.log.debug('video playlist url: %s' % url)
+        return url
+        
+    def resolve_video_url_m3u8(self, video_id):
         # get video info
         data = self._get_video_info(video_id)
         self.plugin.log.debug('resolving video: %s' % video_id)
@@ -236,3 +278,6 @@ class GloboApi(object):
             return url
         return util.getBestBitrateUrl(self.plugin, streams)
 '''
+
+
+
