@@ -12,10 +12,10 @@
   <string id="30014">Busca</string>
   <!-- Settings categories and labels -->
   <string id="31000">Geral</string>
-  <string id="31100">Configurações Globo.tv</string>
+  <string id="31100">Globo.tv</string>
   <string id="31110">Usuário</string>
   <string id="31120">Senha</string>
-  <string id="31200">Configurações Globosat Play</string>
+  <string id="31200">Globosat Play</string>
   <string id="31210">Operador de TV</string>
   <string id="31211">Algar Telecom</string>
   <string id="31212">GVT</string>
@@ -27,11 +27,11 @@
   <string id="31218">Vivo</string>
   <string id="31219">Globosat Guest</string>
   <string id="31220">Claro</string>
-  <string id="31300">Configurações do Addon</string>
-  <string id="31310">Qualidade de Video</string>
-  <string id="31311">SD Apenas</string>
-  <string id="31312">480p Quando Disponível</string>
-  <string id="31313">HD Quando Disponível</string>
+  <string id="31300">Ajustes do Addon</string>
+  <string id="31310">Máxima Resolução do Video (se disponível)</string>
+  <string id="31311">360p</string>
+  <string id="31312">480p</string>
+  <string id="31313">720p</string>
   <string id="31400">Videos Por Página</string>
   <string id="31500">Debug</string>
   <string id="31600">Limpar dados</string>
@@ -43,6 +43,12 @@
   <string id="31750">1500 kbps</string>
   <string id="31760">2000 kbps</string>
   <string id="31770">3000 kbps</string>
+  <string id="31800">Use M3U8 (Atenção: leia abaixo)</string>
+  <string id="31810">Com M3U8 o video inicia mais rapidamente porém</string>
+  <string id="31820">o Kodi não faz "cache" de video.</string>
+  <string id="31830">Se o vídeo parar frequentemente para carregar,</string>
+  <string id="31840">desabilite M3U8 e escolha uma resolução compatível</string>
+  <string id="31850">com a sua velocidade da sua internet.</string>
  <!-- Notifications messages -->
   <string id="32001">Erro na authenticação. Usuário ou senha inválidos.</string>
   <string id="32002">Operador %s ainda não disponível.</string>
