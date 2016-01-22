@@ -275,7 +275,8 @@ def play_live(channel, index='live'):
         item = {
             'label': video_index['name'],
             'thumbnail': video_index['logo'],
-            'path': api.resolve_video_url(video_id),
+            # Forces URL Resolution as M3U8 for Live streams
+            'path': api.resolve_video_url_m3u8(video_id),
             'is_playable': True,
             'info': {
                 'date': video_info.date,
