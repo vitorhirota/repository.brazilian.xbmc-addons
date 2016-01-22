@@ -12,10 +12,10 @@
   <string id="30014">Search</string>
   <!-- Settings categories and labels -->
   <string id="31000">General</string>
-  <string id="31100">Globo.tv Settings</string>
+  <string id="31100">Globo.tv</string>
   <string id="31110">Username</string>
   <string id="31120">Password</string>
-  <string id="31200">Globosat Play Settings</string>
+  <string id="31200">Globosat Play</string>
   <string id="31210">Provider</string>
   <string id="31211">Algar Telecom</string>
   <string id="31212">GVT</string>
@@ -28,10 +28,10 @@
   <string id="31219">Globosat Guest</string>
   <string id="31220">Claro</string>
   <string id="31300">Addon Settings</string>
-  <string id="31310">Video Quality</string>
-  <string id="31311">SD Only</string>
-  <string id="31312">480p When Available</string>
-  <string id="31313">HD When Available</string>
+  <string id="31310">Maximum Video Resolution (if available)</string>
+  <string id="31311">360p</string>
+  <string id="31312">480p</string>
+  <string id="31313">720p</string>
   <string id="31400">Videos Per Page</string>
   <string id="31500">Debug</string>
   <string id="31600">Clear data</string>
@@ -43,6 +43,12 @@
   <string id="31750">1500 kbps</string>
   <string id="31760">2000 kbps</string>
   <string id="31770">3000 kbps</string>
+  <string id="31800">Use M3U8 (Warning: read below)</string>
+  <string id="31810">With M3U8 the video starts faster but</string>
+  <string id="31820">Kodi doesn't cache the video stream.</string>
+  <string id="31830">If you face frequent freezes waiting for the video to</string>
+  <string id="31840">load again, disable M3U8 and chose a resolution</string>
+  <string id="31850">compatible with your internet speed.</string>
   <!-- Notifications messages -->
   <string id="32001">Authentication error. Invalid username or password.</string>
   <string id="32002">Provider %s not implemented yet.</string>
