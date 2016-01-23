@@ -43,13 +43,13 @@
   <string id="31750">1500 kbps</string>
   <string id="31760">2000 kbps</string>
   <string id="31770">3000 kbps</string>
-  <string id="31800">Use M3U8 (Atenção: leia abaixo)</string>
-  <string id="31810">Com M3U8 o video inicia mais rapidamente porém</string>
-  <string id="31820">o Kodi não faz "cache" de video.</string>
-  <string id="31830">Se o vídeo parar frequentemente para carregar,</string>
-  <string id="31840">desabilite M3U8 e escolha uma resolução compatível</string>
-  <string id="31850">com a sua velocidade da sua internet.</string>
- <!-- Notifications messages -->
+  <string id="31800">Rode "Video sob demanda" como "transmissão ao vivo"</string>
+  <string id="31810">[COLOR orange]Rode "Video sob demanda" como "transmissão ao vivo"[/COLOR]: A reprodução</string>
+  <string id="31820">inicia mais rapidamente porém não é possível escolher a resolução</string>
+  <string id="31830">máxima e o Kodi não faz "cache" de vídeo. Se a reprodução está</string> 
+  <string id="31840">a travar frequentemente, deixe esta opção desabilitada e escolha</string>
+  <string id="31850">uma resolução mais adequada com a sua internet.</string>
+  !-- Notifications messages -->
   <string id="32001">Erro na authenticação. Usuário ou senha inválidos.</string>
   <string id="32002">Operador %s ainda não disponível.</string>
   <string id="32003">Erro inexperado: %s</string>
