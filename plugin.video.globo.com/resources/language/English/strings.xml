@@ -43,12 +43,12 @@
   <string id="31750">1500 kbps</string>
   <string id="31760">2000 kbps</string>
   <string id="31770">3000 kbps</string>
-  <string id="31800">Use M3U8 (Warning: read below)</string>
-  <string id="31810">With M3U8 the video starts faster but</string>
-  <string id="31820">Kodi doesn't cache the video stream.</string>
-  <string id="31830">If you face frequent freezes waiting for the video to</string>
-  <string id="31840">load again, disable M3U8 and chose a resolution</string>
-  <string id="31850">compatible with your internet speed.</string>
+  <string id="31800">Play "Video on demand" as "Live Stream"</string>
+  <string id="31810">[COLOR orange]Play "Video on demand" as "Live Stream"[/COLOR]: The video starts faster</string>
+  <string id="31820">but the maximum video resolution can't be chosen and Kodi doesn't use</string>
+  <string id="31830">its internal video cache. If you are facing frequent video freezes,</string> 
+  <string id="31840">leave this option unchecked and choose a maximum video resolution</string>
+  <string id="31850">compatible with your internet.</string>
   <!-- Notifications messages -->
   <string id="32001">Authentication error. Invalid username or password.</string>
   <string id="32002">Provider %s not implemented yet.</string>
