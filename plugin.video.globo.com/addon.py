@@ -267,6 +267,7 @@ def play(video_id):
 @plugin.route('/live/<channel>')
 @plugin.route('/premiere/<channel>', name='play_premiere_live', options={'index': 'premiere'})
 def play_live(channel, index='live'):
+    util.clear_cookies()
     video_index = api.get_path(index)[channel]
     video_id = video_index['id']
     video_info = api.get_videos(video_id)[0]

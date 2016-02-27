@@ -2,11 +2,13 @@ import base64
 import hashlib
 import htmlentitydefs
 import json
+import os
 import unicodedata
 import random
 import re
 import string
 import time
+from xbmcswift2 import xbmc
 
 try:
     import cPickle as pickle
@@ -44,6 +46,12 @@ CI_MPAA_Dict = {
     '16':'R',
     '18':'NC-17'
     }
+
+def clear_cookies():
+    try:
+        os.remove(xbmc.translatePath('special://temp/cookies.dat'))
+    except:
+        return
 
 def getMPAAFromCI(ci):
     return CI_MPAA_Dict[ci]
