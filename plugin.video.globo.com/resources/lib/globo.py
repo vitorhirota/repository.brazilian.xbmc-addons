@@ -30,6 +30,8 @@ INFO_URL = 'http://api.globovideos.com/videos/%s/playlist'
 HASH_URL = ('http://security.video.globo.com/videos/%s/hash?'
             + 'resource_id=%s&version=%s&player=%s&udid=null')
 
+GLOBO_LOGO = 'http://s3.glbimg.com/v1/AUTH_180b9dd048d9434295d27c4b6dadc248/media_kit/42/f3/a1511ca14eeeca2e054c45b56e07.png'
+
 class GloboApi(object):
 
     def __init__(self, plugin):
@@ -50,10 +52,22 @@ class GloboApi(object):
     def _build_index(self):
         # get gplay channels
         channels, live = scraper.get_gplay_channels()
+        liveglobo = scraper.get_globo_live_id()
+        if liveglobo:
+            liveinfo = self._get_video_info(liveglobo)
+            live.update({
+                'globo': {
+                    'name': liveinfo['title'],
+                    'logo': GLOBO_LOGO,
+                    'playable': True,
+                    'plot': liveinfo['program'],
+                    'id': liveglobo,
+                },
+            })
         premiere = scraper.get_premiere_live(live['premiere']['logo'])
         # add globo
         channels.update({
-            'globo': ('Rede Globo', 'http://s3.glbimg.com/v1/AUTH_180b9dd048d9434295d27c4b6dadc248/media_kit/a7/d4/6e79a7ac4657bc9344dac0604c12.png'),
+            'globo': ('Rede Globo', GLOBO_LOGO),
         })
         return {
             'index': [
