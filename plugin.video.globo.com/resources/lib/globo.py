@@ -207,7 +207,7 @@ class GloboApi(object):
             raise Exception('Invalid video id: %s' % video_id)
         # build resources dict based on heights
         resources = dict((d['height'], d) for d in data['resources']
-                        if 'players' in d and 'flash' in d['players'])
+                        if 'players' in d and 'desktop' in d['players'])
         # get resource based on video quality setting
         while True:
             try:
