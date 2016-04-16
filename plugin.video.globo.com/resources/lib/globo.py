@@ -256,8 +256,8 @@ class GloboApi(object):
             query_string = query_string % {
                 'hash': signed_hashes[0],
                 'key': 'html5',
-                'openClosed': 'F',
-                'user': data_hashes['user']
+                'openClosed': 'A',
+                'user': ''
             }
         # build resolved url
         url = '?'.join([res['url'], query_string])
