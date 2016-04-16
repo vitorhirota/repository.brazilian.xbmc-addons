@@ -250,12 +250,20 @@ class GloboApi(object):
         # this method assumes there's no children
         if 'children' in data:
             raise Exception('Invalid video id: %s' % video_id)
-        # find playlist in resources list
-        for res in data['resources']:
-            if '.m3u8' in res['url']:
-                break
-        # get hashes
-        hashes, data_hashes = self._get_hashes(video_id, [res['_id']], 'html5')
+        # check if resources is empty
+        if len(data['resources']) == 0:
+            # get hashes
+            hashes, data_hashes = self._get_hashes(video_id, [], 'html5')
+            url = data_hashes['url']
+        else:
+            # find playlist in resources list
+            for res in data['resources']:
+                if '.m3u8' in res['url']:
+                    break
+            url = res['url']
+            # get hashes
+            hashes, data_hashes = self._get_hashes(video_id, [res['_id']], 'html5')
+        
         signed_hashes = util.get_signed_hashes(hashes)
         # resolve query string template
         query_string = re.sub(r'{{(\w*)}}', r'%(\1)s',
