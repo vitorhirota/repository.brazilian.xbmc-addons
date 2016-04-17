@@ -238,7 +238,7 @@ class GloboApi(object):
             raise Exception('Invalid video id: %s' % video_id)
         # find playlist in resources list
         for res in data['resources']:
-            if '.m3u8' in res['url']:
+            if 'players' in res and 'desktop' in res['players'] and '.m3u8' in res['url']:
                 break
         # get hashes
         hashes, data_hashes = self._get_hashes(video_id, [res['_id']], 'html5')
@@ -256,8 +256,8 @@ class GloboApi(object):
             query_string = query_string % {
                 'hash': signed_hashes[0],
                 'key': 'html5',
-                'openClosed': 'A',
-                'user': ''
+                'openClosed': 'F' if data['subscriber_only'] else 'A',
+                'user': data_hashes['user'] if data['subscriber_only'] else ''
             }
         # build resolved url
         url = '?'.join([res['url'], query_string])
