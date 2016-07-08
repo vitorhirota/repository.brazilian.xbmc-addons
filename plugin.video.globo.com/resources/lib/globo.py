@@ -153,7 +153,7 @@ class GloboApi(object):
             backend = getattr(backends, provider)(self.plugin)
         except AttributeError:
             self.plugin.log.error('%s provider unavailable' % provider)
-            self.plugin.notify(self.plugin.get_string(32001) % provider)
+            self.plugin.notify(self.plugin.get_string(32002) % provider)
         return backend.authenticate(provider_id)
 
     def get_path(self, key):
