@@ -119,8 +119,8 @@ and submit an [issue][issues].
 
 
 
-[repozip]: https://github.com/vitorhirota/repository.brazilian.xbmc-addons/raw/master/repo/repository.brazilian.xbmc-addons-1.0.1.zip
-[issues]: https://bitbucket.org/vitorhirota/repository.brazilian.xbmc-addons/issues
+[repozip]: https://github.com/tschope/repository.brazilian.xbmc-addons/raw/master/repo/repository.brazilian.xbmc-addons-1.0.1.zip
+[issues]: https://bitbucket.org/tschope/repository.brazilian.xbmc-addons-update/issues
 [install]: http://wiki.xbmc.org/index.php?title=Add-ons#How_to_install_from_zip
 [repoinstallplugin]: http://passion-xbmc.org/addons/?Page=View&ID=plugin.program.repo.installer
 [globotv]: http://globotv.globo.com
