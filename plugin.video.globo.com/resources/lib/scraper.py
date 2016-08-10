@@ -76,6 +76,30 @@ def get_gplay_channels():
             }) for img, json in zip(live.findChildren()[2::3],
                                     get_page(GLOBOSAT_LIVE_JSON))])
 
+    live[util.slugify(u'SporTV')]['name'] = 'SporTV 1'
+    logo = live[util.slugify(u'SporTV')]['logo']
+    live.update({util.slugify(u'SporTV 2'): {'name': 'SporTV 2', 'logo': logo, 'playable': True, 'plot': '', 'id': 3180373}})
+    live.update({util.slugify(u'SporTV 3'): {'name': 'SporTV 3', 'logo': logo, 'playable': True, 'plot': '', 'id': 3180413}})
+    live.update({util.slugify(u'SporTV 4'): {'name': 'SporTV 4', 'logo': logo, 'playable': True, 'plot': '', 'id': 5125939}})
+    live.update({util.slugify(u'SporTV 5'): {'name': 'SporTV 5', 'logo': logo, 'playable': True, 'plot': '', 'id': 5125924}})
+    live.update({util.slugify(u'SporTV 6'): {'name': 'SporTV 6', 'logo': logo, 'playable': True, 'plot': '', 'id': 5125876}})
+    live.update({util.slugify(u'SporTV 7'): {'name': 'SporTV 7', 'logo': logo, 'playable': True, 'plot': '', 'id': 5125885}})
+    live.update({util.slugify(u'SporTV 8'): {'name': 'SporTV 8', 'logo': logo, 'playable': True, 'plot': '', 'id': 5125900}})
+    live.update({util.slugify(u'SporTV 9'): {'name': 'SporTV 9', 'logo': logo, 'playable': True, 'plot': '', 'id': 5125824}})
+    live.update({util.slugify(u'SporTV 10'): {'name': 'SporTV 10', 'logo': logo, 'playable': True, 'plot': '', 'id': 5125929}})
+    live.update({util.slugify(u'SporTV 11'): {'name': 'SporTV 11', 'logo': logo, 'playable': True, 'plot': '', 'id': 5125865}})
+    live.update({util.slugify(u'SporTV 12'): {'name': 'SporTV 12', 'logo': logo, 'playable': True, 'plot': '', 'id': 5125935}})
+    live.update({util.slugify(u'SporTV 13'): {'name': 'SporTV 13', 'logo': logo, 'playable': True, 'plot': '', 'id': 5125919}})
+    live.update({util.slugify(u'SporTV 14'): {'name': 'SporTV 14', 'logo': logo, 'playable': True, 'plot': '', 'id': 5125880}})
+    live.update({util.slugify(u'SporTV 15'): {'name': 'SporTV 15', 'logo': logo, 'playable': True, 'plot': '', 'id': 5125843}})
+    live.update({util.slugify(u'SporTV 16'): {'name': 'SporTV 16', 'logo': logo, 'playable': True, 'plot': '', 'id': 5125905}})
+    live.update({util.slugify(u'SporTV Extra 6'): {'name': 'SporTV Extra 6', 'logo': logo, 'playable': True, 'plot': '', 'id': 5126220}})
+    live.update({util.slugify(u'SporTV Extra 19'): {'name': 'SporTV Extra 19', 'logo': logo, 'playable': True, 'plot': '', 'id': 5126242}})
+    live.update({util.slugify(u'SporTV Extra 30'): {'name': 'SporTV Extra 30', 'logo': logo, 'playable': True, 'plot': '', 'id': 5126267}})
+    live.update({util.slugify(u'SporTV Extra 37'): {'name': 'SporTV Extra 37', 'logo': logo, 'playable': True, 'plot': '', 'id': 5126294}})
+    live.update({util.slugify(u'SporTV Extra 39'): {'name': 'SporTV Extra 39', 'logo': logo, 'playable': True, 'plot': '', 'id': 5126302}})
+    live.update({util.slugify(u'SporTV Extra 43'): {'name': 'SporTV Extra 43', 'logo': logo, 'playable': True, 'plot': '', 'id': 5126565}})
+
     return (channels, live)
 
 
