@@ -1,7 +1,3 @@
-0.1.31, 0.1.32
- PT: adequação as mudanças no sistema de vídeo ao vivo
- EN: fixed live streaming
-
 0.1.30
  PT: corrigida forma de obter os vídeos mp4
  EN: fixed way to detect mp4 videos

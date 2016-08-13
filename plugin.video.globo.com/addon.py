@@ -76,14 +76,12 @@ def index():
             'path': plugin.url_for(slug)
         } for slug, name in api.get_path('index')]
     except Exception as e:
-        # plugin.notify(plugin.get_string(32001))
         plugin.log.error(e, exc_info=1)
         plugin.notify(plugin.get_string(32003) % e.message)
 
 @plugin.route('/favorites')
 def favorites():
     try:
-        # import pydevd; pydevd.settrace()
         index = api.get_path('channels')
         favorites = api.get_path('favorites')
         return [{
@@ -99,7 +97,6 @@ def favorites():
             ],
         } for channel, slug in sorted(favorites)]
     except Exception as e:
-        # plugin.notify(plugin.get_string(32001))
         plugin.log.error(e, exc_info=1)
         plugin.notify(plugin.get_string(32003) % e.message)
 
@@ -118,7 +115,6 @@ def premiere():
             },
         } for slug, data in sorted(index.items())]
     except Exception as e:
-        # plugin.notify(plugin.get_string(32001))
         plugin.log.error(e, exc_info=1)
         plugin.notify(plugin.get_string(32003) % e.message)
 
@@ -137,7 +133,6 @@ def live():
             },
         } for slug, data in sorted(index.items())]
     except Exception as e:
-        # plugin.notify(plugin.get_string(32001))
         plugin.log.error(e, exc_info=1)
         plugin.notify(plugin.get_string(32003) % e.message)
 
@@ -151,7 +146,6 @@ def channels():
             'thumbnail': img
         } for slug, (name, img) in sorted(index.items())]
     except Exception as e:
-        # plugin.notify(plugin.get_string(32001))
         plugin.log.error(e, exc_info=1)
         plugin.notify(plugin.get_string(32003) % e.message)
 
@@ -171,7 +165,6 @@ def list_shows(channel, category=None):
             ],
         } for slug, (name, img) in sorted(index.items())]
     except Exception as e:
-        # plugin.notify(plugin.get_string(32001))
         plugin.log.error(e, exc_info=1)
         plugin.notify(plugin.get_string(32003) % e.message)
 
@@ -221,7 +214,6 @@ def list_episodes(channel, show, page=1):
             })
         return items
     except Exception as e:
-        # plugin.notify(plugin.get_string(32001))
         plugin.log.error(e, exc_info=1)
         plugin.notify(plugin.get_string(32003) % e.message)
 
@@ -288,7 +280,6 @@ def play_live(channel, index='live'):
         }
         plugin.set_resolved_url(item, 'video/mp4')
     except Exception as e:
-        # plugin.notify(plugin.get_string(32001))
         plugin.log.error(e, exc_info=1)
         plugin.notify(plugin.get_string(32003) % e.message)
 
