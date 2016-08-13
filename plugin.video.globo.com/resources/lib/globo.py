@@ -57,7 +57,7 @@ class GloboApi(object):
             liveinfo = self._get_video_info(liveglobo)
             live.update({
                 'globo': {
-                    'name': liveinfo['title'],
+                    'name': 'Rede Globo',
                     'logo': GLOBO_LOGO,
                     'playable': True,
                     'plot': liveinfo['program'],
@@ -256,6 +256,7 @@ class GloboApi(object):
             # get hashes
             hashes, data_hashes = self._get_hashes(video_id, [], 'html5')
             url = data_hashes['url']
+            template = 'h={{hash}}&k={{key}}&a={{openClosed}}&u={{user}}'
         else:
             # find playlist in resources list
             for res in data['resources']:
@@ -264,10 +265,11 @@ class GloboApi(object):
             url = res['url']
             # get hashes
             hashes, data_hashes = self._get_hashes(video_id, [res['_id']], 'html5')
+            template = res['query_string_template']
         signed_hashes = util.get_signed_hashes(hashes)
         # resolve query string template
         query_string = re.sub(r'{{(\w*)}}', r'%(\1)s',
-                              res['query_string_template'])
+                              template)
         try:
             query_string = query_string % {
                 'hash': signed_hashes[0],
@@ -282,7 +284,7 @@ class GloboApi(object):
                 'user': data_hashes['user'] if data['subscriber_only'] else ''
             }
         # build resolved url
-        url = '?'.join([res['url'], query_string])
+        url = '?'.join([url, query_string])
         self.plugin.log.debug('video playlist url: %s' % url)
         return url
 
