@@ -118,6 +118,24 @@ def premiere():
         plugin.log.error(e, exc_info=1)
         plugin.notify(plugin.get_string(32003) % e.message)
 
+@plugin.route('/sportv')
+def sportv():
+    try:
+        plugin.set_content('LiveTV')
+        index = api.get_path('sportv')
+        return [{
+            'label': data['name'],
+            'path': plugin.url_for('play_sportv_live', channel=slug),
+            'thumbnail': data['logo'],
+            'is_playable': data['playable'],
+            'info': {
+                'plot': data['plot'],
+            },
+        } for slug, data in sorted(index.items())]
+    except Exception as e:
+        plugin.log.error(e, exc_info=1)
+        plugin.notify(plugin.get_string(32003) % e.message)
+
 @plugin.route('/live')
 def live():
     try:
@@ -125,9 +143,9 @@ def live():
         index = api.get_path('live')
         return [{
             'label': data['name'],
-            'path': plugin.url_for('play_live', channel=slug) if slug != 'premiere' else plugin.url_for(slug),
+            'path': plugin.url_for('play_live', channel=slug) if slug not in ['premiere', 'sportv'] else plugin.url_for(slug),
             'thumbnail': data['logo'],
-            'is_playable': slug != 'premiere' and data['playable'],
+            'is_playable': slug not in ['premiere', 'sportv'] and data['playable'],
             'info': {
                 'plot': data['plot'],
             },
@@ -258,6 +276,7 @@ def play(video_id):
 
 @plugin.route('/live/<channel>')
 @plugin.route('/premiere/<channel>', name='play_premiere_live', options={'index': 'premiere'})
+@plugin.route('/sportv/<channel>', name='play_sportv_live', options={'index': 'sportv'})
 def play_live(channel, index='live'):
     util.clear_cookies()
     video_index = api.get_path(index)[channel]

@@ -51,6 +51,7 @@ class GloboApi(object):
 
     def _build_index(self):
         # get gplay channels
+        #import rpdb2; rpdb2.start_embedded_debugger('pw')
         channels, live = scraper.get_gplay_channels()
         liveglobo = scraper.get_globo_live_id()
         if liveglobo:
@@ -65,6 +66,7 @@ class GloboApi(object):
                 },
             })
         premiere = scraper.get_premiere_live(live['premiere']['logo'])
+        sportv = scraper.get_sportv_live(live['sportv']['logo'])
         # add globo
         channels.update({
             'globo': ('Rede Globo', GLOBO_LOGO),
@@ -78,6 +80,7 @@ class GloboApi(object):
             'channels': channels,
             'live': live,
             'premiere': premiere,
+            'sportv': sportv,
             'favorites': set(),
 			'loaded': datetime.datetime.now()
         }
