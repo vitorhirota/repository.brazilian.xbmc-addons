@@ -1,4 +1,4 @@
-0.1.31, 0.1.32
+0.1.31
  PT: adequação as mudanças no sistema de vídeo ao vivo
  EN: fixed live streaming
 
