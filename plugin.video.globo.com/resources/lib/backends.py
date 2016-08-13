@@ -57,7 +57,7 @@ class Backends(object):
     def is_authenticated(self, provider_id):
         authProvider = False
         for key in self.credentials.keys():
-            authProvider = authProvider or (provider_id in key if provider_id is not None else key == 'GLBID')
+            authProvider = authProvider or ((provider_id in key if provider_id is not None else key == 'GLBID') and self.credentials[key] is not None)
         return authProvider
 
     def authenticate(self, provider_id):
@@ -99,12 +99,16 @@ class globo(Backends):
             'payload': {
                 'email': self.username,
                 'password': self.password,
-                'serviceId': 465
+                'serviceId': 4654
             }
         }
         response = requests.post(self.ENDPOINT_URL,
                                  data=json.dumps(payload),
-                                 headers={ 'content-type': 'application/json' })
+                                 headers={ 'content-type': 'application/json; charset=UTF-8',
+                                           'accept': 'application/json, text/javascript',
+                                           'referer': 'https://login.globo.com/login/4654?url=https://globoplay.globo.com/&tam=WIDGET',
+                                           'origin': 'https://login.globo.com' },
+                                 verify=False)
         return { 'GLBID': response.cookies.get('GLBID') }
 
 
