@@ -24,6 +24,7 @@ GLOBOSAT_EPS_JSON = GLOBOSAT_SHOW_URL + '/videos/recentes.json?quantidade=15&pag
 GLOBOSAT_SEASON_JSON = GLOBOSAT_SHOW_URL + '/temporada/%d/episodios.json'
 
 PREMIERE_LIVE_JSON = GLOBOSAT_URL + '/premierefc/ao-vivo/add-on/jogos-ao-vivo/%s.json'
+SPORTV_LIVE_JSON = GLOBOSAT_URL + '/api/v1/sportv/live-signals.json'
 
 EPSTHUMB_URL = 'http://s01.video.glbimg.com/x720/%s.jpg'
 
@@ -89,6 +90,16 @@ def get_gplay_channels():
 
     return (channels, live)
 
+def get_sportv_live(logo):
+    #provider_id is hardcoded right now. 
+    live = dict([(util.slugify(json['title']), {
+                'name': json['title'],
+                'logo': logo,
+                'playable': True,
+                'plot': '',
+                'id': json['videoId'],
+            }) for json in get_page(SPORTV_LIVE_JSON)])
+    return live
 
 def get_premiere_live(logo):
     #provider_id is hardcoded right now. 
