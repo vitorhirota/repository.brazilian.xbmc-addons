@@ -1,8 +1,4 @@
-0.1.33
- PT: adicionado stream da Rede Globo e todos os canais SporTV
- EN: added Rede Globo's and all SporTV signals stream
-
-0.1.31, 0.1.32
+0.1.31
  PT: adequação as mudanças no sistema de vídeo ao vivo
  EN: fixed live streaming
 

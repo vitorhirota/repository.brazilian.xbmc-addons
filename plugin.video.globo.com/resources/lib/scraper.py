@@ -15,6 +15,8 @@ GLOBOPLAY_CATEGORIAS = GLOBOPLAY_URL + '/v1/categories/?api_key=' + GLOBOPLAY_AP
 GLOBOPLAT_DAYS = GLOBOPLAY_URL + '/v1/programs/%d/videos/days?api_key=' + GLOBOPLAY_APIKEY
 GLOBOPLAY_VIDEOS = GLOBOPLAY_URL + '/v1/programs/%d/videos?day=%s&order=asc&page=%d&api_key=' + GLOBOPLAY_APIKEY
 
+GLOBOPLAY_LIVE = 'http://s.glbimg.com/vi/p3/restrictions.js'
+
 GLOBOSAT_URL = BASE_URL % 'globosatplay'
 GLOBOSAT_SHOW_URL = GLOBOSAT_URL + '/%s'
 GLOBOSAT_LIVE_JSON = GLOBOSAT_URL + '/xhr/transmissoes/ao-vivo.json'
@@ -22,6 +24,7 @@ GLOBOSAT_EPS_JSON = GLOBOSAT_SHOW_URL + '/videos/recentes.json?quantidade=15&pag
 GLOBOSAT_SEASON_JSON = GLOBOSAT_SHOW_URL + '/temporada/%d/episodios.json'
 
 PREMIERE_LIVE_JSON = GLOBOSAT_URL + '/premierefc/ao-vivo/add-on/jogos-ao-vivo/%s.json'
+SPORTV_LIVE_JSON = GLOBOSAT_URL + '/api/v1/sportv/live-signals.json'
 
 EPSTHUMB_URL = 'http://s01.video.glbimg.com/x720/%s.jpg'
 
@@ -43,6 +46,15 @@ def get_page(url, **kwargs):
     return ('application/json' in r.headers.get('content-type')
             and json.loads(r.text, object_hook=lambda x: dict((str(k), v) for k, v in x.items()))
             or r.text)
+
+def get_globo_live_id():
+    req = get_page(GLOBOPLAY_LIVE)
+    rexp = r'WM\.Player3\.ID_MOBILE_WHITELIST=\[([\d]+)[,\d]*\]'
+    liveIds = re.findall(rexp, req)
+    try:
+        return liveIds[0]
+    except:
+        return false
 
 def get_player_version():
     req = get_page(JSAPI_URL)
@@ -78,6 +90,16 @@ def get_gplay_channels():
 
     return (channels, live)
 
+def get_sportv_live(logo):
+    #provider_id is hardcoded right now. 
+    live = dict([(util.slugify(json['title']), {
+                'name': json['title'],
+                'logo': logo,
+                'playable': True,
+                'plot': '',
+                'id': json['videoId'],
+            }) for json in get_page(SPORTV_LIVE_JSON)])
+    return live
 
 def get_premiere_live(logo):
     #provider_id is hardcoded right now. 

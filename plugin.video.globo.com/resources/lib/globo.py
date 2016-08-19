@@ -30,6 +30,8 @@ INFO_URL = 'http://api.globovideos.com/videos/%s/playlist'
 HASH_URL = ('http://security.video.globo.com/videos/%s/hash?'
             + 'resource_id=%s&version=%s&player=%s&udid=null')
 
+GLOBO_LOGO = 'http://s3.glbimg.com/v1/AUTH_180b9dd048d9434295d27c4b6dadc248/media_kit/42/f3/a1511ca14eeeca2e054c45b56e07.png'
+
 class GloboApi(object):
 
     def __init__(self, plugin):
@@ -49,11 +51,25 @@ class GloboApi(object):
 
     def _build_index(self):
         # get gplay channels
+        #import rpdb2; rpdb2.start_embedded_debugger('pw')
         channels, live = scraper.get_gplay_channels()
+        liveglobo = scraper.get_globo_live_id()
+        if liveglobo:
+            liveinfo = self._get_video_info(liveglobo)
+            live.update({
+                'globo': {
+                    'name': 'Rede Globo',
+                    'logo': GLOBO_LOGO,
+                    'playable': True,
+                    'plot': liveinfo['program'],
+                    'id': liveglobo,
+                },
+            })
         premiere = scraper.get_premiere_live(live['premiere']['logo'])
+        sportv = scraper.get_sportv_live(live['sportv']['logo'])
         # add globo
         channels.update({
-            'globo': ('Rede Globo', 'http://s3.glbimg.com/v1/AUTH_180b9dd048d9434295d27c4b6dadc248/media_kit/a7/d4/6e79a7ac4657bc9344dac0604c12.png'),
+            'globo': ('Rede Globo', GLOBO_LOGO),
         })
         return {
             'index': [
@@ -64,6 +80,7 @@ class GloboApi(object):
             'channels': channels,
             'live': live,
             'premiere': premiere,
+            'sportv': sportv,
             'favorites': set(),
 			'loaded': datetime.datetime.now()
         }
@@ -153,7 +170,7 @@ class GloboApi(object):
             backend = getattr(backends, provider)(self.plugin)
         except AttributeError:
             self.plugin.log.error('%s provider unavailable' % provider)
-            self.plugin.notify(self.plugin.get_string(32001) % provider)
+            self.plugin.notify(self.plugin.get_string(32002) % provider)
         return backend.authenticate(provider_id)
 
     def get_path(self, key):
@@ -236,16 +253,26 @@ class GloboApi(object):
         # this method assumes there's no children
         if 'children' in data:
             raise Exception('Invalid video id: %s' % video_id)
-        # find playlist in resources list
-        for res in data['resources']:
-            if '.m3u8' in res['url']:
-                break
-        # get hashes
-        hashes, data_hashes = self._get_hashes(video_id, [res['_id']], 'html5')
+        
+        # check if resources is empty
+        if len(data['resources']) == 0:
+            # get hashes
+            hashes, data_hashes = self._get_hashes(video_id, [], 'html5')
+            url = data_hashes['url']
+            template = 'h={{hash}}&k={{key}}&a={{openClosed}}&u={{user}}'
+        else:
+            # find playlist in resources list
+            for res in data['resources']:
+                if 'players' in res and 'desktop' in res['players'] and '.m3u8' in res['url']:
+                    break
+            url = res['url']
+            # get hashes
+            hashes, data_hashes = self._get_hashes(video_id, [res['_id']], 'html5')
+            template = res['query_string_template']
         signed_hashes = util.get_signed_hashes(hashes)
         # resolve query string template
         query_string = re.sub(r'{{(\w*)}}', r'%(\1)s',
-                              res['query_string_template'])
+                              template)
         try:
             query_string = query_string % {
                 'hash': signed_hashes[0],
@@ -256,28 +283,11 @@ class GloboApi(object):
             query_string = query_string % {
                 'hash': signed_hashes[0],
                 'key': 'html5',
-                'openClosed': 'F',
-                'user': data_hashes['user']
+                'openClosed': 'F' if data['subscriber_only'] else 'A',
+                'user': data_hashes['user'] if data['subscriber_only'] else ''
             }
         # build resolved url
-        url = '?'.join([res['url'], query_string])
+        url = '?'.join([url, query_string])
         self.plugin.log.debug('video playlist url: %s' % url)
         return url
-        # removed choose bitrate for now (it forces the cookie and the video fails after few minutes)
-'''
-        session = requests.Session()
-        req = session.get(url)
-        m3u8_header = { 'Cookie': '; '.join(['%s=%s' % (key, value) for (key, value) in req.cookies.items()]) }
-        m3u8_obj = m3u8.loads(req.text.strip())
-        streams = {}
-        if m3u8_obj.is_variant:  # if this m3u8 contains links to other m3u8s
-            for playlist in m3u8_obj.playlists:
-                bitrate = str(int(playlist.stream_info.bandwidth[:playlist.stream_info.bandwidth.find(' ')])/100)
-                streams[bitrate] = url[:url.rfind('/') + 1] + playlist.uri + '?' + url.split('?')[1] + '|' + urllib.urlencode(m3u8_header)
-        else:
-            return url
-        return util.getBestBitrateUrl(self.plugin, streams)
-'''
-
-
 
