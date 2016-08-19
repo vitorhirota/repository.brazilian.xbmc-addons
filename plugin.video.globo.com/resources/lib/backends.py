@@ -229,13 +229,18 @@ class vivo(GlobosatBackends):
     PROVIDER_ID = 147
 
     def _provider_auth(self, url, qs):
+        cpf = self.username
+        if len(cpf) == 11:
+            cpf = "%s.%s.%s-%s" % ( cpf[0:3], cpf[3:6], cpf[6:9], cpf[9:11] )
         qs.update({
-            'user_Doc': self.username,
+            'user_Doc': cpf,
             'password': self.password,
             'password_fake': None,
         })
         req = self.session.post(url, data=qs)
-        return req
+        nova_url = re.findall('var urlString = \'(.*)\';', req.text)[0]
+        ret_req = self.session.get(nova_url)
+        return ret_req
 
 class claro(GlobosatBackends):
     PROVIDER_ID = 123
