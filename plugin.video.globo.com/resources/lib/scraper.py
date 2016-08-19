@@ -54,7 +54,7 @@ def get_globo_live_id():
     try:
         return liveIds[0]
     except:
-        return false
+        return False
 
 def get_player_version():
     req = get_page(JSAPI_URL)
