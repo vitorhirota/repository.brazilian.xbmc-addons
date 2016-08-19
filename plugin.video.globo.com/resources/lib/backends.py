@@ -57,7 +57,7 @@ class Backends(object):
     def is_authenticated(self, provider_id):
         authProvider = False
         for key in self.credentials.keys():
-            authProvider = authProvider or (provider_id in key if provider_id is not None else key == 'GLBID')
+            authProvider = authProvider or ((provider_id in key if provider_id is not None else key == 'GLBID') and self.credentials[key] is not None)
         return authProvider
 
     def authenticate(self, provider_id):
@@ -99,12 +99,16 @@ class globo(Backends):
             'payload': {
                 'email': self.username,
                 'password': self.password,
-                'serviceId': 465
+                'serviceId': 4654
             }
         }
         response = requests.post(self.ENDPOINT_URL,
                                  data=json.dumps(payload),
-                                 headers={ 'content-type': 'application/json' })
+                                 headers={ 'content-type': 'application/json; charset=UTF-8',
+                                           'accept': 'application/json, text/javascript',
+                                           'referer': 'https://login.globo.com/login/4654?url=https://globoplay.globo.com/&tam=WIDGET',
+                                           'origin': 'https://login.globo.com' },
+                                 verify=False)
         return { 'GLBID': response.cookies.get('GLBID') }
 
 
@@ -153,25 +157,6 @@ class GlobosatBackends(Backends):
                                                  calendar.timegm(now.timetuple()),
                                                  expiration.strftime('%a, %d %b %Y %H:%M:%S GMT')))
         return dict(r5.cookies)
-
-class gvt(GlobosatBackends):
-    PROVIDER_ID = 62
-
-    def _provider_auth(self, url, qs):
-        post_data = {
-            'code': qs['code'][0],
-            'user_Fone': None,
-            'user_CpfCnpj': self.username,
-            'password': self.password,
-            'login': 'Login',
-        }
-        req = self.session.post(url, data=post_data)
-        try:
-            return self.session.get(req.url.split('redirect_uri=', 1)[1])
-        except IndexError:
-            # if invalid user/pass: IndexError: list index out of range
-            raise Exception('Invalid user name or password.')
-
 
 class net(GlobosatBackends):
     PROVIDER_ID = 64
@@ -241,12 +226,13 @@ class sky(GlobosatBackends):
         raise Exception('Invalid user name or password.')
 
 class vivo(GlobosatBackends):
-    PROVIDER_ID = 68
+    PROVIDER_ID = 147
 
     def _provider_auth(self, url, qs):
         qs.update({
-            'cpf': self.username,
-            'senha': self.password,
+            'user_Doc': self.username,
+            'password': self.password,
+            'password_fake': None,
         })
         req = self.session.post(url, data=qs)
         return req
