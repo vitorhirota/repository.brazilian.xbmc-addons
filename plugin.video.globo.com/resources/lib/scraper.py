@@ -48,13 +48,8 @@ def get_page(url, **kwargs):
             or r.text)
 
 def get_globo_live_id():
-    req = get_page(GLOBOPLAY_LIVE)
-    rexp = r'WM\.Player3\.ID_MOBILE_WHITELIST=\[([\d]+)[,\d]*\]'
-    liveIds = re.findall(rexp, req)
-    try:
-        return liveIds[0]
-    except:
-        return False
+    # Hardcoded for now 
+    return 4452349
 
 def get_player_version():
     req = get_page(JSAPI_URL)
