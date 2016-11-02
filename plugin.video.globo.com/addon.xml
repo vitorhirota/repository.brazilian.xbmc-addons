@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="plugin.video.globo.com"
 		name="Globo.com"
-		version="0.1.35"
+		version="0.1.36"
 		provider-name="vitorhirota, lucasrokam">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0"/>
