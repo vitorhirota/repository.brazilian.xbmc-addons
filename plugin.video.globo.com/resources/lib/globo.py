@@ -66,10 +66,10 @@ class GloboApi(object):
                 },
             })
         premiere = scraper.get_premiere_live(live['premiere']['logo'])
-        sportv = scraper.get_sportv_live(live['sportv']['logo'])
+        sportv = scraper.get_sportv_live(live['sportvlive']['logo'])
         # add globo
         channels.update({
-            'globo': ('Rede Globo', GLOBO_LOGO),
+            'globo': ('Rede Globo', GLOBO_LOGO, None),
         })
         return {
             'index': [
@@ -80,7 +80,7 @@ class GloboApi(object):
             'channels': channels,
             'live': live,
             'premiere': premiere,
-            'sportv': sportv,
+            'sportvlive': sportv,
             'favorites': set(),
 			'loaded': datetime.datetime.now()
         }
@@ -95,7 +95,10 @@ class GloboApi(object):
         return data
 
     def _build_globosat(self, channel):
-        shows = scraper.get_gplay_shows(channel)
+        #import rpdb2; rpdb2.start_embedded_debugger('pw')
+        index = self.get_path('channels')
+        channelid = [id for slug, (name, img, id) in sorted(index.items()) if channel == slug]
+        shows = scraper.get_gplay_shows(channelid[0])
         data = {
             channel: dict([(slug.split('/')[-2], (name, img))
                            for slug, name, img in shows])
@@ -213,7 +216,8 @@ class GloboApi(object):
         return url
 
     def resolve_video_url_mp4(self, video_id):
-         # which index to look in the list
+        #import rpdb2; rpdb2.start_embedded_debugger('pw')
+        # which index to look in the list
         heights = [360, 480, 720]
         video_res = int(self.plugin.get_setting('video_quality') or 0)
         # get video info
@@ -224,7 +228,10 @@ class GloboApi(object):
             raise Exception('Invalid video id: %s' % video_id)
         # build resources dict based on heights
         resources = dict((d['height'], d) for d in data['resources']
-                        if 'players' in d and 'desktop' in d['players'])
+                        if 'players' in d and 'height' in d and 'desktop' in d['players'])
+        # No height info, skip to m3u8
+        if len(resources) == 0:
+            return self.resolve_video_url_m3u8(video_id)
         # get resource based on video quality setting
         while True:
             try:
@@ -247,6 +254,7 @@ class GloboApi(object):
         return url
         
     def resolve_video_url_m3u8(self, video_id):
+        #import rpdb2; rpdb2.start_embedded_debugger('pw')
         # get video info
         data = self._get_video_info(video_id)
         self.plugin.log.debug('resolving video: %s' % video_id)
@@ -262,9 +270,11 @@ class GloboApi(object):
             template = 'h={{hash}}&k={{key}}&a={{openClosed}}&u={{user}}'
         else:
             # find playlist in resources list
-            for res in data['resources']:
-                if 'players' in res and 'desktop' in res['players'] and '.m3u8' in res['url']:
-                    break
+            reslist = [resource for resource in data['resources'] if 'players' in resource and 'desktop' in resource['players'] and '.m3u8' in resource['url']]
+            # don't have a m3u8 video available
+            if len(reslist) == 0:
+                return self.resolve_video_url_mp4(video_id)
+            res = reslist[0]
             url = res['url']
             # get hashes
             hashes, data_hashes = self._get_hashes(video_id, [res['_id']], 'html5')
