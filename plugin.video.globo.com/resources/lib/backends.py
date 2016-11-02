@@ -96,6 +96,7 @@ class globo(Backends):
 
     def _authenticate(self, provider_id):
         payload = {
+            'captcha':'',
             'payload': {
                 'email': self.username,
                 'password': self.password,
