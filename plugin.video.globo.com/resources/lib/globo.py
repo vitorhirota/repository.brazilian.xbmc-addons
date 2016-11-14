@@ -100,8 +100,8 @@ class GloboApi(object):
         channelid = [id for slug, (name, img, id) in sorted(index.items()) if channel == slug]
         shows = scraper.get_gplay_shows(channelid[0])
         data = {
-            channel: dict([(slug.split('/')[-2], (name, img))
-                           for slug, name, img in shows])
+            channel: dict([(showid, (name, img))
+                           for showid, name, img in shows])
         }
         return data
 
