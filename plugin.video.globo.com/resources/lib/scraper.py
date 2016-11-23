@@ -26,8 +26,8 @@ GLOBOSAT_SEASON_JSON = GLOBOSAT_SHOW_URL + '/temporada/%d/episodios.json'
 GLOBOSAT_API_URL = 'https://api.vod.globosat.tv/globosatplay'
 GLOBOSAT_API_AUTHORIZATION = 'token b4b4fb9581bcc0352173c23d81a26518455cc521'
 GLOBOSAT_API_CHANNELS = GLOBOSAT_API_URL + '/channels.json?page=%d'
-GLOBOSAT_API_TRACKS = GLOBOSAT_API_URL + '/tracks.json?channel_id=%d&kind=programs'
-GLOBOSAT_API_PROGRAMS = GLOBOSAT_API_URL + '/tracks/%d.json?page=%d'
+GLOBOSAT_API_PROGRAMS = GLOBOSAT_API_URL + '/cards.json?channel_id=%d&page=%d'
+GLOBOSAT_API_EPISODES = GLOBOSAT_API_URL + '/episodes.json?&program_id=%d&page=%d'
 
 PREMIERE_LIVE_JSON = GLOBOSAT_URL + '/premierefc/ao-vivo/add-on/jogos-ao-vivo/%s.json'
 SPORTV_LIVE_JSON = GLOBOSAT_URL + '/api/v1/sportv/live-signals.json'
@@ -143,16 +143,15 @@ def get_globo_shows():
 
 def get_gplay_shows(channel):
     headers = {'Authorization': GLOBOSAT_API_AUTHORIZATION}
-    trackid = get_page(GLOBOSAT_API_TRACKS % channel, headers=headers)['results'][0]['id']
     page = 1
-    shows_info = get_page(GLOBOSAT_API_PROGRAMS % (trackid, page), headers=headers)
+    shows_info = get_page(GLOBOSAT_API_PROGRAMS % (channel, page), headers=headers)
     results = shows_info['results']
     #loop through pages
     while shows_info['next'] <> None:
         page += 1
-        shows_info = get_page(GLOBOSAT_API_CHANNELS % page, headers=headers)
-        results.update(shows_info['results'])
-    return [(result['program']['url'], result['program']['title'], result['program']['poster_image']) for result in results if 'program' in result]
+        shows_info = get_page(GLOBOSAT_API_PROGRAMS % (channel, page), headers=headers)
+        results += shows_info['results']
+    return [(result['id'], result['title'], result['image']) for result in results]
 
 '''
 def get_gplay_shows(channel):
@@ -201,23 +200,22 @@ def get_globo_episodes(channel, show, page):
 
 def get_gplay_episodes(channel, show, page):
     videos = []
-    properties = ('id', 'title', 'plot', 'duration', 'date', 'episode', 'season', 'mpaa', 'tvshowtitle')
-    prop_data = ('id', 'titulo', 'descricao', 'duracao_original', 'data_exibicao', 'episodio', 'temporada', 'classificacao_indicativa', 'programa')
+    properties = ('id', 'title', 'plot', 'duration', 'date', 'episode', 'season', 'mpaa', 'tvshowtitle', 'thumb')
+    prop_data = ('id_globo_videos', 'title', 'description', 'duration_in_milliseconds', 'exhibition_date', 'number', 'season', 'content_rating', 'program', 'thumb_image')
 
-    data = get_page(GLOBOSAT_EPS_JSON % ('%s/%s' % (channel, show), page))
-
-    for item in data['resultado']:
+    headers = {'Authorization': GLOBOSAT_API_AUTHORIZATION}
+    data = get_page(GLOBOSAT_API_EPISODES % (int(show), page), headers=headers)
+    for item in data['results']:
         video = util.struct(dict(zip(properties,
                                      [item.get(p) for p in prop_data])))
         # update attrs
         video.date = util.time_format(video.date[:10], '%Y-%m-%d')
         video.mpaa = util.getMPAAFromCI(video.mpaa)
-        video.tvshowtitle = video.tvshowtitle['titulo']
+        video.tvshowtitle = video.tvshowtitle['title']
+        video.season = video.season['number'] if video.season else None
         video.duration = int(video.duration/1000)
-        video.thumb = EPSTHUMB_URL % video.id
-        # self.cache.set('video|%s' % video.id, repr(video))
         videos.append(video)
-    page = (page+1 if page < data['total_paginas'] else None)
+    page = (page+1 if data['next'] else None)
     return videos, page
 
 
