@@ -1,15 +1,3 @@
-0.1.38
- PT: corrigido VoD
- EN: fixed VoD
-
-0.1.37
- PT: corrigido VoD do SporTV e falha ao tocar alguns vídeos On Demand
- EN: fixed SporTV VoD list and error while playing some On Demand Videos
-
-0.1.36
- PT: corrigida autenticação do Globo Play
- EN: fixed Globo Play's authentication
-
 0.1.35
  PT: corrigido menu ao vivo para inclusão da Rede Globo
  EN: fixed live menu to add Rede Globo
