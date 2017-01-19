@@ -23,6 +23,12 @@ GLOBOSAT_LIVE_JSON = GLOBOSAT_URL + '/xhr/transmissoes/ao-vivo.json'
 GLOBOSAT_EPS_JSON = GLOBOSAT_SHOW_URL + '/videos/recentes.json?quantidade=15&pagina=%d'
 GLOBOSAT_SEASON_JSON = GLOBOSAT_SHOW_URL + '/temporada/%d/episodios.json'
 
+GLOBOSAT_API_URL = 'https://api.vod.globosat.tv/globosatplay'
+GLOBOSAT_API_AUTHORIZATION = 'token b4b4fb9581bcc0352173c23d81a26518455cc521'
+GLOBOSAT_API_CHANNELS = GLOBOSAT_API_URL + '/channels.json?page=%d'
+GLOBOSAT_API_PROGRAMS = GLOBOSAT_API_URL + '/cards.json?channel_id=%d&page=%d'
+GLOBOSAT_API_EPISODES = GLOBOSAT_API_URL + '/episodes.json?&program_id=%d&page=%d'
+
 PREMIERE_LIVE_JSON = GLOBOSAT_URL + '/premierefc/ao-vivo/add-on/jogos-ao-vivo/%s.json'
 SPORTV_LIVE_JSON = GLOBOSAT_URL + '/api/v1/sportv/live-signals.json'
 
@@ -48,13 +54,8 @@ def get_page(url, **kwargs):
             or r.text)
 
 def get_globo_live_id():
-    req = get_page(GLOBOPLAY_LIVE)
-    rexp = r'WM\.Player3\.ID_MOBILE_WHITELIST=\[([\d]+)[,\d]*\]'
-    liveIds = re.findall(rexp, req)
-    try:
-        return liveIds[0]
-    except:
-        return False
+    # Hardcoded for now 
+    return 4452349
 
 def get_player_version():
     req = get_page(JSAPI_URL)
@@ -68,18 +69,37 @@ def get_player_version():
 
 # @util.cacheFunction
 def get_gplay_channels():
+    #import rpdb2; rpdb2.start_embedded_debugger('pw')
+    page = 1
+    headers = {'Authorization': GLOBOSAT_API_AUTHORIZATION}
+    channel_info = get_page(GLOBOSAT_API_CHANNELS % page, headers=headers)
+    results = channel_info['results']
+    #loop through pages
+    while channel_info['next'] <> None:
+        page += 1
+        channel_info = get_page(GLOBOSAT_API_CHANNELS % page, headers=headers)
+        results.update(channel_info['results'])
+    #create channels index
+    channels = dict([(result['slug'], (
+                        result['title'],
+                        result['color_logo'],
+                        result['id']
+                    )) for result in results])
+
     soup = bs(get_page(GLOBOSAT_URL))
     # get lists
     # uls = soup.find('ul', attrs={'class': 'lista-canais'}).findAll('li')
     # uls = soup.find('ul', attrs={'id': 'mobile-submenu-canais-on-demand'}).findAll('li')[1:]
-    channels, live, dummy = soup.findAll('ul', attrs={'class': 'submenu-desktop'})
+    channels_dummy, live, dummy = soup.findAll('ul', attrs={'class': 'submenu-desktop'})
+    '''    
     # get children tags and filter as imgs
     channels = dict([(util.slugify(img['alt']),
                        (img['alt'],
                         img['src'].replace(img['src'][7:img['src'].index('=/')+2], '')))
                        for img in channels.findChildren()[2::3]])
+    '''
     # build live data
-    live = dict([(util.slugify(img['alt']), {
+    live = dict([(util.slugify(img['alt']) if util.slugify(img['alt']) != 'sportv' else 'sportvlive', {
                 'name': img['alt'],
                 'logo': json['canal_logotipo'],
                 'playable': json['status'] == 'ativa',
@@ -91,7 +111,6 @@ def get_gplay_channels():
     return (channels, live)
 
 def get_sportv_live(logo):
-    #provider_id is hardcoded right now. 
     live = dict([(util.slugify(json['title']), {
                 'name': json['title'],
                 'logo': logo,
@@ -123,6 +142,19 @@ def get_globo_shows():
     return (categories, shows)
 
 def get_gplay_shows(channel):
+    headers = {'Authorization': GLOBOSAT_API_AUTHORIZATION}
+    page = 1
+    shows_info = get_page(GLOBOSAT_API_PROGRAMS % (channel, page), headers=headers)
+    results = shows_info['results']
+    #loop through pages
+    while shows_info['next'] <> None:
+        page += 1
+        shows_info = get_page(GLOBOSAT_API_PROGRAMS % (channel, page), headers=headers)
+        results += shows_info['results']
+    return [(result['id'], result['title'], result['image']) for result in results]
+
+'''
+def get_gplay_shows(channel):
     soup = bs(get_page(GLOBOSAT_SHOW_URL % channel))
     search_strs = {
         'megapix':'submenu-generos',
@@ -135,6 +167,7 @@ def get_gplay_shows(channel):
         search = 'mobile-submenu-programas'
     shows = soup.find('ul', attrs={'id':search }).findAll('a')[1:]
     return [(a['href'], a.text, None) for a in shows]
+'''
 
 def get_globo_episodes(channel, show, page):
     videos = []
@@ -167,23 +200,22 @@ def get_globo_episodes(channel, show, page):
 
 def get_gplay_episodes(channel, show, page):
     videos = []
-    properties = ('id', 'title', 'plot', 'duration', 'date', 'episode', 'season', 'mpaa', 'tvshowtitle')
-    prop_data = ('id', 'titulo', 'descricao', 'duracao_original', 'data_exibicao', 'episodio', 'temporada', 'classificacao_indicativa', 'programa')
+    properties = ('id', 'title', 'plot', 'duration', 'date', 'episode', 'season', 'mpaa', 'tvshowtitle', 'thumb')
+    prop_data = ('id_globo_videos', 'title', 'description', 'duration_in_milliseconds', 'exhibition_date', 'number', 'season', 'content_rating', 'program', 'thumb_image')
 
-    data = get_page(GLOBOSAT_EPS_JSON % ('%s/%s' % (channel, show), page))
-
-    for item in data['resultado']:
+    headers = {'Authorization': GLOBOSAT_API_AUTHORIZATION}
+    data = get_page(GLOBOSAT_API_EPISODES % (int(show), page), headers=headers)
+    for item in data['results']:
         video = util.struct(dict(zip(properties,
                                      [item.get(p) for p in prop_data])))
         # update attrs
         video.date = util.time_format(video.date[:10], '%Y-%m-%d')
         video.mpaa = util.getMPAAFromCI(video.mpaa)
-        video.tvshowtitle = video.tvshowtitle['titulo']
+        video.tvshowtitle = video.tvshowtitle['title']
+        video.season = video.season['number'] if video.season else None
         video.duration = int(video.duration/1000)
-        video.thumb = EPSTHUMB_URL % video.id
-        # self.cache.set('video|%s' % video.id, repr(video))
         videos.append(video)
-    page = (page+1 if page < data['total_paginas'] else None)
+    page = (page+1 if data['next'] else None)
     return videos, page
 
 

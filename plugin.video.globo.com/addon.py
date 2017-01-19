@@ -118,11 +118,12 @@ def premiere():
         plugin.log.error(e, exc_info=1)
         plugin.notify(plugin.get_string(32003) % e.message)
 
-@plugin.route('/sportv')
-def sportv():
+@plugin.route('/sportvlive')
+def sportvlive():
     try:
+        #import rpdb2; rpdb2.start_embedded_debugger('pw')
         plugin.set_content('LiveTV')
-        index = api.get_path('sportv')
+        index = api.get_path('sportvlive')
         return [{
             'label': data['name'],
             'path': plugin.url_for('play_sportv_live', channel=slug),
@@ -139,13 +140,14 @@ def sportv():
 @plugin.route('/live')
 def live():
     try:
+        #import rpdb2; rpdb2.start_embedded_debugger('pw')
         plugin.set_content('LiveTV')
         index = api.get_path('live')
         return [{
             'label': data['name'],
-            'path': plugin.url_for('play_live', channel=slug) if slug not in ['premiere', 'sportv'] else plugin.url_for(slug),
+            'path': plugin.url_for('play_live', channel=slug) if slug not in ['premiere', 'sportvlive'] else plugin.url_for(slug),
             'thumbnail': data['logo'],
-            'is_playable': slug not in ['premiere', 'sportv'] and data['playable'],
+            'is_playable': slug not in ['premiere', 'sportvlive'] and data['playable'],
             'info': {
                 'plot': data['plot'],
             },
@@ -162,7 +164,7 @@ def channels():
             'label': name,
             'path': plugin.url_for('list_shows', channel=slug),
             'thumbnail': img
-        } for slug, (name, img) in sorted(index.items())]
+        } for slug, (name, img, channelid) in sorted(index.items())]
     except Exception as e:
         plugin.log.error(e, exc_info=1)
         plugin.notify(plugin.get_string(32003) % e.message)
@@ -171,6 +173,7 @@ def channels():
 @plugin.route('/globo/<category>', name='list_globo_categories', options={'channel': 'globo'})
 def list_shows(channel, category=None):
     try:
+        #import rpdb2; rpdb2.start_embedded_debugger('pw')
         plugin.set_content('tvshows')
         index = api.get_path(category or channel)
         return [{
@@ -189,6 +192,7 @@ def list_shows(channel, category=None):
 @plugin.route('/<channel>/<show>/page/<page>')
 @plugin.route('/globo/<show>/page/<page>', name='list_globo_episodes', options={'channel': 'globo'})
 def list_episodes(channel, show, page=1):
+    #import rpdb2; rpdb2.start_embedded_debugger('pw')
     try:
         content_strs = {
             'megapix':'movies',
@@ -276,8 +280,9 @@ def play(video_id):
 
 @plugin.route('/live/<channel>')
 @plugin.route('/premiere/<channel>', name='play_premiere_live', options={'index': 'premiere'})
-@plugin.route('/sportv/<channel>', name='play_sportv_live', options={'index': 'sportv'})
+@plugin.route('/sportvlive/<channel>', name='play_sportv_live', options={'index': 'sportvlive'})
 def play_live(channel, index='live'):
+    #import rpdb2; rpdb2.start_embedded_debugger('pw')
     util.clear_cookies()
     video_index = api.get_path(index)[channel]
     video_id = video_index['id']
