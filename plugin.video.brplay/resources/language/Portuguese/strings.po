@@ -1,0 +1,82 @@
+# Addon Name: BR Play
+# Addon id: plugin.video.brplay
+# Addon Provider: brplayer
+msgid ""
+msgstr ""
+
+msgctxt "#31200"
+msgid "Globosat Play"
+msgstr "Globosat Play"
+
+msgctxt "#31110"
+msgid "User"
+msgstr "Usuário"
+
+msgctxt "#31120"
+msgid "Password"
+msgstr "Senha"
+
+msgctxt "#31210"
+msgid "TV Provider"
+msgstr "Operador de TV"
+
+msgctxt "#31111"
+msgid "Affiliate"
+msgstr "Afiliada"
+
+msgctxt "#31100"
+msgid "Globo Play"
+msgstr "Globo Play"
+
+msgctxt "#31003"
+msgid "Proxy"
+msgstr "Proxy"
+
+msgctxt "#32003"
+msgid "Authentication Error. Invalid user or password."
+msgstr "Erro na authenticação. Usuário ou senha inválidos."
+
+
+msgctxt "#32001"
+msgid "Live TV"
+msgstr "Canais Ao Vivo"
+
+msgctxt "#32002"
+msgid "On Demand"
+msgstr "Canais On Demand"
+
+msgctxt "#32004"
+msgid "Live"
+msgstr "Ao Vivo"
+
+msgctxt "#32310"
+msgid "General"
+msgstr "Geral"
+
+msgctxt "#32346"
+msgid "Accounts"
+msgstr "Contas"
+
+msgctxt "#32010"
+msgid "Search"
+msgstr "Busca"
+
+msgctxt "#32056"
+msgid "Are you sure?"
+msgstr "Tem certeza?"
+
+msgctxt "#32057"
+msgid "Process Complete"
+msgstr "Processo Concluído"
+
+msgctxt "#32502"
+msgid "Resume from %s"
+msgstr "Continuar a partir de %s"
+
+msgctxt "#32503"
+msgid "Resume"
+msgstr "Continuar"
+
+msgctxt "#32072"
+msgid "Refresh"
+msgstr "Atualizar"
