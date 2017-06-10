@@ -103,7 +103,7 @@ def favorites():
 @plugin.route('/premiere')
 def premiere():
     try:
-        plugin.set_content('LiveTV')
+        #plugin.set_content('LiveTV')
         index = api.get_path('premiere')
         return [{
             'label': data['name'],
@@ -122,7 +122,7 @@ def premiere():
 def sportvlive():
     try:
         #import rpdb2; rpdb2.start_embedded_debugger('pw')
-        plugin.set_content('LiveTV')
+        #plugin.set_content('LiveTV')
         index = api.get_path('sportvlive')
         return [{
             'label': data['name'],
@@ -141,7 +141,7 @@ def sportvlive():
 def live():
     try:
         #import rpdb2; rpdb2.start_embedded_debugger('pw')
-        plugin.set_content('LiveTV')
+        #plugin.set_content('LiveTV')
         index = api.get_path('live')
         return [{
             'label': data['name'],
