@@ -198,7 +198,7 @@ def get_total_seconds(timedelta):
 def get_total_hours(timedelta):
     import datetime as dt
     hours = int(round(((timedelta.microseconds + (timedelta.seconds + timedelta.days * 24 * 3600) * 10 ** 6) / 10 ** 6) / 3600.0))
-    return dt.timedelta(hours=hours), hours
+    return dt.timedelta(hours=hours)
 
 def addUrlParameters(url, params):
 

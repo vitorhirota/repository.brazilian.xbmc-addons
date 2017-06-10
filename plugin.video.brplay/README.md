@@ -1,25 +1,5 @@
-BR Play Kodi Plugin
+BR Play
 ======================
-
-Vídeos dos principais aplicativos de streaming brasileiros
-
-Globo Play é um serviço para assinantes globo.com, que disponibiliza
-conteúdos como jornais, novelas e séries produzidos pela Rede Globo de
-televisão, na íntegra e sob demanda.
-
-Globosat Play é um serviço de vídeos sob demanda oferecidos para assinantes
-de TV a Cabo das operadoras Algar Telecom, GVT, Multiplay, NET, NET Angra, Tv
-Oi, Sky e Vivo. Oferece conteúdos sob demanda dos canais +Globosat, Bis, Canal
-Brasil, Globonews, Canal Off, Sportv, Combate, Gloob, GNT, Multishow, Megapix e
-Telecine Play. E streaming ao vivo dos canais Globonews, Sportv, Sportv 2,
-Sportv 3, Combate, Premiere, entre outros.
-
-Nota: este plugin ainda está em desenvolvimento, com vários canais e
-fornecedores de autenticação ainda não funcionais. Note também que mesmo se
-funcionais, acesso ao conteúdo é dependente de um pacote de assinatura
-correspondente (como Combate, Premiere e Telecine Play). Por favor, relate os
-devidos problemas caso os encontre.
-
 
 ![screenshot-01.jpg](https://github.com/olavopeixoto/plugin.video.brplay/raw/master/resources/screenshots/screenshot-01.jpg)
 
