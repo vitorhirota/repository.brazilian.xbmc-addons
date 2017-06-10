@@ -1,3 +1,0 @@
-0.0.2-alpha
- PT: Primeira versão alpha, maioria dos canais ao vivo e on demand funcionais
- EN: First alpha, most of the live and on demand channels working
