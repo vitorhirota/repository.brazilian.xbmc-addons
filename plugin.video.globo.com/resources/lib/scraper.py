@@ -2,6 +2,7 @@ from BeautifulSoup import BeautifulSoup as bs
 import json
 import re
 import requests
+import xbmcaddon
 
 import util
 
@@ -47,6 +48,9 @@ def get_page(url, **kwargs):
         Helper for requests get, automatically returning a json object if
         applicable or regular text otherwise.
     '''
+    SSL_TLS_Ignore = xbmcaddon.Addon('plugin.video.globo.com').getSetting("ignore_SSL") == 'true'
+    if SSL_TLS_Ignore:
+        kwargs["verify"]=False;
     r = requests.get(url, **kwargs)
     if r.status_code != 200:
         r.raise_for_status()

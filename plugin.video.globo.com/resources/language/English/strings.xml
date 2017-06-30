@@ -43,12 +43,10 @@
   <string id="31750">1500 kbps</string>
   <string id="31760">2000 kbps</string>
   <string id="31770">3000 kbps</string>
+  <string id="31805">Ignore TLS SSL 1.2 verification</string>
+  <string id="31806">[COLOR orange]Ignore TLS SSL 1.2 verification[/COLOR]: Enable only if you receive errors. If your Kodi is Krypton or higher and you are still receiving errors, this will NOT solve the problem!</string>
   <string id="31800">Play "Video on demand" as "Live Stream"</string>
-  <string id="31810">[COLOR orange]Play "Video on demand" as "Live Stream"[/COLOR]: The video starts faster</string>
-  <string id="31820">but the maximum video resolution can't be chosen and Kodi doesn't use</string>
-  <string id="31830">its internal video cache. If you are facing frequent video freezes,</string> 
-  <string id="31840">leave this option unchecked and choose a maximum video resolution</string>
-  <string id="31850">compatible with your internet.</string>
+  <string id="31810">[COLOR orange]Play "Video on demand" as "Live Stream"[/COLOR]: The video starts faster but the maximum video resolution can't be chosen and Kodi doesn't use its internal video cache. If you are facing frequent video freezes, leave this option unchecked and choose a maximum video resolution compatible with your internet.</string>
   <!-- Notifications messages -->
   <string id="32001">Authentication error. Invalid username or password.</string>
   <string id="32002">Provider %s not implemented yet.</string>
