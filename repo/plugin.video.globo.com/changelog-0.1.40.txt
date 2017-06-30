@@ -1,0 +1,197 @@
+0.1.40
+ PT: corrigido funcionamento do addon devido à mudança da Globo (patch de Johnny Depp https://bitbucket.org/johnnydepp16/)
+ 	 Adicionada opção de ignorar verificação SSL TLS 1.2 (patch de Johnny Depp https://bitbucket.org/johnnydepp16/)
+ EN: fixed Haddon not working due to a change made by Globo (patch supplied by Johnny Depp https://bitbucket.org/johnnydepp16/)
+ 	 Added option to ignore SSL TLS 1.2 verification (patch supplied by Johnny Depp https://bitbucket.org/johnnydepp16/)
+
+0.1.39
+ PT: corrigido ao vivo no Kodi 17
+ EN: fixed live video on Kodi 17
+
+0.1.38
+ PT: corrigido VoD
+ EN: fixed VoD
+
+0.1.37
+ PT: corrigido VoD do SporTV e falha ao tocar alguns vídeos On Demand
+ EN: fixed SporTV VoD list and error while playing some On Demand Videos
+
+0.1.36
+ PT: corrigida autenticação do Globo Play
+ EN: fixed Globo Play's authentication
+
+0.1.35
+ PT: corrigido menu ao vivo para inclusão da Rede Globo
+ EN: fixed live menu to add Rede Globo
+
+0.1.34
+ PT: corrigida autenticação Vivo e corrigido não funcionamento do addon em alguns casos
+ EN: fixed Vivo's authentication and fixed addon not working in some cases
+
+0.1.33
+ PT: adicionado stream da Rede Globo e todos os canais SporTV
+ EN: added Rede Globo's and all SporTV signals stream
+
+0.1.31, 0.1.32
+ PT: adequação as mudanças no sistema de vídeo ao vivo
+ EN: fixed live streaming
+
+0.1.30
+ PT: corrigida forma de obter os vídeos mp4
+ EN: fixed way to detect mp4 videos
+
+0.1.29
+ PT: apagado o arquivo de cache cookies.dat antes de tocar vídeos live
+ EN: deleted the cookies.dat file before live playback
+
+0.1.28
+ PT: adicionada opção de utilizar os vídeos mp4 no lugar da playlist m3u8 em VoD
+ EN: added option to choose between mp4 videos besides m3u8 playlist on VoD
+
+0.1.27
+ PT: corrigido erro dos vídeos pararem de tocar após algum tempo
+ EN: fixed videos stop playing after a while
+
+0.1.26
+ PT: adicionada classificação indicativa obsoleta para garantir compatibilidade
+ EN: added deprecated MPAA for compatibility issues
+
+0.1.25
+ PT: corrigida forma de exibição do globoplay
+ EN: fixed globoplay's view mode
+
+0.1.24
+ PT: corrigida falta de imagem no canal Rede Globo e exibindo manchetes além da íntegra no GloboPlay
+ EN: fixed missing Rede Globo's logo and showing highlights with the full episodes on GloboPlay
+
+0.1.23
+ PT: release 0.1.22 reempacotado
+ EN: repacked release 0.1.22
+
+0.1.22
+ PT: adicionado suporte para navegar nos dias dos programas do GloboPlay
+ EN: added way to navigate through days on GloboPlay's programs
+
+0.1.21
+ PT: melhora no retorno ao usuários dos erros e na forma de mostrar os vídeos
+ EN: improved user feedback and fixed the way that videos are shown
+
+0.1.20
+ PT: correção dos exibição dos jogos do PremierePlay
+ EN: fixed how the matches from PremierePlay were played
+
+0.1.19
+ PT: correção dos videos on-demand da Rede Globo devido ao fim do globo.tv e lançamento do globoplay.com
+ EN: fixed the Rede Globo's VoD due to the end of globo.tv and launch of globoplay.com
+
+0.1.18
+ PT: desabilitado os videos on-demand da Rede Globo devido ao fim do globo.tv e lançamento do globoplay.com
+ EN: disabled the Rede Globo's VoD due to the end of globo.tv and launch of globoplay.com
+
+0.1.17
+ PT: correção da autorização globo para assinantes só globo.tv
+ EN: fixed globo authorization for globo.tv only subscribers
+
+0.1.16
+ PT: correção da autenticação da OiTV e temporização para atualização do índice (by lucasrokam)
+ EN: fixed OiTV authentication and timed index update (by lucasrokam)
+
+0.1.15
+ PT: correção da listagem de jogos do Premiere FC, correção da autenticação da globo.com e correção da paginação dos filmes no TelecinePlay e Megapix (by lucasrokam)
+ EN: fixed matches listing on Premiere FC, fixed Globo.com authentication  and fixed movies pagination on TelecinePlay and Megapix (by lucasrokam)
+
+0.1.14
+ PT: correção do acesso ao Premiere FC e correção da busca dos filmes no TelecinePlay (by lucasrokam)
+ EN: fixed access to Premiere FC and fixed movies listing on TelecinePlay (by lucasrokam)
+
+0.1.13
+ PT: inclusão do limite de banda (by lucasrokam)
+ EN: added bandwidth limit (by lucasrokam)
+
+0.1.12
+ PT: correção de autorização NET (by lucasrokam)
+ EN: fix authorization for NET (by lucasrokam)
+
+0.1.11
+ PT: correção de autorização e atualizado tocador da api globosat (by lucasrokam)
+ EN: fixed authorization and updated player in globosat api (by lucasrokam)
+
+0.1.10
+ PT: adicionado autorização para Visitantes (by guilhermegarnier)
+ EN: added authorization for Guests (by guilhermegarnier)
+
+0.1.9
+ PT: correção autorização Sky (by lucasrokam)
+ EN: fix authorization for Sky (by lucasrokam)
+
+0.1.8
+ PT: corrigido problema de autorização
+ EN: fix authorization issue
+
+0.1.7
+ PT: adicionado autorização para Claro (by guilhermegarnier)
+ EN: added authorization for Claro (by guilhermegarnier)
+
+0.1.6
+ PT: adicionado autorização para Vivo (by greis)
+ EN: added authorization for Vivo (by greis)
+
+0.1.5.1.1
+ PT: correção de bug
+ EN: bug-fix
+
+0.1.5.1
+ PT: correção de bug
+ EN: bug-fix
+
+0.1.5
+ PT: adicionado streaming de canais ao vivo
+ EN: added live streaming
+
+0.1.4
+ PT: adicionado autorização Sky
+ EN: added authorization for Sky
+
+0.1.3.2
+ PT: corrigido listagem favoritos Rede Globo
+ EN: fixed Rede Globo favorites listing
+
+0.1.3.1
+ PT: corrigido listagem Rede Globo
+ EN: fixed Rede Globo listing
+
+0.1.3
+ PT: adicionado autorização para TV Oi, favoritos, streaming 480p
+ EN: added authorization for TV Oi, favorites, 480p streaming
+
+0.1.2.3.1
+ PT: correção sintática
+ EN: typo fix
+
+0.1.2.3
+ PT: corrigido erro de playback em Windows
+ EN: fixed Windows playback error
+
+0.1.2.2
+ PT: adicionado perfil ao processo de autenticação
+ EN: added profile to authentication process
+
+0.1.2.1
+ PT: correçoes variadas
+ EN: general bug-fixes
+
+0.1.2
+ PT: adicionado autorização para NET
+ EN: added authorization for NET
+
+0.1.1.1
+ PT: correção de erro
+ EN: bugfix
+
+0.1.1
+ PT: correção de erros
+ EN: bugfixes
+
+0.1
+ PT: Primeira versão alpha, apenas alguns vídeos e autorização pela GVT funcionais.
+ EN: First alpha, just some videos and gvt auth working.
