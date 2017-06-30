@@ -1,3 +1,9 @@
+0.1.40
+ PT: corrigido funcionamento do addon devido à mudança da Globo (patch de Johnny Depp https://bitbucket.org/johnnydepp16/)
+ 	 Adicionada opção de ignorar verificação SSL TLS 1.2 (patch de Johnny Depp https://bitbucket.org/johnnydepp16/)
+ EN: fixed Haddon not working due to a change made by Globo (patch supplied by Johnny Depp https://bitbucket.org/johnnydepp16/)
+ 	 Added option to ignore SSL TLS 1.2 verification (patch supplied by Johnny Depp https://bitbucket.org/johnnydepp16/)
+
 0.1.39
  PT: corrigido ao vivo no Kodi 17
  EN: fixed live video on Kodi 17
