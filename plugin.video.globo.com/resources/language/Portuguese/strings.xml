@@ -43,12 +43,10 @@
   <string id="31750">1500 kbps</string>
   <string id="31760">2000 kbps</string>
   <string id="31770">3000 kbps</string>
+  <string id="31805">Ignorar verificação TLS SSL 1.2</string>
+  <string id="31806">[COLOR orange]Ignorar verificação TLS SSL 1.2[/COLOR]: Habilite somente se o addon informar erros. Se seu Kodi for Krypton ou superior e ainda estiver recebendo erros, habilitar esta opção NÃO resolverá o problema !!!</string>
   <string id="31800">Rode "Video sob demanda" como "transmissão ao vivo"</string>
-  <string id="31810">[COLOR orange]Rode "Video sob demanda" como "transmissão ao vivo"[/COLOR]: A reprodução</string>
-  <string id="31820">inicia mais rapidamente porém não é possível escolher a resolução</string>
-  <string id="31830">máxima e o Kodi não faz "cache" de vídeo. Se a reprodução está</string> 
-  <string id="31840">a travar frequentemente, deixe esta opção desabilitada e escolha</string>
-  <string id="31850">uma resolução mais adequada com a sua internet.</string>
+  <string id="31810">[COLOR orange]Rode "Video sob demanda" como "transmissão ao vivo"[/COLOR]: A reprodução inicia mais rapidamente porém não é possível escolher a resolução máxima e o Kodi não faz "cache" de vídeo. Se a reprodução está a travar frequentemente, deixe esta opção desabilitada e escolha uma resolução mais adequada com a sua internet.</string>
   !-- Notifications messages -->
   <string id="32001">Erro na authenticação. Usuário ou senha inválidos.</string>
   <string id="32002">Operador %s ainda não disponível.</string>
