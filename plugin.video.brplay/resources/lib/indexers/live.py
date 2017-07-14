@@ -171,14 +171,15 @@ class Live:
 
             item.setContentLookup(False)
 
-            startdate = util.strptime_workaround(channel['dateadded'], '%Y-%m-%d %H:%M:%S') if 'dateadded' in channel else None
-
-            offset = float(util.get_total_seconds(datetime.datetime.now() - startdate)) if startdate else 0
-            item.setProperty('resumetime', str(offset))
-
             if 'duration' in channel and channel['duration'] is not None:
                 duration = float(meta['duration'])
+                startdate = util.strptime_workaround(channel['dateadded'], '%Y-%m-%d %H:%M:%S') if 'dateadded' in channel else None
+                offset = float(util.get_total_seconds(datetime.datetime.now() - startdate)) if startdate else 0
+                item.setProperty('Progress', str((offset / duration) * 100) if duration else str(0))
                 item.setProperty('totaltime', str(duration))
+
+            if not isFolder:
+                item.setMimeType("application/vnd.apple.mpegurl")
 
             list_items.append((url, item, isFolder))
 
@@ -189,7 +190,7 @@ class Live:
         control.addItems(syshandle, list_items)
         control.category(handle=syshandle, category="Live")
 
-        content = 'LiveTV' if control.isJarvis else 'episodes'
+        content = 'LiveTV' if control.isJarvis else 'tvshows'
 
         control.content(syshandle, content)
         control.directory(syshandle, cacheToDisc=False)

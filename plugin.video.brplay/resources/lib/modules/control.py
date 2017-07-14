@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import urlparse,os,sys
+import urlparse,os,sys,json
 
 import xbmc,xbmcaddon,xbmcplugin,xbmcgui,xbmcvfs
 
@@ -30,6 +30,8 @@ content = xbmcplugin.setContent
 property = xbmcplugin.setProperty
 
 category = xbmcplugin.setPluginCategory
+
+monitor = xbmc.Monitor()
 
 addSortMethod = xbmcplugin.addSortMethod
 SORT_METHOD_NONE = xbmcplugin.SORT_METHOD_NONE
@@ -146,6 +148,8 @@ log = xbmc.log
 
 skinPath = xbmc.translatePath('special://skin/')
 
+tempPath = xbmc.translatePath('special://temp/')
+
 addonPath = xbmc.translatePath(addonInfo('path'))
 
 dataPath = xbmc.translatePath(addonInfo('profile')).decode('utf-8')
@@ -166,6 +170,8 @@ isJarvis = infoLabel("System.BuildVersion").startswith("16.")
 
 isKrypton = infoLabel("System.BuildVersion").startswith("17.")
 
+cookieFile = os.path.join(tempPath, 'cookies.dat')
+
 
 def getKodiVersion():
     return infoLabel("System.BuildVersion").split(' ')[0]
@@ -175,6 +181,11 @@ def addonIcon():
     art = artPath()
     if not (art == None): return os.path.join(art, 'icon.png')
     return addonInfo('icon')
+
+def getBandwidthLimit():
+    json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Settings.GetSettingValue","params":{"setting":"network.bandwidth"},"id":1}')
+    data_object = json.loads(json_result)
+    return data_object['result']['value']
 
 
 def addonThumb():
@@ -214,7 +225,7 @@ def infoDialog(message, heading=addonInfo('name'), icon='', time=3000, sound=Fal
     elif icon == 'INFO': icon = xbmcgui.NOTIFICATION_INFO
     elif icon == 'WARNING': icon = xbmcgui.NOTIFICATION_WARNING
     elif icon == 'ERROR': icon = xbmcgui.NOTIFICATION_ERROR
-    dialog.notification(heading, message, icon, time, sound=sound)
+    dialog.notification(heading=heading, message=message, icon=icon, time=time, sound=sound)
 
 
 def yesnoDialog(line1, line2, line3, heading=addonInfo('name'), nolabel='', yeslabel=''):

@@ -69,6 +69,56 @@ class Vod:
             extras = cache.get(globoplay.Indexer().get_extra_categories, 1)
             self.category_directory(categories, extras)
 
+    def get_extras(self):
+        from resources.lib.modules.globosat import scraper_vod
+        tracks = cache.get(scraper_vod.get_tracks, 1)
+
+        sysaddon = sys.argv[0]
+        syshandle = int(sys.argv[1])
+        provider = 'globosat'
+
+        url = '%s?action=openfeatured&provider=%s' % (sysaddon, provider)
+
+        label = 'Destaques'
+
+        item = control.item(label=label)
+
+        item.setProperty('IsPlayable', "false")
+        item.setInfo(type='video', infoLabels={'title': label})
+
+        control.addItem(handle=syshandle, url=url, listitem=item, isFolder=True)
+
+        for track in tracks:
+            url = '%s?action=openextra&provider=%s&id=%s&kind=%s' % (sysaddon, provider, track['id'], track['kind'])
+
+            label = track['title']
+
+            item = control.item(label=label)
+
+            item.setProperty('IsPlayable', "false")
+            item.setInfo(type='video', infoLabels={'title': label})
+
+            control.addItem(handle=syshandle, url=url, listitem=item, isFolder=True)
+
+        control.addSortMethod(int(sys.argv[1]), control.SORT_METHOD_LABEL_IGNORE_FOLDERS)
+
+        control.content(syshandle, 'files')
+        control.directory(syshandle, cacheToDisc=False)
+
+    def get_track(self, id, kind='episode'):
+        from resources.lib.modules.globosat import scraper_vod
+        videos = cache.get(scraper_vod.get_track_list, 1, id)
+
+        if kind == 'programs':
+            self.programs_directory(videos)
+        else:
+            self.episodes_directory(videos, provider='globosat')
+
+    def get_featured(self):
+        from resources.lib.modules.globosat import scraper_vod
+        featured = cache.get(scraper_vod.get_featured, 1)
+        self.episodes_directory(featured, provider='globosat')
+
     def get_programs_by_categories(self, category):
         categories = cache.get(globoplay.Indexer().get_category_programs, 1, category)
         self.programs_directory(categories)
@@ -141,9 +191,9 @@ class Vod:
         episodes, nextpage, total_pages, days = cache.get(globoplay.Indexer().get_videos_by_program, 1, program_id, page)
         self.episodes_directory(episodes, program_id, nextpage, total_pages, days=days, poster=poster, provider=provider)
 
-    def get_videos_by_program_date(self, program_id, date, poster=None):
+    def get_videos_by_program_date(self, program_id, date, poster=None, provider=None):
         episodes = cache.get(globoplay.Indexer().get_videos_by_program_date, 1, program_id, date)
-        self.episodes_directory(episodes, program_id, poster=poster)
+        self.episodes_directory(episodes, program_id, poster=poster, provider=provider)
 
     def get_fighters(self, letter):
         fighters = cache.get(globosat.Indexer().get_fighters, 1, letter)
@@ -187,7 +237,7 @@ class Vod:
         videos, next_page, total_pages = cache.get(globosat.Indexer().get_fighter_videos, 1, slug, page)
         self.episodes_directory(videos, next_page=next_page, total_pages=total_pages, next_action='openfighter&slug=%s' % slug, provider='globosat')
 
-    def get_program_dates(self, program_id, poster=None):
+    def get_program_dates(self, program_id, poster=None, provider='globoplay'):
         days = globoplay.Indexer().get_program_dates(program_id)
 
         if days == None or len(days) == 0: control.idle() ; sys.exit()
@@ -202,7 +252,7 @@ class Vod:
             meta.update({'overlay': 6})
             meta.update({'title': label})
 
-            url = '%s?action=openvideos&provider=%s&program_id=%s&date=%s' % (sysaddon, 'globoplay', program_id, day)
+            url = '%s?action=openvideos&provider=%s&program_id=%s&date=%s' % (sysaddon, provider, program_id, day)
 
             item = control.item(label=label)
 
@@ -289,6 +339,8 @@ class Vod:
             cm.append((refreshMenu, 'RunPlugin(%s?action=refresh)' % sysaddon))
             item.addContextMenuItems(cm)
 
+            item.setMimeType("application/vnd.apple.mpegurl")
+
             control.addItem(handle=syshandle, url=url, listitem=item, isFolder=False)
 
         # if next_page:
@@ -335,7 +387,7 @@ class Vod:
             meta.update({'overlay': 6})
             meta.update({'title': label})
 
-            url = '%s?action=showdates&provider=%s&program_id=%s&category=%s' % (sysaddon, 'globoplay', program_id, program_id)
+            url = '%s?action=showdates&provider=%s&program_id=%s&category=%s' % (sysaddon, provider, program_id, program_id)
 
             item = control.item(label=label)
 
@@ -353,6 +405,7 @@ class Vod:
             control.addItem(handle=syshandle, url=url, listitem=item, isFolder=True)
 
         for video in items:
+                # label = video['label'] if 'label' in video else video['title']
                 label = video['title']
                 meta = video
                 meta.update({'overlay': 6})
@@ -370,7 +423,9 @@ class Vod:
 
                 clearlogo = meta['clearlogo'] if 'clearlogo' in meta else None
 
-                art = {'thumb': video['thumb'], 'poster': poster, 'fanart': fanart, 'clearlogo': clearlogo}
+                poster = meta['poster'] if 'poster' in meta else poster
+
+                art = {'thumb': meta['thumb'], 'poster': poster, 'fanart': fanart, 'clearlogo': clearlogo}
 
                 item.setProperty('Fanart_Image', fanart)
 
@@ -399,6 +454,8 @@ class Vod:
                 cm = []
                 cm.append((refreshMenu, 'RunPlugin(%s?action=refresh)' % sysaddon))
                 item.addContextMenuItems(cm)
+
+                item.setMimeType("application/vnd.apple.mpegurl")
 
                 control.addItem(handle=syshandle, url=url, listitem=item, isFolder=False)
 
@@ -442,7 +499,7 @@ class Vod:
 
         for index, program in enumerate(items):
 
-                label = program['name']
+                label = program['name'] if 'name' in program else program['title'] if 'title' in program else ''
 
                 is_music_video = 'kind' in program and program['kind'] == 'shows'
                 is_movie = 'kind' in program and program['kind'] == 'movies'
@@ -491,10 +548,11 @@ class Vod:
                 item.setProperty('IsPlayable', 'true' if is_playable else 'false')
                 item.setInfo(type='video', infoLabels = meta)
 
-                control.addItem(handle=syshandle, url=url, listitem=item, isFolder=not is_playable)
-
                 if is_playable:
+                    item.setMimeType("application/vnd.apple.mpegurl")
                     has_playable_item = True
+
+                control.addItem(handle=syshandle, url=url, listitem=item, isFolder=not is_playable)
 
         # control.addSortMethod(int(sys.argv[1]), control.SORT_METHOD_VIDEO_SORT_TITLE)
         #
