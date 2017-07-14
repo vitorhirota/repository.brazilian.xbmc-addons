@@ -1,0 +1,11 @@
+[B]0.0.8[/B]
+- Experimental Adaptive HLS playback (live streaming)
+[B]0.0.7[/B]
+- Experimental Krypton live streaming support
+- Internal bandwidth limiter
+- Removed resume point from live streaming
+- Added Featured globosat content
+[B]0.0.4[/B]
+- Major compatibility issues
+[B]0.0.1[/B]
+- Initial version
