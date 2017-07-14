@@ -8,8 +8,12 @@ GLOBOSAT_API_URL = 'https://api.vod.globosat.tv/globosatplay'
 GLOBOSAT_API_AUTHORIZATION = 'token b4b4fb9581bcc0352173c23d81a26518455cc521'
 GLOBOSAT_API_CHANNELS = GLOBOSAT_API_URL + '/channels.json?page=%d'
 GLOBOSAT_SEARCH = 'https://globosatplay.globo.com/busca/pagina/%s.json?q=%s'
+GLOBOSAT_FEATURED = 'https://api.vod.globosat.tv/globosatplay/featured.json'
+GLOBOSAT_TRACKS = 'https://api.vod.globosat.tv/globosatplay/tracks.json'
+GLOBOSAT_TRACKS_ITEM = 'https://api.vod.globosat.tv/globosatplay/tracks/%s.json'
 
 artPath = control.artPath()
+
 
 def get_authorized_channels():
 
@@ -51,6 +55,7 @@ def get_authorized_channels():
                 })
 
     return channels
+
 
 def get_channel_programs(channel_id):
 
@@ -118,3 +123,150 @@ def search(term, page=1):
         videos.append(video)
 
     return videos, next_page, total
+
+
+def get_featured(channel_id=None):
+    headers = {
+            'Accept-Encoding': 'gzip',
+            'Authorization': GLOBOSAT_API_AUTHORIZATION
+       }
+    channel_filter = '?channel_id=%s' % channel_id if channel_id else ''
+    featured_list = client.request(GLOBOSAT_FEATURED + channel_filter, headers=headers)
+
+    results = featured_list['results']
+
+    while featured_list['next'] is not None:
+        featured_list = client.request(featured_list['next'], headers=headers)
+        results += featured_list['results']
+
+    videos = []
+
+    for item in results:
+
+        media = item['media']
+
+        if media:
+            video = {
+                'id': item['id_globo_videos'],
+                'label': media['channel']['title'] + ' - ' + item['title'] + ' - ' + media['title'],
+                'title': media['title'],
+                'tvshowtitle': item['title'],
+                'studio': media['channel']['title'],
+                'plot': media['description'],
+                'tagline': item['subtitle'],
+                'duration': float(media['duration_in_milliseconds']) / 1000.0,
+                'logo': media['program']['logo_image'] if 'program' in media and media['program'] else item['channel']['color_logo'],
+                'clearlogo': media['program']['logo_image'] if 'program' in media and media['program'] else item['channel']['color_logo'],
+                'poster': media['program']['poster_image'] if 'program' in media and media['program'] else media['card_image'],
+                'thumb': media['thumb_image'],
+                'fanart': media['background_image_tv_cropped'] if 'program' in media and media['program'] else media['background_image'],
+                'mediatype': 'episode',
+                'brplayprovider': 'globosat'
+            }
+        else:
+            video = {
+                'id': item['id_globo_videos'],
+                'label': item['channel']['title'] + ' - ' + item['title'],
+                'title': item['title'],
+                'tvshowtitle': item['title'],
+                'studio': item['channel']['title'],
+                'plot': item['subtitle'],
+                #'tagline': item['subtitle'],
+                #'duration': float(media['duration_in_milliseconds']) / 1000.0,
+                #'logo': media['program']['logo_image'],
+                #'clearlogo': media['program']['logo_image'],
+                #'poster': media['program']['poster_image'],
+                'thumb': item['background_image'],
+                'fanart': item['background_image'],
+                'mediatype': 'episode',
+                'brplayprovider': 'globosat'
+            }
+
+        videos.append(video)
+
+    return videos
+
+
+def get_tracks(channel_id=None):
+    headers = {
+        'Accept-Encoding': 'gzip',
+        'Authorization': GLOBOSAT_API_AUTHORIZATION
+    }
+    channel_filter = '?channel_id=%s' % channel_id if channel_id else ''
+    tracks_response = client.request(GLOBOSAT_TRACKS + channel_filter, headers=headers)
+
+    results = tracks_response['results']
+
+    tracks = []
+
+    for item in results:
+        video = {
+            'id': item['id'],
+            'label': item['title'],
+            'title': item['title'],
+            'kind': item['kind']
+        }
+
+        tracks.append(video)
+
+    return tracks
+
+
+def get_track_list(id):
+    headers = {
+        'Accept-Encoding': 'gzip',
+        'Authorization': GLOBOSAT_API_AUTHORIZATION
+    }
+    track_list = client.request(GLOBOSAT_TRACKS_ITEM % id, headers=headers)
+
+    results = track_list['results']
+
+    while track_list['next'] is not None:
+        track_list = client.request(track_list['next'], headers=headers)
+        results += track_list['results']
+
+    videos = []
+
+    for item in results:
+
+        media = item['media']
+        if media:
+            video = {
+                'id': item['id_globo_videos'],
+                'label': media['channel']['title'] + ' - ' + media['title'],
+                'title': media['title'],
+                'tvshowtitle': media['program']['title'] if 'program' in media and media['program'] else None,
+                'studio': media['channel']['title'],
+                'plot': media['description'],
+                'tagline': media['subtitle'],
+                'duration': float(media['duration_in_milliseconds']) / 1000.0,
+                'logo': media['program']['logo_image'] if 'program' in media and media['program'] else media['channel']['color_logo'],
+                'clearlogo': media['program']['logo_image'] if 'program' in media and media['program'] else media['channel']['color_logo'],
+                'poster': media['program']['poster_image'] if 'program' in media and media['program'] else media['card_image'],
+                'thumb': media['thumb_image'],
+                'fanart': media['background_image_tv_cropped'],
+                'mediatype': 'episode',
+                'brplayprovider': 'globosat'
+            }
+        else:
+            program = item['program']
+            video = {
+                'id': item['id_globo_videos'],
+                'label': program['title'],
+                'title': program['title'],
+                'tvshowtitle': program['title'],
+                'studio': program['channel']['title'],
+                'plot': program['description'],
+                'tagline': None,
+                'logo': program['logo_image'],
+                'clearlogo': program['logo_image'],
+                'poster': program['poster_image'],
+                'thumb': None,
+                'fanart': program['background_image_tv_cropped'],
+                'mediatype': 'tvshow',
+                'isplayable': False,
+                'brplayprovider': 'globosat'
+            }
+        videos.append(video)
+
+    return videos

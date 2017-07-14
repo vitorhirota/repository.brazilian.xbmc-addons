@@ -1,23 +1,47 @@
 import json
 import re
 import sys
-
 import xbmc
-
 import auth
+from resources.lib.modules import hlshelper
 from resources.lib.modules import client
 from resources.lib.modules import control
 from resources.lib.modules.util import get_signed_hashes
 
+import threading
+
+PLAYER_VERSION = '1.1.23'
+PLAYER_SLUG = 'ios'
+
+HISTORY_URL = 'https://api.user.video.globo.com/watch_history/'
+
 
 class Player(xbmc.Player):
     def __init__(self):
-        super(Player, self).__init__()
+        super(xbmc.Player, self).__init__()
         self.sources = []
         self.offset = 0.0
         self.isLive = False
+        self.m3u8 = None
+        self.cookies = None
+        self.url = None
+        self.item = None
+        self.stopPlayingEvent = None
 
-    def play(self, id, meta):
+    def onPlayBackStopped(self):
+        control.log("PLAYBACK STOPPED")
+        if self.stopPlayingEvent:
+            self.stopPlayingEvent.set()
+
+    def onPlayBackEnded(self):
+        control.log("PLAYBACK ENDED")
+        if self.stopPlayingEvent:
+            self.stopPlayingEvent.set()
+
+    def onPlayBackStarted(self):
+        control.log("PLAYBACK STARTED")
+
+    def play_stream(self, id, meta):
 
         if id == None: return
 
@@ -29,7 +53,10 @@ class Player(xbmc.Player):
             "aired": None
         }
 
+        is_live = False
+
         if 'live' in meta and meta['live'] == True:
+            is_live = True
             info = self.__getLiveVideoInfo(id, meta['affiliate'] if 'affiliate' in meta else None)
         else:
             info = self.__getVideoInfo(id)
@@ -61,68 +88,50 @@ class Player(xbmc.Player):
         poster = meta['poster'] if 'poster' in meta else control.addonPoster()
         thumb = meta['thumb'] if 'thumb' in meta else info["thumbUri"]
 
-        # playlist, cookies = m3u8.load(url)
-        #
-        # control.log("PLAYLIST[0].bandwidth: %s" % repr(playlist.playlists[0].stream_info.bandwidth))
-        # control.log("PLAYLIST[0].uri: %s" % repr(playlist.playlists[0].absolute_uri))
-        # control.log("PLAYLIST[0].cookies: %s" % repr(cookies))
-        #
-        # cookies_str = urllib.urlencode(cookies.get_dict()).replace('&', '; ') + ';'
-        #
-        # url = playlist.playlists[0].absolute_uri + '|Cookie=' + urllib.quote(cookies_str)
-
-        # control.log("FINAL URL: %s" % url)
-
-        item = control.item(path=url)
-
-        item.setArt({'icon': thumb, 'thumb': thumb, 'poster': poster, 'tvshow.poster': poster, 'season.poster': poster})
-        item.setProperty('IsPlayable', 'true')
-        item.setInfo(type='video', infoLabels=meta)
-
         syshandle = int(sys.argv[1])
 
-        self.offset = float(meta['milliseconds_watched']) / 1000.0 if 'milliseconds_watched' in meta else 0
-
-        item.setContentLookup(False)
-
-        # control.player.play(url, item)
-        control.resolve(syshandle, True, item)
+        # self.offset = float(meta['milliseconds_watched']) / 1000.0 if 'milliseconds_watched' in meta else 0
 
         self.isLive = 'live' in meta and meta['live'] == True
 
-    #     if self.isLive:
-    #         self.keepPlaybackAlive(item, meta)
-    #
-    # def onPlayBackStarted(self):
-    #     control.log('onPlayBackStarted!!!')
-    #
-    #     # control.execute('Dialog.Close(all,true)')
-    #     if self.offset > 0:
-    #         control.log('SET SEEKTIME TO: %s' % str(self.offset))
-    #         self.seekTime(self.offset)
-    #
-    # def onPlayBackResumed(self):
-    #     control.log('onPlayBackResumed!!!')
-    #
-    #
-    # def keepPlaybackAlive(self, item, meta):
-    #     code = meta['affiliate_code'] if 'affiliate_code' in meta else 'RJ'
-    #
-    #     for i in range(0, 240):
-    #         if self.isPlayingVideo(): break
-    #         xbmc.sleep(1000)
-    #
-    #     while self.isPlayingVideo():
-    #         control.log("IS PLAYING: TRUE")
-    #         live_program = scraper_live.getLiveProgram(code)
-    #         program_description = scraper_live.getProgramDescription(live_program['program_id_epg'], live_program['program_id'], code)
-    #         meta.update({
-    #             'title': 'PLAYING: Globo ' + re.sub(r'\d+','',code) + '[I] - ' + program_description['title'] + '[/I]',
-    #             'tvshowtitle': program_description['tvshowtitle'] if 'tvshowtitle' in program_description else None
-    #         })
-    #         control.log("UPDATING META TO: %s" % repr(meta))
-    #         item.setInfo(type='video', infoLabels=meta)
-    #         xbmc.sleep(60000)
+        self.url, mime_type, stopEvent = hlshelper.pickBandwidth(url)
+        control.log("Resolved URL: %s" % repr(self.url))
+
+        item = control.item(path=self.url)
+        item.setInfo(type='video', infoLabels=meta)
+        item.setArt({'icon': thumb, 'thumb': thumb, 'poster': poster, 'tvshow.poster': poster, 'season.poster': poster})
+        item.setProperty('IsPlayable', 'true')
+
+        if mime_type:
+            item.setMimeType(mime_type)
+
+        item.setContentLookup(False)
+
+        control.resolve(syshandle, True, item)
+
+        self.stopPlayingEvent = threading.Event()
+        self.stopPlayingEvent.clear()
+
+        last_time = 0.0
+        while not self.stopPlayingEvent.isSet():
+            if control.monitor.abortRequested():
+                control.log("Abort requested")
+                break;
+            control.log("IS PLAYING: %s" % self.isPlaying())
+            if not is_live and self.isPlaying():
+                total_time = self.getTotalTime()
+                current_time = self.getTime()
+                if current_time - last_time > 10 or (last_time == 0 and current_time > 1):
+                    last_time = current_time
+                    percentage_watched = current_time / total_time if total_time > 0 else 1.0 / 1000000.0
+                    self.save_video_progress(info['credentials'], info['program_id'], info['id'], current_time / 1000.0, fully_watched=percentage_watched>0.9 and percentage_watched<=1)
+            control.sleep(1000)
+
+        if stopEvent:
+            control.log("Setting stop event for proxy player")
+            stopEvent.set()
+
+        control.log("Done playing. Quitting...")
 
     def __getVideoInfo(self, id):
 
@@ -131,8 +140,6 @@ class Player(xbmc.Player):
             'http': proxy,
             'https': proxy,
         }
-
-        # control.log("VIDEO INFO")
 
         playlistUrl = 'http://api.globovideos.com/videos/%s/playlist'
         playlistJson = client.request(playlistUrl % id, headers={"Accept-Encoding": "gzip"})
@@ -146,7 +153,7 @@ class Player(xbmc.Player):
         playlistJson = playlistJson['videos'][0]
 
         for node in playlistJson['resources']:
-            if any("ios" in s for s in node['players']):
+            if any(PLAYER_SLUG in s for s in node['players']):
                 resource = node
                 break
 
@@ -156,6 +163,35 @@ class Player(xbmc.Player):
             sys.exit()
             return None
 
+        #cuepoints = playlistJson['cuepoints']
+
+        #"cuepoints": [
+        #     {
+        #         "type": "next_segment",
+        #         "title": "",
+        #         "description": "",
+        #         "time": 596062
+        #     },
+        #     {
+        #         "type": "next_segment",
+        #         "title": "",
+        #         "description": "",
+        #         "time": 1136068
+        #     },
+        #     {
+        #         "type": "next_segment",
+        #         "title": "",
+        #         "description": "",
+        #         "time": 1687152
+        #     },
+        #     {
+        #         "type": "next_segment",
+        #         "title": "",
+        #         "description": "",
+        #         "time": 2020151
+        #     }
+        # ]
+
         resource_id = resource['_id']
 
         username = control.setting('globoplay_username')
@@ -163,7 +199,7 @@ class Player(xbmc.Player):
 
         #authenticate
         credentials = auth.auth().authenticate(username, password)
-        hashUrl = 'http://security.video.globo.com/videos/%s/hash?resource_id=%s&version=1.1.23&player=ios' % (id, resource_id)
+        hashUrl = 'http://security.video.globo.com/videos/%s/hash?resource_id=%s&version=%s&player=%s' % (id, resource_id, PLAYER_VERSION, PLAYER_SLUG)
         hashJson = client.request(hashUrl, cookie=credentials, mobile=True, headers={"Accept-Encoding": "gzip"}, proxy=proxy)
 
         return {
@@ -178,33 +214,37 @@ class Player(xbmc.Player):
             "category": playlistJson["category"],
             "subscriber_only": playlistJson["subscriber_only"],
             "exhibited_at": playlistJson["exhibited_at"],
-            "player": "ios",
+            "player": PLAYER_SLUG,
             "url": resource["url"],
             "query_string_template": resource["query_string_template"],
             "thumbUri": None,
             "hash": hashJson["hash"],
-            "user": None
+            "user": None,
+            "credentials": credentials
         }
 
     def __getLiveVideoInfo(self, id, geolocation):
 
         username = control.setting('globoplay_username')
         password = control.setting('globoplay_password')
+
+        # authenticateurl
+        credentials = auth.auth().authenticate(username, password)
+
         affiliate = control.setting('globo_affiliate')
 
         if affiliate == "All" and geolocation != None:
-            post_data = geolocation + "&player=ios&version=1.1.23"
+            pass
         elif affiliate == "Sao Paulo":
-            post_data = "lat=-23.5505&long=-46.6333&player=ios&version=1.1.23"
+            geolocation = 'lat=-23.5505&long=-46.6333'
         elif affiliate == 'Brasilia':
-            post_data = "lat=-15.7942&long=-47.8825&player=ios&version=1.1.23"
+            geolocation = 'lat=-15.7942&long=-47.8825'
         elif affiliate == 'Belo Horizonte':
-            post_data = "lat=-19.9245&long=-43.9352&player=ios&version=1.1.23"
+            geolocation = 'lat=-19.9245&long=-43.9352'
         else: #Rio de Janeiro
-            post_data = "lat=-22.900&long=-43.172&player=ios&version=1.1.23"
+            geolocation = 'lat=-22.900&long=-43.172'
 
-        #authenticateurl
-        credentials = auth.auth().authenticate(username, password)
+        post_data = "%s&player=%s&version=%s" % (geolocation, PLAYER_SLUG, PLAYER_VERSION)
 
         #4452349
         hashUrl = 'http://security.video.globo.com/videos/%s/hash' % id
@@ -226,10 +266,28 @@ class Player(xbmc.Player):
             # "subscriber_only": playlistJson["subscriber_only"],
             "subscriber_only": 'true',
             # "exhibited_at": playlistJson["exhibited_at"],
-            "player": "ios",
+            "player": PLAYER_SLUG,
             "url": hashJson["url"],
             "query_string_template": "h={{hash}}&k={{key}}&a={{openClosed}}&u={{user}}",
             "thumbUri": hashJson["thumbUri"],
             "hash": hashJson["hash"],
-            "user": hashJson["user"]
+            "user": hashJson["user"],
+            "credentials": credentials
         }
+
+    def save_video_progress(self, credentials, program_id, video_id, milliseconds_watched, fully_watched=False):
+
+        post_data = {
+            'resource_id': video_id,
+            'milliseconds_watched': milliseconds_watched,
+            'program_id': program_id,
+            'fully_watched': fully_watched
+        }
+
+        control.log("SAVING HISTORY: %s" % repr(post_data))
+
+        client.request(HISTORY_URL, error=True, cookie=credentials, mobile=True, headers={
+            "Accept-Encoding": "gzip",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "User-Agent": "Globo Play/0 (iPhone)"
+        }, post=post_data)
