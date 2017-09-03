@@ -19,7 +19,13 @@ class navigator:
     def root(self):
         self.addDirectoryItem(32001, 'liveChannels', 'live.png', 'DefaultLive.png')
         self.addDirectoryItem(32002, 'vodChannels', 'ondemand.png', 'DefaultOnDemand.png')
-        self.addDirectoryItem(32080, 'featured', 'featured.png', 'DefaultMovies.png')
+
+        if control.is_globosat_available():
+            self.addDirectoryItem(32080, 'featured', 'featured.png', 'DefaultMovies.png')
+            self.addDirectoryItem(32090, 'favorites', 'favorites.png', 'DefaultMovies.png')
+            self.addDirectoryItem(32095, 'watchlater', 'userlists.png', 'DefaultMovies.png')
+            self.addDirectoryItem(32096, 'watchhistory', 'years.png', 'DefaultMovies.png')
+
         self.addDirectoryItem(32010, 'searchMenu', 'search.png', 'DefaultMovies.png')
 
         # control.addSortMethod(int(sys.argv[1]), control.SORT_METHOD_LABEL_IGNORE_FOLDERS)
@@ -35,7 +41,7 @@ class navigator:
         k = control.keyboard('', t); k.doModal()
         q = k.getText() if k.isConfirmed() else None
 
-        if (q == None or q == ''): return
+        if q is None or q == '': return
 
         url = '%s?action=search&q=%s&page=1' % (sys.argv[0], urllib.quote_plus(q))
         control.execute('Container.Update(%s)' % url)
@@ -57,6 +63,7 @@ class navigator:
 
     def cacheAuth(self):
         import resources.lib.modules.globosat.scraper_vod as scraper_vod
+
         cache.get(scraper_vod.get_authorized_channels, 1)
 
     def addDirectoryItem(self, name, query, thumb, icon, queue=False, isAction=True, isFolder=True):

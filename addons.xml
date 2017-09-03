@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.brplay" version="0.0.10" name="BR play" provider-name="brplayer">
+<addon id="plugin.video.brplay" version="0.0.12" name="BR play" provider-name="brplayer">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0" />
 		<import addon="script.module.beautifulsoup" version="3.2.1"/>
@@ -23,8 +23,8 @@
 			<screenshot>resources/screenshots/screenshot-02.jpg</screenshot>
 			<screenshot>resources/screenshots/screenshot-03.jpg</screenshot>
 		</assets>
-		<news>0.0.9
-- Experimental Adaptive HLS playback (live streaming)
+		<news>0.0.12
+			- Fix Vivo Authentication
         </news>
 	</extension>
 </addon>

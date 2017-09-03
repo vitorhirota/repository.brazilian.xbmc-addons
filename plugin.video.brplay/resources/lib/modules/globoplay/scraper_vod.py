@@ -17,8 +17,8 @@ GLOBOPLAY_VIDEOS_RANGE = GLOBOPLAY_URL + '/v1/programs/%d/videos?start=%s&end=%s
 
 GLOBOPLAY_HIGHLIGHTS = GLOBOPLAY_URL + '/v2/highlights?api_key=' + GLOBOPLAY_APIKEY
 GLOBOPLAY_FAVORITES = 'http://api.user.video.globo.com/favorites?page=%s&per_page=%s'
-GLOBOPLAY_WATCHHISTORY_BYPROGRAM = 'https://api.user.video.globo.com/watch_history/last_by_program?library_id=560d2da572696f10df000000&preload_metadata=true&limit=%s'
-GLOBOPLAY_CONTINUEWATCHING_BYPROGRAM = 'https://api.user.video.globo.com/watch_history/last_by_program?library_id=560d2da572696f10df000000&preload_metadata=true&fully_watched=false&limit=%s'
+GLOBOPLAY_WATCHHISTORY_BYPROGRAM = 'https://api.user.video.globo.com/watch_history/?preload_metadata=true&per_page=%s'
+GLOBOPLAY_CONTINUEWATCHING_BYPROGRAM = 'https://api.user.video.globo.com/watch_history/?preload_metadata=true&fully_watched=false&per_page=%s'
 GLOBOPLAY_MOST_WATCHED_VIDEOS = 'https://api.globoplay.com.br/v1/trilhos/mais-vistos?api_key=' + GLOBOPLAY_APIKEY
 
 GLOBOPLAY_SEARCH = 'https://api.globoplay.com.br/v1/search?page=%s&q=%s&api_key=' + GLOBOPLAY_APIKEY
@@ -39,6 +39,7 @@ def get_globoplay_channels():
             'playable': 'false',
             'plot': None,
             'id': 196,
+            'adult': False
         })
 
     return channels
@@ -48,19 +49,19 @@ def get_extra_sections():
 
     extras = [{
         'id': '-highlights-',
-        'title': '-Destaques-'
+        'title': control.lang(34011).encode('utf-8')
     },{
         'id': '-mostwatched-',
-        'title': '-Mais Assistidos-'
+        'title': control.lang(34012).encode('utf-8')
     },{
         'id': '-continue-',
-        'title': '-Continue Assistindo-'
+        'title': control.lang(34013).encode('utf-8')
     },{
         'id': '-favorites-',
-        'title': '-Favoritos-'
+        'title': control.lang(34014).encode('utf-8')
     },{
         'id': '-history-',
-        'title': '-Histórico-'
+        'title': control.lang(34015).encode('utf-8')
     }]
 
     return extras
