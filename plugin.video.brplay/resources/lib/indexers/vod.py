@@ -23,38 +23,34 @@ class Vod:
     def __init__(self):
         self.systime = (datetime.datetime.utcnow()).strftime('%Y%m%d%H%M%S%f')
 
+    def get_vod_channels_directory(self):
+
+        channels = self.get_vod_channels()
+
+        self.channel_directory(channels)
+
     def get_vod_channels(self):
 
         channels = cache.get(self.__get_vod_channels, 360, table="channels")
 
-        self.channel_directory(channels)
+        if not control.show_adult_content:
+            channels = [channel for channel in channels if not channel["adult"]]
+
         return channels
 
     def __get_vod_channels(self):
 
         channels = []
 
-        if self.__isGlobosatAvailable():
+        if control.is_globosat_available():
             channels += globosat.Indexer().get_vod()
 
-        if self.__isGloboplayAvailable():
+        if control.is_globoplay_available():
              channels += globoplay.Indexer().get_vod()
 
         channels = sorted(channels, key=lambda k: k['name'])
 
         return channels
-
-    def __isGlobosatAvailable(self):
-        username = control.setting('globosat_username')
-        password = control.setting('globosat_password')
-
-        return username and password and username.strip() != '' and password.strip() != ''
-
-    def __isGloboplayAvailable(self):
-        username = control.setting('globoplay_username')
-        password = control.setting('globoplay_password')
-
-        return username and password and username.strip() != '' and password.strip() != ''
 
     def get_channel_programs(self, channel_id):
         programs = cache.get(globosat.Indexer().get_channel_programs, 1, channel_id)
@@ -118,6 +114,48 @@ class Vod:
         from resources.lib.modules.globosat import scraper_vod
         featured = cache.get(scraper_vod.get_featured, 1)
         self.episodes_directory(featured, provider='globosat')
+
+    def get_favorites(self):
+        from resources.lib.modules.globosat import scraper_vod
+        favorites = scraper_vod.get_favorites()
+        self.episodes_directory(favorites, provider='globosat', is_favorite=True)
+
+    def add_favorites(self, video_id):
+        from resources.lib.modules.globosat import scraper_vod
+        scraper_vod.add_favorites(video_id)
+
+        control.infoDialog(control.lang(32057).encode('utf-8'), sound=True, icon='INFO')
+
+    def del_favorites(self, video_id):
+        from resources.lib.modules.globosat import scraper_vod
+        scraper_vod.del_favorites(video_id)
+
+        control.refresh()
+        control.infoDialog(control.lang(32057).encode('utf-8'), sound=True, icon='INFO')
+
+    def get_watch_later(self):
+        from resources.lib.modules.globosat import scraper_vod
+        favorites = scraper_vod.get_watch_later()
+        self.episodes_directory(favorites, provider='globosat', is_watchlater=True)
+
+    def add_watch_later(self, video_id):
+        from resources.lib.modules.globosat import scraper_vod
+        scraper_vod.add_watch_later(video_id)
+
+        control.infoDialog(control.lang(32057).encode('utf-8'), sound=True, icon='INFO')
+
+    def del_watch_later(self, video_id):
+        from resources.lib.modules.globosat import scraper_vod
+        scraper_vod.del_watch_later(video_id)
+
+        control.refresh()
+        control.infoDialog(control.lang(32057).encode('utf-8'), sound=True, icon='INFO')
+
+    def get_watch_history(self):
+        from resources.lib.modules.globosat import scraper_vod
+        watch_history = scraper_vod.get_watch_history()
+
+        self.episodes_directory(watch_history, provider='globosat')
 
     def get_programs_by_categories(self, category):
         categories = cache.get(globoplay.Indexer().get_category_programs, 1, category)
@@ -275,10 +313,10 @@ class Vod:
 
         threads = []
 
-        if self.__isGloboplayAvailable():
+        if control.is_globoplay_available():
             threads.append(workers.Thread(self.add_search_results, globoplay.Indexer().search, results, q, page))
 
-        if self.__isGlobosatAvailable():
+        if control.is_globosat_available():
             threads.append(workers.Thread(self.add_search_results, globosat.Indexer().search, results, q, page))
 
         [i.start() for i in threads]
@@ -345,7 +383,10 @@ class Vod:
 
         # if next_page:
         # label = 'Next Page (%s/%s)' % (nextpage, total_pages)
-        label = 'More Videos'
+
+        # 34004 = "More Videos"
+        label = control.lang(34004).encode('utf-8')
+
         meta = {}
         meta.update({'mediatype': 'video'})
         meta.update({'overlay': 6})
@@ -372,16 +413,26 @@ class Vod:
         results, next_page, total = fn(*args)
         list += results
 
-    def episodes_directory(self, items, program_id=None, next_page=None, total_pages=None, next_action='openvideos', days=[], poster=None, provider=None):
-        if items == None or len(items) == 0: control.idle() ; sys.exit()
+    def add_results(self, fn, list, *args):
+        results = fn(*args)
+        list += results
+
+    def episodes_directory(self, items, program_id=None, next_page=None, total_pages=None, next_action='openvideos', days=[], poster=None, provider=None, is_favorite=False, is_watchlater=False):
+        if items is None or len(items) == 0: control.idle() ; sys.exit()
 
         sysaddon = sys.argv[0]
         syshandle = int(sys.argv[1])
 
+        # 32072 = "Refresh" 
         refreshMenu = control.lang(32072).encode('utf-8')
+        addFavorite = control.lang(32073).encode('utf-8')
+        removeFavorite = control.lang(32074).encode('utf-8')
+        addWatchLater = control.lang(32075).encode('utf-8')
+        removeWatchLater = control.lang(32076).encode('utf-8')
 
         if days:
-            label = 'By Date'
+            # 34005 = "By Date"
+            label = control.lang(34005).encode('utf-8')
             meta = {}
             meta.update({'mediatype': 'video'})
             meta.update({'overlay': 6})
@@ -453,6 +504,15 @@ class Vod:
 
                 cm = []
                 cm.append((refreshMenu, 'RunPlugin(%s?action=refresh)' % sysaddon))
+                if provider == 'globosat':
+                    if is_favorite:
+                        cm.append((removeFavorite, 'RunPlugin(%s?action=delFavorites&id_globo_videos=%s)' % (sysaddon,video['id'])))
+                    else:
+                        cm.append((addFavorite, 'RunPlugin(%s?action=addFavorites&id_globo_videos=%s)' % (sysaddon,video['id'])))
+                    if is_watchlater:
+                        cm.append((removeWatchLater, 'RunPlugin(%s?action=delwatchlater&id_globo_videos=%s)' % (sysaddon,video['id'])))
+                    else:
+                        cm.append((addWatchLater, 'RunPlugin(%s?action=addwatchlater&id_globo_videos=%s)' % (sysaddon,video['id'])))
                 item.addContextMenuItems(cm)
 
                 item.setMimeType("application/vnd.apple.mpegurl")
@@ -461,7 +521,10 @@ class Vod:
 
         if next_page:
             # label = 'Next Page (%s/%s)' % (nextpage, total_pages)
-            label = 'Older Videos'
+
+            # 34006 = "Older Videos"
+            label = control.lang(34006).encode('utf-8')
+            
             meta = {}
             meta.update({'mediatype': 'video'})
             meta.update({'overlay': 6})
@@ -493,6 +556,7 @@ class Vod:
         sysaddon = sys.argv[0]
         syshandle = int(sys.argv[1])
 
+        # 32072 = "Refresh" 
         refreshMenu = control.lang(32072).encode('utf-8')
 
         has_playable_item = False
@@ -570,6 +634,7 @@ class Vod:
         sysaddon = sys.argv[0]
         syshandle = int(sys.argv[1])
 
+        # 32072 = "Refresh" 
         refreshMenu = control.lang(32072).encode('utf-8')
 
         for extra in extras:
@@ -643,6 +708,7 @@ class Vod:
 
         #queueMenu = control.lang(32065).encode('utf-8')
 
+        # 32072 = "Refresh" 
         refreshMenu = control.lang(32072).encode('utf-8')
 
         for i in items:
@@ -717,11 +783,12 @@ class Vod:
 
 
     def category_combate_directory(self, items):
-        if items == None or len(items) == 0: control.idle() ; sys.exit()
+        if items is None or len(items) == 0: control.idle() ; sys.exit()
 
         sysaddon = sys.argv[0]
         syshandle = int(sys.argv[1])
 
+        # 32072 = "Refresh" 
         refreshMenu = control.lang(32072).encode('utf-8')
 
         for item in items:

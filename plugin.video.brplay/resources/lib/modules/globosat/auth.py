@@ -24,25 +24,27 @@ class auth:
     OAUTH_URL = 'http://globosatplay.globo.com/-/auth/gplay/'
     GLOBOSAT_CREDENTIALS = 'globosat_credentials'
 
-    PROXY = 'proxy_url'
-
     def __init__(self):
         self.session = requests.Session()
         try:
-            self.proxy = control.setting(self.PROXY)
+            self.proxy = control.proxy_url
             self.proxy = None if self.proxy == None or self.proxy == '' else {
                                                                   'http': self.proxy,
                                                                   'https': self.proxy,
                                                                 }
-            if self.proxy != None: control.log("proxy: %s" % self.proxy)
-            credentials = control.setting(self.GLOBOSAT_CREDENTIALS)
-            control.log("Loaded credentials from: %s" % self.GLOBOSAT_CREDENTIALS)
-            self.credentials = pickle.loads(credentials)
+            if self.proxy is not None: control.log("proxy: %s" % self.proxy)
+            if self.GLOBOSAT_CREDENTIALS:
+                credentials = control.setting(self.GLOBOSAT_CREDENTIALS)
+                control.log("Loaded credentials from: %s" % self.GLOBOSAT_CREDENTIALS)
+                self.credentials = pickle.loads(credentials)
+            else:
+                self.credentials = {}
         except:
             self.credentials = {}
 
     def clearCredentials(self):
-        control.setSetting(self.GLOBOSAT_CREDENTIALS, None)
+        if self.GLOBOSAT_CREDENTIALS:
+            control.setSetting(self.GLOBOSAT_CREDENTIALS, None)
         self.credentials = {}
 
     def get_token(self, username, password, select_profile=True):
@@ -75,7 +77,7 @@ class auth:
             r3 = self._provider_auth(url, urlparse.parse_qs(qs), username, password, r2.text)
         except Exception as e:
             self.error(str(e))
-            return {}
+            return None, None
 
         # set profile
         urlp, qp = r3.url.split('?', 1)
@@ -84,7 +86,13 @@ class auth:
             sessionId = None
             token = self._select_profile(urlp, r3.text)
         else:
-            control.log('COOKIES: %s' % repr(r3.cookies))
+            control.log('COOKIES: %s' % repr(dict(r3.cookies)))
+
+            # control.log('VERIFYING HISTORY: %s' % pickle.dumps(r3))
+            # if r3.history:
+            #     control.log('HAS HISTORY (%s): %s' % (len(r3.history), repr(r3.history)))
+            #     last_response = r3.history[-1]
+            #     control.log('HISTORY COOKIES: %s' % dict(last_response.cookies))
 
             sessionId = dict(r3.cookies)['sexyhotplay_sessionid']
             token = qp.replace('code=', '')
@@ -95,7 +103,7 @@ class auth:
         })
         self._save_credentials()
 
-        if sessionId != None:
+        if sessionId is not None:
             control.log('SESSION_KEY: %s' % sessionId)
         control.log('TOKEN: %s' % token)
 
@@ -119,7 +127,6 @@ class auth:
         except Exception as ex:
             raise Exception('There was a problem in the authetication process. - %s' % repr(ex))
 
-
     def _authenticate(self, provider_id, username, password, select_profile):
 
         token, sessionKey = self.get_token(username, password, select_profile)
@@ -135,10 +142,10 @@ class auth:
             expirationkey: expiration
         }
 
-
     def _save_credentials(self):
-        control.setSetting(self.GLOBOSAT_CREDENTIALS, pickle.dumps(self.credentials))
-        control.log("Saving credentials with key: %s" % self.GLOBOSAT_CREDENTIALS)
+        if self.GLOBOSAT_CREDENTIALS:
+            control.log("Saving credentials with key: %s" % self.GLOBOSAT_CREDENTIALS)
+            control.setSetting(self.GLOBOSAT_CREDENTIALS, pickle.dumps(self.credentials))
 
     def is_authenticated(self, provider_id):
         for key in self.credentials.keys():
@@ -266,9 +273,14 @@ class vivo(auth):
     PROVIDER_ID = 147
 
     def _provider_auth(self, url, qs, username, password, html):
+        nova_url = re.findall('var urlString = \'(.*)\';', html)[0]
+        r2 = self.session.get(nova_url, proxies=self.proxy, headers={'Accept-Encoding': 'gzip'})
+        url, qs = r2.url.split('?', 1)
+        qs = urlparse.parse_qs(qs)
+
         cpf = username
         if len(cpf) == 11:
-            cpf = "%s.%s.%s-%s" % ( cpf[0:3], cpf[3:6], cpf[6:9], cpf[9:11] )
+            cpf = "%s.%s.%s-%s" % (cpf[0:3], cpf[3:6], cpf[6:9], cpf[9:11])
         qs.update({
             'user_Doc': cpf,
             'password': password,
@@ -325,13 +337,13 @@ class multiplay(auth):
         token_regex = re.match(r'<input type="hidden" name="_token" value="([^"]+)">', html)
 
         token = token_regex.groups()[0]
-        data = {
+        qs.update({
             '_token': token,
             'username': username,
             'password': password
-        }
+        })
 
-        return self.session.post(url, data=data, proxies=self.proxy, headers={'Accept-Encoding': 'gzip'})
+        return self.session.post(url, data=qs, proxies=self.proxy, headers={'Accept-Encoding': 'gzip'})
 
 
 #incomplete
@@ -340,9 +352,9 @@ class orm_cabo(auth):
 
     def _provider_auth(self, url, qs, username, password, html):
 
-        data = {
+        qs.update({
             'cpf': username,
             'senha': password
-        }
+        })
 
-        return self.session.post(url, data=data, proxies=self.proxy, headers={'Accept-Encoding': 'gzip'})
+        return self.session.post(url, data=qs, proxies=self.proxy, headers={'Accept-Encoding': 'gzip'})

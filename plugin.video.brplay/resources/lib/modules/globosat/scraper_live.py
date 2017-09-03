@@ -125,6 +125,7 @@ def get_premiere_live_channels():
             'clearlogo': PREMIERE_LOGO,
             'fanart': PREMIERE_FANART,
             'thumb': PREMIERE_FANART,
+            'channel_id': 1995
         }, offline)]
 
     if len(live_games) > 1:
@@ -136,7 +137,7 @@ def get_premiere_live_channels():
 
     #PREMIERE
     live.append({
-        'slug': 'premierefc',
+        'slug': 'premiere-fc',
         'name': 'Assista Agora' if not offline else u'Próximos Jogos',
         'studio': 'Premiere FC',
         'title': 'Ao Vivo' if not offline else u'Veja a Programação',
@@ -149,7 +150,7 @@ def get_premiere_live_channels():
         'playable': 'false',
         'plot': title,
         'id': None,
-        'channel_id': None,
+        'channel_id': 1995,
         'duration': None,
         'isFolder': 'true',
         'logo': live_games[0]['time_mandante']['escudo'],

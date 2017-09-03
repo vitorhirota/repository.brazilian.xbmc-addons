@@ -12,7 +12,7 @@ msgctxt "#31110"
 msgid "User"
 msgstr ""
 
-msgctxt "#31120"
+msgctxt "#31109"
 msgid "Password"
 msgstr ""
 
@@ -28,8 +28,116 @@ msgctxt "#31111"
 msgid "Affiliate"
 msgstr ""
 
+msgctxt "#31112"
+msgid "Rio de Janeiro"
+msgstr ""
+
+msgctxt "#31113"
+msgid "Sao Paulo"
+msgstr ""
+
+msgctxt "#31114"
+msgid "Brasilia"
+msgstr ""
+
+msgctxt "#31115"
+msgid "Belo Horizonte"
+msgstr ""
+
+msgctxt "#31116"
+msgid "All"
+msgstr ""
+
+msgctxt "#31117"
+msgid "Recife"
+msgstr ""
+
+msgctxt "#31118"
+msgid "Salvador"
+msgstr ""
+
+msgctxt "#31119"
+msgid "Fortaleza"
+msgstr ""
+
+msgctxt "#31120"
+msgid "Aracaju"
+msgstr ""
+
+msgctxt "#31121"
+msgid "Maceio"
+msgstr ""
+
+msgctxt "#31122"
+msgid "Cuiaba"
+msgstr ""
+
+msgctxt "#31123"
+msgid "Porto Alegre"
+msgstr ""
+
+msgctxt "#31124"
+msgid "Florianopolis"
+msgstr ""
+
+msgctxt "#31125"
+msgid "Curitiba"
+msgstr ""
+
+msgctxt "#31126"
+msgid "Vitoria"
+msgstr ""
+
+msgctxt "#31127"
+msgid "Goiania"
+msgstr ""
+
+msgctxt "#31128"
+msgid "Campo Grande"
+msgstr ""
+
+msgctxt "#31129"
+msgid "Manaus"
+msgstr ""
+
+msgctxt "#31130"
+msgid "Belem"
+msgstr ""
+
+msgctxt "#31131"
+msgid "Macapa"
+msgstr ""
+
+msgctxt "#31132"
+msgid "Palmas"
+msgstr ""
+
+msgctxt "#31133"
+msgid "Rio Branco"
+msgstr ""
+
+msgctxt "#31134"
+msgid "Teresina"
+msgstr ""
+
+msgctxt "#31135"
+msgid "Sao Luis"
+msgstr ""
+
+msgctxt "#31136"
+msgid "Joao Pessoa"
+msgstr ""
+
+msgctxt "#31137"
+msgid "Natal"
+msgstr ""
+
 msgctxt "#31003"
 msgid "Proxy"
+msgstr ""
+
+msgctxt "#31004"
+msgid "Use Proxy"
 msgstr ""
 
 msgctxt "#32003"
@@ -80,6 +188,162 @@ msgctxt "#32072"
 msgid "Refresh"
 msgstr ""
 
+msgctxt "#32073"
+msgid "Add to Globosat favorites"
+msgstr ""
+
+msgctxt "#32074"
+msgid "Remove from Globosat favorites"
+msgstr ""
+
+msgctxt "#32075"
+msgid "Add to Globosat Watch Later"
+msgstr ""
+
+msgctxt "#32076"
+msgid "Remove from Globosat Watch Later"
+msgstr ""
+
 msgctxt "#32080"
 msgid "Featured"
+msgstr ""
+
+msgctxt "#32090"
+msgid "Favorites"
+msgstr ""
+
+msgctxt "#32095"
+msgid "Watch Later"
+msgstr ""
+
+msgctxt "#32096"
+msgid "Watch History"
+msgstr ""
+
+msgctxt "#33001"
+msgid "Streaming"
+msgstr ""
+
+msgctxt "#33101"
+msgid "Bandwidth"
+msgstr ""
+
+msgctxt "#33102"
+msgid "Adaptive"
+msgstr ""
+
+msgctxt "#33103"
+msgid "Auto"
+msgstr ""
+
+msgctxt "#33104"
+msgid "Manual"
+msgstr ""
+
+msgctxt "#33105"
+msgid "Max"
+msgstr ""
+
+msgctxt "#33106"
+msgid "Medium"
+msgstr ""
+
+msgctxt "#33107"
+msgid "Low"
+msgstr ""
+
+msgctxt "#33201"
+msgid "Proxy Type"
+msgstr ""
+
+msgctxt "#33202"
+msgid "Downloader"
+msgstr ""
+
+msgctxt "#33203"
+msgid "Redirect"
+msgstr ""
+
+msgctxt "#33204"
+msgid "Redirect Buffered"
+msgstr ""
+
+msgctxt "#33301"
+msgid "Show Full Videos Only"
+msgstr ""
+
+msgctxt "#33401"
+msgid "Show Adult Content"
+msgstr ""
+
+msgctxt "#33402"
+msgid "Use Pagination"
+msgstr ""
+
+msgctxt "#33501"
+msgid "Clear Cache"
+msgstr ""
+
+msgctxt "#33502"
+msgid "Addon Maintenance"
+msgstr ""
+
+msgctxt "#34004"
+msgid "More Videos"
+msgstr ""
+
+msgctxt "#34005"
+msgid "By Date"
+msgstr ""
+
+msgctxt "#34006"
+msgid "Older Videos"
+msgstr ""
+
+msgctxt "#34010"
+msgid "Pick the desired bandwidth:"
+msgstr ""
+
+msgctxt "#34011"
+msgid "[I]- Featured -[/I]"
+msgstr ""
+
+msgctxt "#34012"
+msgid "[I]- Most Watched -[/I]"
+msgstr ""
+
+msgctxt "#34013"
+msgid "[I]- Continue Watching -[/I]"
+msgstr ""
+
+msgctxt "#34014"
+msgid "[I]- Favorites -[/I]"
+msgstr ""
+
+msgctxt "#34015"
+msgid "[I]- Recent Videos -[/I]"
+msgstr ""
+
+msgctxt "#34100"
+msgid "Stream is not available yet!"
+msgstr ""
+
+msgctxt "#34101"
+msgid "Video Info Not Found"
+msgstr ""
+
+msgctxt "#34102"
+msgid "Video Resource Not Found"
+msgstr ""
+
+msgctxt "#34103"
+msgid "Content is DRM encrypted it won't play in Kodi at this moment"
+msgstr ""
+
+msgctxt "#34104"
+msgid "Not Authorised"
+msgstr ""
+
+msgctxt "#34105"
+msgid "Authentication Failed"
 msgstr ""

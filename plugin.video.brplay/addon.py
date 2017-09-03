@@ -51,7 +51,7 @@ try:
 
     #Actions
 
-    if action == None:
+    if action is None:
         from resources.lib.indexers import navigator
         navigator.navigator().root()
 
@@ -80,6 +80,40 @@ try:
 
         vod.Vod().get_extras()
 
+    elif action == 'favorites':
+        from resources.lib.indexers import vod
+
+        vod.Vod().get_favorites()
+
+    elif action == 'addFavorites':
+        from resources.lib.indexers import vod
+
+        vod.Vod().add_favorites(id_globo_videos)
+
+    elif action == 'delFavorites':
+        from resources.lib.indexers import vod
+
+        vod.Vod().del_favorites(id_globo_videos)
+
+    elif action == 'watchlater':
+        from resources.lib.indexers import vod
+
+        vod.Vod().get_watch_later()
+
+    elif action == 'addwatchlater':
+        from resources.lib.indexers import vod
+
+        vod.Vod().add_watch_later(id_globo_videos)
+
+    elif action == 'delwatchlater':
+        from resources.lib.indexers import vod
+
+        vod.Vod().del_watch_later(id_globo_videos)
+
+    elif action == 'watchhistory':
+        from resources.lib.indexers import vod
+
+        vod.Vod().get_watch_history()
 
     elif action == 'liveChannels':
         from resources.lib.indexers import live
@@ -87,7 +121,7 @@ try:
 
     elif action == 'vodChannels':
         from resources.lib.indexers import vod
-        vod.Vod().get_vod_channels()
+        vod.Vod().get_vod_channels_directory()
 
     ## COMMON
     elif action == 'showdates':
@@ -105,7 +139,7 @@ try:
     #PREMIER FC
     elif action == 'playlive' and isFolder == True or isFolder == 'True':
         from resources.lib.indexers import live
-        live.Live().getSubitems(metaJson)
+        live.Live().get_subitems(metaJson)
 
     #LIVE CHANNELS
     elif action == 'playlive' and provider == 'globosat':
@@ -199,7 +233,7 @@ try:
     elif action == 'playvod' and provider == 'sexyhot':
         from resources.lib.modules.sexyhotplay import player
 
-        player.player().playVod(id_sexyhot, meta)
+        player.Player().play_vod(id_sexyhot, meta)
 
 except Exception:
     buggalo.onExceptionRaised()

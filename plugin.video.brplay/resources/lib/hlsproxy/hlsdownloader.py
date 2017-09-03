@@ -79,7 +79,7 @@ class HLSDownloader():
         self.g_stopEvent = None
         self.init_url = None
 
-    def init(self, out_stream, url, proxy=None, use_proxy_for_chunks=True, g_stopEvent=None, maxbitrate=0):
+    def init(self, out_stream, url, proxy=None, g_stopEvent=None, maxbitrate=0):
         global clientHeader,gproxy,session,use_proxy
 
         try:
@@ -96,7 +96,6 @@ class HLSDownloader():
 
             gproxy=self.proxy
 
-            self.use_proxy_for_chunks=use_proxy_for_chunks
             self.out_stream=out_stream
 
             if g_stopEvent: g_stopEvent.clear()
@@ -123,7 +122,8 @@ class HLSDownloader():
     def keep_sending_video(self, dest_stream):
         global average_download_speed
         try:
-            average_download_speed = float(control.setting('average_download_speed')) if control.setting('average_download_speed') else 0.0
+            #average_download_speed = float(control.setting('average_download_speed')) if control.setting('average_download_speed') else 0.0
+            average_download_speed = 0.0
             queue = Queue.Queue()
             worker = workers.Thread(queue_processor, queue, dest_stream, self.g_stopEvent)
             worker.daemon = True
