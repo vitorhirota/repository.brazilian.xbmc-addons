@@ -20,6 +20,18 @@ msgctxt "#31210"
 msgid "TV Provider"
 msgstr "Operador de TV"
 
+msgctxt "#31208"
+msgid "National"
+msgstr "Nacional"
+
+msgctxt "#31209"
+msgid "Geo Location"
+msgstr "Localização"
+
+msgctxt "#31211"
+msgid "Use Custom Affiliate"
+msgstr "Usar outra afiliada"
+
 msgctxt "#31100"
 msgid "Globo Play"
 msgstr "Globo Play"
@@ -132,6 +144,14 @@ msgctxt "#31137"
 msgid "Natal"
 msgstr "Natal"
 
+msgctxt "#31138"
+msgid "Boa Vista"
+msgstr "Boa Vista"
+
+msgctxt "#31139"
+msgid "Porto Velho"
+msgstr "Porto Velho"
+
 msgctxt "#31003"
 msgid "Proxy"
 msgstr "Proxy"
@@ -151,6 +171,10 @@ msgstr "Canais ao Vivo"
 msgctxt "#32002"
 msgid "On Demand"
 msgstr "Canais sob Demanda"
+
+msgctxt "#32005"
+msgid "Login"
+msgstr "Login"
 
 msgctxt "#32004"
 msgid "Live"
@@ -225,8 +249,8 @@ msgid "Streaming"
 msgstr "Streaming"
 
 msgctxt "#33101"
-msgid "Bandwidth"
-msgstr "Largura de Banda"
+msgid "Player Mode"
+msgstr "Modo de Reprodução"
 
 msgctxt "#33102"
 msgid "Adaptive"
@@ -252,6 +276,10 @@ msgctxt "#33107"
 msgid "Low"
 msgstr "Mínima"
 
+msgctxt "#33200"
+msgid "Average Download Speed"
+msgstr "Média de Velocidade de Download"
+
 msgctxt "#33201"
 msgid "Proxy Type"
 msgstr "Tipo de Proxy"
@@ -264,21 +292,29 @@ msgctxt "#33203"
 msgid "Redirect"
 msgstr "Redirect"
 
-msgctxt "#33204"
-msgid "Redirect Buffered"
-msgstr "Redirect Buffered"
-
 msgctxt "#33301"
 msgid "Show Full Videos Only"
-msgstr "Mostrar apenas vídeos na íntegra"
+msgstr "Exibir apenas vídeos na íntegra"
 
 msgctxt "#33401"
 msgid "Show Adult Content"
-msgstr "Mostrar conteúdo adulto"
+msgstr "Exibir conteúdo adulto"
 
 msgctxt "#33402"
 msgid "Use Pagination"
 msgstr "Usar Paginação"
+
+msgctxt "#33403"
+msgid "Ignore Channel Authorization"
+msgstr "Ignorar Autorização de Canais"
+
+msgctxt "#33404"
+msgid "Show BBB channels"
+msgstr "Exibir canais do BBB"
+
+msgctxt "#33405"
+msgid "Show PFC Games"
+msgstr "Exibir jogos PFC"
 
 msgctxt "#33501"
 msgid "Clear Cache"
@@ -287,6 +323,10 @@ msgstr "Limpar o Cache"
 msgctxt "#33502"
 msgid "Addon Maintenance"
 msgstr "Manutenção do Addon"
+
+msgctxt "#33503"
+msgid "Clear Credentials"
+msgstr "Limpar as Credenciais"
 
 msgctxt "#34004"
 msgid "More Videos"
@@ -299,6 +339,14 @@ msgstr "Por data"
 msgctxt "#34006"
 msgid "Older Videos"
 msgstr "Vídeos Mais Antigos"
+
+msgctxt "#34007"
+msgid "More Videos"
+msgstr "Mais Vídeos"
+
+msgctxt "#34009"
+msgid "Select player mode:"
+msgstr "Escolha o modo de reprodução:"
 
 msgctxt "#34010"
 msgid "Pick the desired bandwidth:"
@@ -325,8 +373,8 @@ msgid "[I]- Recent Videos -[/I]"
 msgstr "[I]- Vídeos Recentes -[/I]"
 
 msgctxt "#34100"
-msgid "Stream is not available yet!"
-msgstr "Vídeo ainda não disponível!"
+msgid "Stream is not available"
+msgstr "Vídeo não disponível"
 
 msgctxt "#34101"
 msgid "Video Info Not Found"
@@ -337,8 +385,8 @@ msgid "Video Resource Not Found"
 msgstr "Recursos do Vídeo Não Encontrados"
 
 msgctxt "#34103"
-msgid "DRM encrypted content won't play in Kodi at this moment"
-msgstr "Contúdo protegido por Gerenciamento Digital de Direitos (DRM) não é compatível com o Kodi neste momento"
+msgid "Content is DRM encrypted you need Kodi Leia (18) or later wih inputstream.adaptive addon enabled"
+msgstr "Contúdo protegido por Gerenciamento Digital de Direitos (DRM), você precisa do Kodi Leia (18) ou superior com o addon inputstream.adaptive habilitado"
 
 msgctxt "#34104"
 msgid "Not Authorised"
@@ -347,3 +395,31 @@ msgstr "Não Autorizado"
 msgctxt "#34105"
 msgid "Authentication Failed"
 msgstr "Falha na Autenticação"
+
+msgctxt "#34106"
+msgid "Local Programmes"
+msgstr "Programas Locais"
+
+msgctxt "#34107"
+msgid "4K - HDR"
+msgstr "4K - HDR"
+
+msgctxt "#34108"
+msgid "Enable Globosat Play"
+msgstr "Habilitar Globosat Play"
+
+msgctxt "#34109"
+msgid "Use Globoplay Credentials for Globosat Play"
+msgstr "Usar as credenciais Globoplay para o Globosat Play"
+
+msgctxt "#34110"
+msgid "Latitude"
+msgstr "Latitude"
+
+msgctxt "#34111"
+msgid "Longitude"
+msgstr "Longitude"
+
+msgctxt "#34112"
+msgid "Custom"
+msgstr "Personalizada"

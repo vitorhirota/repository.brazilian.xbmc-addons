@@ -1,27 +1,40 @@
 # -*- coding: utf-8 -*-
 
-import auth
+import auth_helper
+import urllib
 import resources.lib.modules.util as util
 from resources.lib.modules import client
 from resources.lib.modules import control
+from resources.lib.modules import workers
+from resources.lib.modules import cache
 
 GLOBO_LOGO = 'http://s3.glbimg.com/v1/AUTH_180b9dd048d9434295d27c4b6dadc248/media_kit/42/f3/a1511ca14eeeca2e054c45b56e07.png'
 GLOBO_FANART = 'https://s02.video.glbimg.com/x720/4452349.jpg'
 
 GLOBOPLAY_URL = 'https://api.globoplay.com.br'
-GLOBOPLAY_APIKEY = '***REMOVED***'
-GLOBOPLAY_CATEGORIAS = GLOBOPLAY_URL + '/v1/categories/?api_key=' + GLOBOPLAY_APIKEY
+GLOBOPLAY_APIKEY = '***REMOVED***'  # '***REMOVED***'
+GLOBOPLAY_CATEGORIES = GLOBOPLAY_URL + '/v3/categories/?api_key=' + GLOBOPLAY_APIKEY
 GLOBOPLAY_DAYS = GLOBOPLAY_URL + '/v1/programs/%d/videos/days?api_key=' + GLOBOPLAY_APIKEY
 GLOBOPLAY_VIDEOS = GLOBOPLAY_URL + '/v1/programs/%d/videos?day=%s&order=asc&page=%d&per_page=%s&api_key=' + GLOBOPLAY_APIKEY
-GLOBOPLAY_VIDEOS_RANGE = GLOBOPLAY_URL + '/v1/programs/%d/videos?start=%s&end=%s&order=desc&per_page=%s&api_key=' + GLOBOPLAY_APIKEY
+GLOBOPLAY_VIDEOS_RANGE = GLOBOPLAY_URL + '/v1/programs/%d/videos?start=%s&end=%s&order=%s&per_page=%s&api_key=' + GLOBOPLAY_APIKEY
 
 GLOBOPLAY_HIGHLIGHTS = GLOBOPLAY_URL + '/v2/highlights?api_key=' + GLOBOPLAY_APIKEY
 GLOBOPLAY_FAVORITES = 'http://api.user.video.globo.com/favorites?page=%s&per_page=%s'
 GLOBOPLAY_WATCHHISTORY_BYPROGRAM = 'https://api.user.video.globo.com/watch_history/?preload_metadata=true&per_page=%s'
 GLOBOPLAY_CONTINUEWATCHING_BYPROGRAM = 'https://api.user.video.globo.com/watch_history/?preload_metadata=true&fully_watched=false&per_page=%s'
-GLOBOPLAY_MOST_WATCHED_VIDEOS = 'https://api.globoplay.com.br/v1/trilhos/mais-vistos?api_key=' + GLOBOPLAY_APIKEY
+GLOBOPLAY_MOST_WATCHED_VIDEOS = GLOBOPLAY_URL + '/v1/trilhos/mais-vistos?api_key=' + GLOBOPLAY_APIKEY
 
-GLOBOPLAY_SEARCH = 'https://api.globoplay.com.br/v1/search?page=%s&q=%s&api_key=' + GLOBOPLAY_APIKEY
+GLOBOPLAY_SEARCH = GLOBOPLAY_URL + '/v1/search?page=%s&q=%s&api_key=' + GLOBOPLAY_APIKEY
+
+GLOBOPLAY_STATES = GLOBOPLAY_URL + '/v1/states?api_key=' + GLOBOPLAY_APIKEY
+GLOBOPLAY_REGIONS = GLOBOPLAY_URL + '/v1/regions/search?&query=%s&api_key=' + GLOBOPLAY_APIKEY
+GLOBOPLAY_PROGRAMS_BY_REGION = GLOBOPLAY_URL + '/v1/categories/region/%s?api_key=' + GLOBOPLAY_APIKEY
+
+GLOBOPLAY_PROGRAM_INFO = GLOBOPLAY_URL + '/v1/programs/%s/info?api_key=' + GLOBOPLAY_APIKEY
+
+GLOBOPLAY_CONFIGURATION = GLOBOPLAY_URL + '/v1/configurations?api_key=' + GLOBOPLAY_APIKEY
+
+GLOBOPLAY_PROGRAM_EPISODES = 'https://api.globoplay.com.br/v1/programs/{program_id}/episodes?api_key=' + GLOBOPLAY_APIKEY
 
 THUMB_URL = 'http://s01.video.glbimg.com/x720/%s.jpg'
 
@@ -108,11 +121,8 @@ def get_highlights():
 def get_favorites(page=1, per_page=10):
     videos = []
 
-    username = control.setting('globoplay_username')
-    password = control.setting('globoplay_password')
-
     # authenticate
-    credentials = auth.auth().authenticate(username, password)
+    credentials = auth_helper.get_credentials()
     headers = {'Accept-Encoding': 'gzip'}
     data = client.request(GLOBOPLAY_FAVORITES % (page, per_page), cookie=credentials, headers=headers)
 
@@ -148,11 +158,8 @@ def get_watch_history():
 
     limit = 15
 
-    username = control.setting('globoplay_username')
-    password = control.setting('globoplay_password')
-
     # authenticate
-    credentials = auth.auth().authenticate(username, password)
+    credentials = auth_helper.get_credentials()
 
     headers = {'Accept-Encoding': 'gzip'}
     data = client.request(GLOBOPLAY_WATCHHISTORY_BYPROGRAM % limit, cookie=credentials, headers=headers)
@@ -193,11 +200,8 @@ def get_continue_watching():
 
     limit = 15
 
-    username = control.setting('globoplay_username')
-    password = control.setting('globoplay_password')
-
     # authenticate
-    credentials = auth.auth().authenticate(username, password)
+    credentials = auth_helper.get_credentials()
 
     headers = {'Accept-Encoding': 'gzip'}
     data = client.request(GLOBOPLAY_CONTINUEWATCHING_BYPROGRAM % limit, cookie=credentials, headers=headers)
@@ -262,21 +266,30 @@ def get_most_watched_videos():
 
 def get_globo_programs():
     headers = {'Accept-Encoding': 'gzip'}
-    categories_json = client.request(GLOBOPLAY_CATEGORIAS, headers=headers)['categories']
+    categories_json = client.request(GLOBOPLAY_CATEGORIES, headers=headers)['categories']
     categories = [json['title'].capitalize() for json in categories_json]
 
     programs = [{'category': json['title'].capitalize(), 'programs': [{
                             'id': j['id'],
-                            'name': j['name'],
-                            'thumb': j['thumb'],
-                            # 'fanart': j['thumb'],
-                            'fanart': control.addonFanart(),
+                            'name': j['title'],
+                            'poster': j['assets']['poster_web'] if control.is_4k_images_enabled and 'poster_web' in j['assets'] else j['assets']['poster_mobile'] if 'poster_mobile' in j['assets'] else j['assets']['poster_tv'] if 'poster_tv' in j['assets'] else None,
+                            'fanart': j['assets']['tvos_background_4k'] if control.is_4k_images_enabled and 'tvos_background_4k' in j['assets'] else j['assets']['background_tv'],
                             'clearlogo': GLOBO_LOGO,
-                            'kind': 'movies' if j['type'] == 'filmes' else 'default',
+                            'kind': 'movies' if j['type'] == 'filmes' else (j['type'] or 'default'),
+                            'plot': j['description'] if 'description' in j else '',
                             'brplayprovider': 'globoplay'
-                        } for j in json['programs']]} for json in categories_json]
+                        } for j in json['programs']], 'subcategories': [{'category': j['title'].capitalize(), 'programs': [{
+                            'id': p['id'],
+                            'name': p['title'],
+                            'poster': p['assets']['poster_web'] if control.is_4k_images_enabled and 'poster_web' in p['assets'] else p['assets']['poster_mobile'] if 'poster_mobile' in p['assets'] else p['assets']['poster_tv'] if 'poster_tv' in p['assets'] else None,
+                            'fanart': p['assets']['tvos_background_4k'] if control.is_4k_images_enabled and 'tvos_background_4k' in p['assets'] else p['assets']['background_tv'],
+                            'clearlogo': GLOBO_LOGO,
+                            'kind': 'movies' if p['type'] == 'filmes' else (p['type'] or 'default'),
+                            'plot': p['description'] if 'description' in j else '',
+                            'brplayprovider': 'globoplay'
+                        } for p in j['programs']]} for j in json['subcategories']]} for json in categories_json]
 
-    return (categories, programs)
+    return categories, programs
 
 
 def get_program_dates(program_id):
@@ -284,12 +297,12 @@ def get_program_dates(program_id):
     headers = {'Accept-Encoding': 'gzip'}
     days = client.request(GLOBOPLAY_DAYS % int(program_id), headers=headers)
 
-    days = days['days'] if days and 'days' in days else []
+    days_result = days['days'] if days and 'days' in days else []
 
-    return days
+    return days_result, days['position'] == 'last' if days and 'position' in days else True
 
 
-def get_globo_partial_episodes(program_id, page=1):
+def get_globo_partial_episodes(program_id, page=1, bingewatch=False):
 
     videos = []
     headers = {'Accept-Encoding': 'gzip'}
@@ -325,13 +338,16 @@ def get_globo_partial_episodes(program_id, page=1):
     return videos, page, len(days), days if page < len(days) else None
 
 
-def get_globo_episodes(program_id, page=1):
+def get_globo_episodes(program_id, page=1, bingewatch=False):
 
     videos = []
     video_page_size = 300
     full_calendar_threshold = 15
 
-    days = get_program_dates(program_id)
+    days, last = get_program_dates(program_id)
+
+    if not days or len(days) == 0:
+        return videos, page, len(days), None
 
     page = int(page)
 
@@ -344,10 +360,20 @@ def get_globo_episodes(program_id, page=1):
     if len(days) - page + 1 < full_calendar_threshold:
         sevenDays = len(days)
     else:
-        sevenDays = page+6 if len(days) > page+6 else len(days)
+        sevenDays = page + 6 if len(days) > page + 6 else len(days)
+
+    if not last:
+        days.reverse()
+        order = 'asc'
+        firstday = days[page - 1]
+        lastday = days[sevenDays - 1]
+    else:
+        order = 'desc'
+        firstday = days[sevenDays-1]
+        lastday = days[page-1]
 
     headers = {'Accept-Encoding': 'gzip'}
-    data = client.request(GLOBOPLAY_VIDEOS_RANGE % (int(program_id), days[sevenDays-1], days[page-1], video_page_size), headers=headers)
+    data = client.request(GLOBOPLAY_VIDEOS_RANGE % (int(program_id), firstday, lastday, order, video_page_size), headers=headers)
 
     exerpts = []
 
@@ -364,7 +390,9 @@ def get_globo_episodes(program_id, page=1):
             'genre': item['subset'],
             'thumb': THUMB_URL % item['id'],
             'fanart': GLOBO_FANART,
-            'mediatype': 'episode'
+            'mediatype': 'episode',
+            'bingewatch': not last,  # bingewatch
+            'mpaa': item['content_rating']
         }
 
         if not item["full_episode"]:
@@ -381,12 +409,15 @@ def get_globo_episodes(program_id, page=1):
     return videos, page, len(days), days if sevenDays+1 < len(days) else None
 
 
-def get_globo_episodes_by_date(program_id, date):
+def get_globo_episodes_by_date(program_id, date, bingewatch=False):
 
     videos = []
     video_page_size = 300
+
+    order = 'asc' if bingewatch else 'desc'
+
     headers = {'Accept-Encoding': 'gzip'}
-    data = client.request(GLOBOPLAY_VIDEOS_RANGE % (int(program_id), date, date, video_page_size), headers=headers)
+    data = client.request(GLOBOPLAY_VIDEOS_RANGE % (int(program_id), date, date, order, video_page_size), headers=headers)
 
     for item in data['videos']:
         video = {
@@ -416,7 +447,7 @@ def search(term, page=1):
 
     videos = []
     headers = {'Accept-Encoding': 'gzip'}
-    data = client.request(GLOBOPLAY_SEARCH % (page, term), headers=headers)
+    data = client.request(GLOBOPLAY_SEARCH % (page, urllib.quote_plus(term)), headers=headers)
 
     if not data:
         return [], None, 0
@@ -424,10 +455,28 @@ def search(term, page=1):
     total = data['total']
     next_page = page + 1 if data['has_next'] else None
 
-    for item in data['videos']:
+    for item in data['programs']:
         video = {
             'id': item['id'],
-            'label': 'Globo - ' + item['title'],
+            'label': 'Globo - Programa - ' + item['name'],
+            'title': item['name'],
+            'plot': 'Programa: ' + item['name'],
+            'thumb': item['thumb'],
+            'fanart': GLOBO_FANART,
+            'mediatype': 'tvshow',
+            'IsPlayable': False,
+            'brplayprovider': 'globoplay'
+        }
+
+        videos.append(video)
+
+    for item in data['videos']:
+        label = 'Globo - ' + item['title']
+        if item['full_episode'] and item['kind'] == 'episode':
+            label = label + ' - ' + item['description']
+        video = {
+            'id': item['id'],
+            'label': label,
             'title': item['title'],
             'plot': item['description'],
             'duration': sum(int(x) * 60 ** i for i, x in
@@ -441,3 +490,113 @@ def search(term, page=1):
         videos.append(video)
 
     return videos, next_page, total
+
+
+def get_states():
+
+    headers = {'Accept-Encoding': 'gzip'}
+    data = client.request(GLOBOPLAY_STATES, headers=headers)
+
+    if not data or not 'states' in data:
+        return []
+
+    return data['states']
+
+
+def get_regions(state):
+
+    headers = {'Accept-Encoding': 'gzip'}
+    data = client.request(GLOBOPLAY_REGIONS % urllib.quote_plus(state), headers=headers)
+
+    if not data or not 'regions' in data:
+        return []
+
+    # {
+    #     "affiliate_code": "RES",
+    #     "affiliate_name": "TV Rio Sul",
+    #     "region_group_name": "Sul e Costa Verde",
+    #     "state_acronym": "RJ",
+    #     "state_name": "Rio de Janeiro"
+    # }
+
+    return data['regions']
+
+
+def get_programs_by_region(region):
+
+    headers = {'Accept-Encoding': 'gzip'}
+    data = client.request(GLOBOPLAY_PROGRAMS_BY_REGION % region, headers=headers)
+
+    if not data or not 'categories' in data:
+        return []
+
+    programs = []
+
+    for item in data['categories']:
+        for program in item['programs']:
+            assets = program['assets']
+            programs.append({
+                'id': program['id'],
+                'title': program['title'],
+                'plot': program['description'],
+                'poster': assets['poster_web'] if control.is_4k_images_enabled and 'poster_web' in assets else assets['poster_mobile'] if 'poster_mobile' in assets else assets['poster_tv'] if 'poster_tv' in assets else None,
+                'fanart': assets['tvos_background_4k'] if control.is_4k_images_enabled and 'tvos_background_4k' in assets else assets['background_tv'],
+                'brplayprovider': 'globoplay'
+            })
+
+    return programs
+
+
+def get_4k():
+
+    config = cache.get(client.request, 1, GLOBOPLAY_CONFIGURATION)
+
+    if not config or 'features' not in config or 'videos4k' not in config['features']:
+        return []
+
+    video_ids = config['features']['videos4k']
+
+    if not video_ids or len(video_ids) == 0:
+        return []
+
+    threads = []
+    programs = []
+
+    for id in video_ids:
+        threads.append(workers.Thread(__add_search_results, __get_program_info, programs, id))
+
+    [i.start() for i in threads]
+    [i.join() for i in threads]
+
+    return programs
+
+
+def __add_search_results(fn, list, *args):
+    result = fn(*args)
+    list.append(result)
+
+
+def __get_program_info(id):
+    headers = {'Accept-Encoding': 'gzip'}
+    program = client.request(GLOBOPLAY_PROGRAM_INFO % id, headers=headers)
+
+    assets = program['assets']
+    return {
+                'id': program['id'],
+                'title': program['title'],
+                'plot': program['description'],
+                'poster': assets['poster_web'] if control.is_4k_images_enabled and 'poster_web' in assets else assets['poster_mobile'] if 'poster_mobile' in assets else assets['poster_tv'] if 'poster_tv' in assets else None,
+                'fanart': assets['tvos_background_4k'] if control.is_4k_images_enabled and 'tvos_background_4k' in assets else assets['background_tv'],
+                'brplayprovider': 'globoplay'
+            }
+
+
+def get_program_episodes(program_id):
+
+    headers = {'Accept-Encoding': 'gzip'}
+    response = client.request(GLOBOPLAY_PROGRAM_EPISODES.format(program_id=int(program_id)), headers=headers)
+
+    if not response or 'episodes' not in response:
+        return None
+
+    return response

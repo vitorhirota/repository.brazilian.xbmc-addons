@@ -14,12 +14,19 @@ import urllib
 import urllib2
 import urlparse
 import traceback
+import uuid
+
+try:
+    from collections import OrderedDict
+except ImportError:
+    # python 2.6 or earlier, use backport
+    OrderedDict = None
 
 from resources.lib.modules import control, cache
 from resources.lib.modules import workers
 
 
-def request(url, close=True, redirect=True, error=False, proxy=None, post=None, headers=None, mobile=False, XHR=False, limit=None, referer=None, cookie=None, output='', timeout='30'):
+def request(url, close=True, redirect=True, error=False, proxy=None, post=None, headers=None, mobile=False, XHR=False, limit=None, referer=None, cookie=None, output='', timeout='30', headRequest=False):
 
     try:
         handlers = []
@@ -30,7 +37,7 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
             opener = urllib2.build_opener(*handlers)
             opener = urllib2.install_opener(opener)
 
-        if output == 'cookie' or output == 'extended' or not close == True:
+        if output == 'cookie' or output == 'extended' or output == 'cookiejar' or not close == True:
             cookies = cookielib.LWPCookieJar()
             handlers += [urllib2.HTTPHandler(), urllib2.HTTPSHandler(), urllib2.HTTPCookieProcessor(cookies)]
             opener = urllib2.build_opener(*handlers)
@@ -49,6 +56,7 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
 
         try: headers.update(headers)
         except: headers = {}
+
         if 'User-Agent' in headers:
             pass
         elif not mobile == True:
@@ -57,7 +65,7 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
             headers['User-Agent'] = 'Apple-iPhone/701.341'
         if 'Referer' in headers:
             pass
-        elif referer == None:
+        elif referer is None:
             headers['Referer'] = '%s://%s/' % (urlparse.urlparse(url).scheme, urlparse.urlparse(url).netloc)
         else:
             headers['Referer'] = referer
@@ -65,14 +73,14 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
             headers['Accept-Language'] = 'en-US'
         if 'X-Requested-With' in headers:
             pass
-        elif XHR == True:
+        elif XHR is True:
             headers['X-Requested-With'] = 'XMLHttpRequest'
         if 'Cookie' in headers:
             pass
-        elif not cookie == None:
+        elif not cookie is None:
             headers['Cookie'] = printCookieDict(cookie) if isinstance(cookie, dict) else cookie
 
-        if redirect == False:
+        if redirect is False:
 
             class NoRedirection(urllib2.HTTPErrorProcessor):
                 def http_response(self, request, response): return response
@@ -85,7 +93,11 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
 
         request = urllib2.Request(url, data=post, headers=headers)
 
-        control.log("Url request: %s" % url)
+        rid = uuid.uuid4().hex
+        control.log("Url request (%s): %s" % (rid, url))
+
+        if headRequest:
+            request.get_method = lambda: 'HEAD'
 
         try:
             response = urllib2.urlopen(request, timeout=int(timeout))
@@ -112,34 +124,48 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
 
                     response = urllib2.urlopen(request, timeout=int(timeout))
 
-                elif error == False:
+                elif error is False:
+                    control.log("Response error code (%s): %s" % (rid, response.code))
                     return
             elif response.code == 403:
+                control.log("Response error code (%s): %s" % (rid, response.code))
                 raise Exception("Permission Denied")
-            elif error == False:
+            elif error is True:
+                control.log("Response error code (%s): %s" % (rid, response.code))
+                raise Exception("ERROR (%s): %s" % (url, response.code))
+            elif error is False:
+                control.log("Response error code (%s): %s" % (rid, response.code))
                 return
+
+        control.log("Response code (%s): %s" % (rid, response.code))
 
         if response.code == 403:
             raise Exception("Permission Denied")
         elif response.code >= 400:
-            raise Exception("Request Error: %s" % response.code)
+            raise Exception("Request Error (%s): %s" % (url, response.code))
 
         if output == 'cookie':
             try: result = '; '.join(['%s=%s' % (i.name, i.value) for i in cookies])
             except: pass
             try: result = cf
             except: pass
-            if close == True: response.close()
+            if close is True: response.close()
             return result
+
+        if output == 'cookiejar':
+            cookies_dict = {}
+            for i in cookies:
+                cookies_dict[i.name] = i.value
+            return cookies_dict
 
         elif output == 'geturl':
             result = response.geturl()
-            if close == True: response.close()
+            if close is True: response.close()
             return result
 
         elif output == 'headers':
             result = response.headers
-            if close == True: response.close()
+            if close is True: response.close()
             return result
 
         elif output == 'chunk':
@@ -147,12 +173,12 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
             except: content = (2049 * 1024)
             if content < (2048 * 1024): return
             result = response.read(16 * 1024)
-            if close == True: response.close()
+            if close is True: response.close()
             return result
 
         if limit == '0':
             result = response.read(224 * 1024)
-        elif not limit == None:
+        elif not limit is None:
             result = response.read(int(limit) * 1024)
         else:
             result = response.read(5242880)
@@ -173,7 +199,7 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
 
             if limit == '0':
                 result = response.read(224 * 1024)
-            elif not limit == None:
+            elif not limit is None:
                 result = response.read(int(limit) * 1024)
             else:
                 result = response.read(5242880)
@@ -183,9 +209,10 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
             if encoding == 'gzip':
                 result = gzip.GzipFile(fileobj=StringIO.StringIO(result)).read()
 
+        control.log("response (%s): %s" % (rid, result))
+
         if response.headers and response.headers.get('content-type') and ('application/json' in response.headers.get('content-type') or 'text/javascript' in response.headers.get('content-type')):
-            control.log("response: %s" % result)
-            return json.loads(result)
+            return json.loads(result, object_pairs_hook=OrderedDict) if OrderedDict else json.loads(result)
 
         if output == 'extended':
             response_headers = response.headers
@@ -194,15 +221,16 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
             except: pass
             try: cookie = cf
             except: pass
-            if close == True: response.close()
-            return (result, response_code, response_headers, headers, cookie)
+            if close is True: response.close()
+            return result, response_code, response_headers, headers, cookie
         else:
-            if close == True: response.close()
+            if close is True: response.close()
             return result
     except Exception, e:
         traceback.print_exc()
         control.log("Request ERROR: %s" % str(e))
         return
+
 
 def printCookieDict(cookie_dict):
     cookie_string = ""
@@ -231,7 +259,7 @@ def parseDOM(html, name='', attrs=None, ret=False):
 
     if not name.strip():
         return ''
-    
+
     if not isinstance(attrs, dict):
         return ''
 
@@ -251,7 +279,7 @@ def parseDOM(html, name='', attrs=None, ret=False):
                 if not this_list and ' ' not in attrs[key]:
                     pattern = '''(<%s [^>]*%s=%s[^>]*>)''' % (name, key, attrs[key])
                     this_list = re.findall(pattern, item, re.M | re. S | re.I)
-        
+
                 if last_list is None:
                     last_list = this_list
                 else:
@@ -351,7 +379,7 @@ class cfcookie:
         [i.start() for i in threads]
 
         for i in range(0, 30):
-            if not self.cookie == None: return self.cookie
+            if not self.cookie is None: return self.cookie
             time.sleep(1)
 
 

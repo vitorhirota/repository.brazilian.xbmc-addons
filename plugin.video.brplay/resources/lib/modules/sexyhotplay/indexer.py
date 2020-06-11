@@ -5,9 +5,18 @@ from resources.lib.modules import cache
 artPath = control.artPath()
 NEXT_ICON = os.path.join(control.artPath(), 'next.png')
 
+
 class indexer:
     def __init__(self):
         pass
+
+    def get_live_channels(self):
+
+        import scraper_live as scraper
+
+        live = scraper.get_live_channels()
+
+        return live
 
     def get_vod(self):
         import scraper_vod as scraper
@@ -31,7 +40,7 @@ class indexer:
     def get_videos(self, url):
 
         import scraper_vod as scraper
-        videos, next_page_url = cache.get(scraper.get_videos, 1, url)
+        videos, next_page = cache.get(scraper.get_videos, 1, url)
 
         sysaddon = sys.argv[0]
         syshandle = int(sys.argv[1])
@@ -41,11 +50,11 @@ class indexer:
 
             sysmeta = urllib.quote_plus(json.dumps(meta))
             isFolder = False
-            brplayprovider = 'sexyhot'
+            brplayprovider = 'globosat' #'sexyhot'
             id_sexyhot = video['id_sexyhot']
             title = video['title']
 
-            action_url = '%s?action=playvod&provider=%s&id_sexyhot=%s&isFolder=%s&meta=%s' % (
+            action_url = '%s?action=playvod&provider=%s&id_globo_videos=%s&isFolder=%s&meta=%s' % (
             sysaddon, brplayprovider, id_sexyhot, isFolder, sysmeta)
 
             item = control.item(label=title)
@@ -53,6 +62,7 @@ class indexer:
             art = {
                 'poster': video['poster'],
                 'fanart': video['fanart'],
+                'thumb': video['thumb'],
             }
 
             item.setArt(art)
@@ -61,12 +71,11 @@ class indexer:
 
             control.addItem(handle=syshandle, url=action_url, listitem=item, isFolder=isFolder)
 
-        if next_page_url:
-            sysurl = urllib.quote_plus(next_page_url)
+        if next_page:
 
-            action_url = '%s?action=getVideos&provider=sexyhot&url=%s' % (sysaddon, sysurl)
+            action_url = '%s?action=getVideos&provider=sexyhot&page=%s' % (sysaddon, next_page)
 
-            title = 'More Videos'
+            title = 'Page ' + str(next_page)
             item = control.item(label=title)
             art = {
                 'logo': os.path.join(artPath, 'logo_sexyhot.png'),
@@ -81,11 +90,11 @@ class indexer:
 
         # control.addSortMethod(int(sys.argv[1]), control.SORT_METHOD_LABEL_IGNORE_FOLDERS)
 
-        control.content(syshandle, 'movies')
+        control.content(syshandle, 'videos')
         control.directory(syshandle, cacheToDisc=False)
 
     def channel_directory(self, items):
-        if items == None or len(items) == 0: control.idle(); sys.exit()
+        if items is None or len(items) == 0: control.idle(); sys.exit()
 
         sysaddon = sys.argv[0]
         syshandle = int(sys.argv[1])

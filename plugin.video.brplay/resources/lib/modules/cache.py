@@ -7,6 +7,12 @@ except: from pysqlite2 import dbapi2 as database
 
 from resources.lib.modules import control
 
+try:
+    from collections import OrderedDict
+except ImportError:
+    # python 2.6 or earlier, use backport
+    OrderedDict = None
+
 
 def get(function, timeout, *args, **table):
     # try:
@@ -103,7 +109,7 @@ def delete_file():
 
 def clear(table=None):
     try:
-        if table == None: table = ['rel_list', 'rel_lib']
+        if table is None: table = ['rel_list', 'rel_lib']
         elif not type(table) == list: table = [table]
 
         dbcon = database.connect(control.cacheFile)

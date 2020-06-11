@@ -1,18 +1,22 @@
 # -*- coding: utf-8 -*-
 
-from resources.lib.modules import control
+# from resources.lib.modules import control
 from resources.lib.modules import client
-import auth_helper
+from resources.lib.modules.globosat import auth_helper
 import urllib
 import requests
 
-GLOBOSAT_API_URL = 'https://api.vod.globosat.tv/globosatplay'
 GLOBOSAT_API_AUTHORIZATION = 'token b4b4fb9581bcc0352173c23d81a26518455cc521'
-GLOBOSAT_API_CHANNELS = GLOBOSAT_API_URL + '/channels.json?page=%d'
 GLOBOSAT_SEARCH = 'https://globosatplay.globo.com/busca/pagina/%s.json?q=%s'
 GLOBOSAT_FEATURED = 'https://api.vod.globosat.tv/globosatplay/featured.json'
 GLOBOSAT_TRACKS = 'https://api.vod.globosat.tv/globosatplay/tracks.json'
 GLOBOSAT_TRACKS_ITEM = 'https://api.vod.globosat.tv/globosatplay/tracks/%s.json'
+
+GLOBOSAT_CHANNELS = 'https://api-vod.globosat.tv/globosatplay/channels.json'
+GLOBOSAT_CARDS = 'https://api-vod.globosat.tv/globosatplay/cards.json?&channel_id_globo_videos=%s&page=%s'
+GLOBOSAT_PROGRAMS = 'https://api-vod.globosat.tv/globosatplay/programs.json?&id_globo_videos=%s&page=%s'
+GLOBOSAT_EPISODES_SEASON = 'https://api-vod.globosat.tv/globosatplay/episodes.json?program_id=%s&season_id=%s&page=%s'
+GLOBOSAT_EPISODES = 'https://api-vod.globosat.tv/globosatplay/episodes.json?&program_id=%s&page=%s'
 
 GLOBOSAT_BASE_FAVORITES = 'https://api.vod.globosat.tv/globosatplay/watch_favorite.json?token=%s'
 GLOBOSAT_FAVORITES = GLOBOSAT_BASE_FAVORITES + '&page=%s&per_page=%s'
@@ -22,9 +26,7 @@ GLOBOSAT_BASE_WATCH_LATER = 'https://api.vod.globosat.tv/globosatplay/watch_late
 GLOBOSAT_WATCH_LATER = GLOBOSAT_BASE_WATCH_LATER + '&page=%s&per_page=%s'
 GLOBOSAT_DEL_WATCH_LATER = GLOBOSAT_BASE_WATCH_LATER + '&id=%s'
 
-GLOBOSAT_WATCH_HISTORY = 'https://api.vod.globosat.tv/globosatplay/watch_history.json?token=%s&page%s&per_page=%s'
-
-artPath = control.artPath()
+GLOBOSAT_WATCH_HISTORY = 'https://api.vod.globosat.tv/globosatplay/watch_history.json?token=%s&page=%s&per_page=%s'
 
 
 def get_authorized_channels():
@@ -38,17 +40,16 @@ def get_authorized_channels():
 
     channels = []
 
-    pkgs = client.request(channels_url, headers={"Accept-Encoding": "gzip"})['pacotes']
+    pkgs_response = client.request(channels_url, headers={"Accept-Encoding": "gzip"})
+
+    # control.log("-- PACKAGES: %s" % repr(pkgs_response))
+
+    pkgs = pkgs_response['pacotes']
 
     channel_ids = []
     for pkg in pkgs:
         for channel in pkg['canais']:
-            if channel['slug'] == 'telecine-zone' \
-                    or channel['slug'] == 'megapix' \
-                    or channel['slug'] == 'telecine':
-                continue
-
-            elif channel['id_globo_videos'] not in channel_ids:
+            if channel['id_globo_videos'] not in channel_ids:
                 channel_ids.append(channel['id_globo_videos'])
                 channels.append({
                     "id": channel['id_globo_videos'],
@@ -57,7 +58,7 @@ def get_authorized_channels():
                     "logo": channel['logo_fundo_claro'],
                     "name": channel['nome'],
                     "slug": channel['slug'],
-                    "adult": channel['slug'] == 'sexyhot',
+                    "adult": channel['slug'] == 'sexyhot' or channel['slug'] == 'sexy-hot',
                     "vod": "vod" in channel['acls'],
                     "live": "live" in channel['acls']
                 })
@@ -99,6 +100,166 @@ def get_channel_programs(channel_id):
     return programs
 
 
+def get_channel_cards(channel_id_globo_videos):
+    headers = {'Authorization': GLOBOSAT_API_AUTHORIZATION, 'Accept-Encoding': 'gzip'}
+
+    page = 1
+    url = GLOBOSAT_CARDS % (channel_id_globo_videos, page)
+    result = client.request(url, headers=headers)
+
+    next = result['next'] if 'next' in result else None
+    programs_result = result['results'] or []
+
+    while next:
+        page = page + 1
+        url = GLOBOSAT_CARDS % (channel_id_globo_videos, page)
+        result = client.request(url, headers=headers)
+        next = result['next'] if 'next' in result else None
+        programs_result = programs_result + result['results']
+
+    programs = []
+
+    for program in programs_result:
+        programs.append({
+            'id': program['id'],
+            'id_globo_videos': program['id_globo_videos'],
+            'title': program['title'],
+            'name': program['title'],
+            'fanart': program['background_image_tv_cropped'],
+            'poster': program['image'],
+            'plot': program['description'],
+            'kind': program['kind'] if 'kind' in program else None
+        })
+
+    return programs
+
+
+def get_card_seasons(id_globo_videos):
+    headers = {'Authorization': GLOBOSAT_API_AUTHORIZATION, 'Accept-Encoding': 'gzip'}
+
+    page = 1
+    url = GLOBOSAT_PROGRAMS % (id_globo_videos, page)
+    result = client.request(url, headers=headers)
+
+    next = result['next'] if 'next' in result else None
+    programs_response = result['results'] or []
+
+    while next:
+        page = page + 1
+        url = GLOBOSAT_PROGRAMS % (id_globo_videos, page)
+        result = client.request(url, headers=headers)
+        next = result['next'] if 'next' in result else None
+        programs_response = programs_response + result['results']
+
+    card_data = programs_response[0] if programs_response and len(programs_response) > 0 else None
+    seasons_response = card_data['seasons'] if card_data and 'seasons' in card_data else []
+
+    if not card_data:
+        return {
+            'id': None,
+            'title': None,
+            'name': None,
+            'fanart': None,
+            'poster': None,
+            'plot': None,
+            'kind': None
+        }
+
+    seasons = []
+
+    card = {
+        'id': card_data['id'],
+        'id_globo_videos': card_data['id_globo_videos'],
+        'title': card_data['title'],
+        'name': card_data['title'],
+        'fanart': card_data['background_image_tv_cropped'],
+        'poster': card_data['poster_image'],
+        'logo': card_data['logo_image'],
+        'plot': card_data['description'],
+        'kind': card_data['kind'] if 'kind' in seasons else None,
+        'season': len(seasons_response),
+    }
+
+    for season in seasons_response:
+        seasons.append({
+            'id': season['id'],
+            'title': season['title'],
+            'description': season['description'],
+            'episodes_number': season['episodes_number'],
+            'number': season['number'],
+            'year': season['year']
+        })
+
+    card['seasons'] = seasons
+
+    return card
+
+
+def get_card_episodes(program_id, season_id=None):
+    headers = {'Authorization': GLOBOSAT_API_AUTHORIZATION, 'Accept-Encoding': 'gzip'}
+
+    page = 1
+    url = GLOBOSAT_EPISODES_SEASON % (program_id, season_id, page) if season_id else GLOBOSAT_EPISODES % (program_id, page)
+    result = client.request(url, headers=headers)
+
+    next = result['next'] if 'next' in result else None
+    programs_result = result['results'] or []
+
+    while next:
+        page = page + 1
+        url = GLOBOSAT_EPISODES_SEASON % (program_id, season_id, page) if season_id else GLOBOSAT_EPISODES % (program_id, page)
+        result = client.request(url, headers=headers)
+        next = result['next'] if 'next' in result else None
+        programs_result = programs_result + result['results']
+
+    episodes = []
+
+    for episode in programs_result:
+
+        if episode['number'] and 'season' in episode and episode['season'] and 'number' in episode['season']:
+            title = 'S%sE%s - %s' % (episode['season']['number'], episode['number'], episode['title'])
+        else:
+            title = episode['title']
+
+        if 'program' in episode and episode['program']:
+            tvshowtitle = episode['program']['title']
+        else:
+            tvshowtitle = title
+
+        data = {
+            'id': episode['id_globo_videos'],
+            'id_globo_videos': episode['id_globo_videos'],
+            'title': title,
+            'name': episode['title'],
+            'fanart': episode['background_image_tv_cropped'],
+            'thumb': episode['thumb_image'],
+            'poster': episode['image'],
+            'plot': episode['description'],
+            'plotoutline': episode['description'],
+            'kind': episode['kind'] if 'kind' in episode else None,
+            'duration': episode['duration_in_milliseconds'] / 1000.0,
+            'brplayprovider': 'globosat',
+            'tvshowtitle': tvshowtitle,
+            # 'episode': episode['number'],
+            # 'season': episode['season']['number'] if 'season' in episode and episode['season'] and 'number' in episode['season'] else None,
+            'country': episode['country'],
+            'genre': episode['categories'],
+            'tag': episode['tags'],
+            'mpaa': episode['content_rating'],
+            'mediatype': 'episode'
+        }
+
+        if 'director' in episode and episode['director'] and len(episode['director']) > 0:
+            data['director'] = [director['name'] for director in episode['director']]
+
+        if 'cast' in episode and episode['cast'] and len(episode['cast']) > 0:
+            data['cast'] = [director['name'] for director in episode['cast']]
+
+        episodes.append(data)
+
+    return episodes
+
+
 def search(term, page=1):
     try:
         page = int(page)
@@ -107,7 +268,7 @@ def search(term, page=1):
 
     videos = []
     headers = {'Accept-Encoding': 'gzip'}
-    data = client.request(GLOBOSAT_SEARCH % (page, term), headers=headers)
+    data = client.request(GLOBOSAT_SEARCH % (page, urllib.quote_plus(term)), headers=headers)
     total = data['total']
     next_page = page + 1 if len(data['videos']) < total else None
 
@@ -224,26 +385,29 @@ def get_tracks(channel_id=None):
 
 
 def get_track_list(id):
+    videos = []
+
     headers = {
         'Accept-Encoding': 'gzip',
         'Authorization': GLOBOSAT_API_AUTHORIZATION
     }
     track_list = client.request(GLOBOSAT_TRACKS_ITEM % id, headers=headers)
 
-    results = track_list['results']
+    results = track_list['results'] if track_list and 'results' in track_list else None
 
-    while track_list['next'] is not None:
+    if results is None:
+        return videos
+
+    while (track_list['next'] if track_list and 'next' in track_list else None) is not None:
         track_list = client.request(track_list['next'], headers=headers)
         results += track_list['results']
 
-    videos = []
-
     for item in results:
-
         media = item['media']
         if media:
             video = {
                 'id': item['id_globo_videos'],
+                'id_globo_videos': item['id_globo_videos'],
                 'label': media['channel']['title'] + ' - ' + media['title'],
                 'title': media['title'],
                 'tvshowtitle': media['program']['title'] if 'program' in media and media['program'] else None,
@@ -266,6 +430,7 @@ def get_track_list(id):
             program = item['program']
             video = {
                 'id': item['id_globo_videos'],
+                'id_globo_videos': item['id_globo_videos'],
                 'label': program['title'],
                 'title': program['title'],
                 'tvshowtitle': program['title'],
@@ -383,7 +548,7 @@ def get_watch_later(page=1):
     results = watch_later_list['data']
 
     while watch_later_list['next'] is not None:
-        watch_later_list = client.request(watch_later_list['next'], headers=headers)
+        watch_later_list = client.request(GLOBOSAT_WATCH_LATER % (token, watch_later_list['next'], 50), headers=headers)
         results += watch_later_list['data']
 
     videos = []
@@ -399,15 +564,11 @@ def get_watch_later(page=1):
             'plot': item['description'],
             'tagline': None,
             'duration': float(item['duration_in_milliseconds']) / 1000.0,
-            'logo': item['program']['logo_image'] if 'program' in item and item['program'] else item['channel'][
-                'color_logo'],
-            'clearlogo': item['program']['logo_image'] if 'program' in item and item['program'] else
-            item['channel']['color_logo'],
-            'poster': item['program']['poster_image'] if 'program' in item and item['program'] else item[
-                'card_image'],
+            'logo': item['program']['logo_image'] if 'program' in item and item['program'] else item['channel']['color_logo'],
+            'clearlogo': item['program']['logo_image'] if 'program' in item and item['program'] else item['channel']['color_logo'],
+            'poster': item['program']['poster_image'] if 'program' in item and item['program'] else item['card_image'],
             'thumb': item['thumb_image'],
-            'fanart': item['program']['background_image_tv_cropped'] if 'program' in item and item['program'] else item[
-                'background_image_tv_cropped'],
+            'fanart': item['program']['background_image_tv_cropped'] if 'program' in item and item['program'] else item['background_image_tv_cropped'],
             'mediatype': 'episode',
             'brplayprovider': 'globosat'
         }
@@ -454,12 +615,7 @@ def del_watch_later(video_id):
 
 def get_watch_history(page=1):
 
-    # GET /globosatplay/watch_history.json?token=bd97dc379d3648d23b69257160a40c6e&amp;page=1&amp;per_page=50 HTTP/1.1
-    # Host: api.vod.globosat.tv
-    # Accept-Language: en-US
-    # Accept-Encoding: gzip
-    # version: 2
-    # Authorization: token b4b4fb9581bcc0352173c23d81a26518455cc521
+    page_size = 50
 
     headers = {
         'Accept-Encoding': 'gzip',
@@ -469,12 +625,12 @@ def get_watch_history(page=1):
 
     token = auth_helper.get_globosat_token()
 
-    watch_later_list = client.request(GLOBOSAT_WATCH_HISTORY % (token, page, 50), headers=headers)
+    watch_later_list = client.request(GLOBOSAT_WATCH_HISTORY % (token, page, page_size), headers=headers)
 
     results = watch_later_list['data']
 
     while watch_later_list['next'] is not None:
-        watch_later_list = client.request(watch_later_list['next'], headers=headers)
+        watch_later_list = client.request(GLOBOSAT_WATCH_HISTORY % (token, watch_later_list['next'], page_size), headers=headers)
         results += watch_later_list['data']
 
     videos = []
@@ -482,25 +638,24 @@ def get_watch_history(page=1):
     results = sorted(results, key=lambda x: x['watched_date'], reverse=True)
 
     for item in results:
+        channel_title = item['channel']['title'] or ''
+        program_title = item['program']['title'] if 'program' in item and item['program'] else ''
+        title = item['title'] or 'No Title'
+        label = channel_title + (' - ' + program_title) + ' - ' + title
         video = {
             'id': item['id_globo_videos'],
-            'label': item['channel']['title'] + (
-            ' - ' + item['program']['title'] if 'program' in item and item['program'] else '') + ' - ' + item['title'],
+            'label': label,
             'title': item['title'],
             'tvshowtitle': item['program']['title'] if 'program' in item and item['program'] else item['title'],
-            'studio': item['channel']['title'],
+            'studio': channel_title,
             'plot': item['description'],
             'tagline': None,
             'duration': float(item['duration_in_milliseconds']) / 1000.0,
-            'logo': item['program']['logo_image'] if 'program' in item and item['program'] else item['channel'][
-                'color_logo'],
-            'clearlogo': item['program']['logo_image'] if 'program' in item and item['program'] else
-            item['channel']['color_logo'],
-            'poster': item['program']['poster_image'] if 'program' in item and item['program'] else item[
-                'card_image'],
+            'logo': item['program']['logo_image'] if 'program' in item and item['program'] else item['channel']['color_logo'],
+            'clearlogo': item['program']['logo_image'] if 'program' in item and item['program'] else item['channel']['color_logo'],
+            'poster': item['program']['poster_image'] if 'program' in item and item['program'] else item['card_image'],
             'thumb': item['thumb_image'],
-            'fanart': item['program']['background_image_tv_cropped'] if 'program' in item and item['program'] else item[
-                'background_image'],
+            'fanart': item['program']['background_image_tv_cropped'] if 'program' in item and item['program'] else item['background_image'],
             'mediatype': 'episode',
             'brplayprovider': 'globosat',
             'milliseconds_watched': int(item['watched_seconds']) * 1000
