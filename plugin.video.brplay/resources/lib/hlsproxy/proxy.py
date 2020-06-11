@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 MA 02110-1301, USA.
 """
 
+import sys
+import ssl
 import re
 import socket
 import traceback
@@ -33,11 +35,14 @@ from SocketServer import ThreadingMixIn
 import xbmc
 import xbmcgui
 
-import thread
 import threading
 
+from resources.lib.modules import control
 
-g_stopEvent=None
+
+g_stopEvent = None
+g_downloader = None
+
 VIDEO_MIME_TYPE = 'video/MP2T'
 PLAYLIST_MIME_TYPE = 'application/vnd.apple.mpegurl'
 
@@ -46,21 +51,20 @@ PORT_NUMBER = 55444
 
 
 def log(msg):
-    pass
-    # xbmc.log(msg, level=xbmc.LOGNOTICE)
+    # pass
+    control.log(msg)
 
 
 class ProxyHandler(BaseHTTPRequestHandler):
-
-    downloader = None
 
     """
     Serves a HEAD request
     """
     def do_HEAD(self):
         print "XBMCLocalProxy: Serving HEAD request..."
+        global g_downloader
         self.send_response(200)
-        self.send_header("Content-Type", PLAYLIST_MIME_TYPE)
+        self.send_header("Content-Type", g_downloader.MAIN_MIME_TYPE)
         self.end_headers()
 
     """
@@ -69,9 +73,10 @@ class ProxyHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         print "XBMCLocalProxy: Serving GET request..."
         global g_stopEvent
+        global g_downloader
 
         try:
-            #Pull apart request path
+            # Pull apart request path
             request_path=self.path[1:]
             path_and_query=request_path
             path_and_query_list = path_and_query.split('?')
@@ -85,22 +90,22 @@ class ProxyHandler(BaseHTTPRequestHandler):
             if request_path.lower() == "brplay":
                 (url, proxy, maxbitrate) = self.decode_url(querystring)
 
-                if not self.downloader.init(self.wfile, url, proxy, g_stopEvent, maxbitrate):
+                if not g_downloader.init(self.wfile, url, proxy, g_stopEvent, maxbitrate):
                     print 'cannot init'
                     raise Exception('HLS.url failed to play\nServer down? check Url.')
 
-                log("GET REQUEST Content-Type: %s" % self.downloader.MAIN_MIME_TYPE)
+                log("GET REQUEST Content-Type: %s" % g_downloader.MAIN_MIME_TYPE)
 
                 self.send_response(200)
-                self.send_header("Content-Type", self.downloader.MAIN_MIME_TYPE)
+                self.send_header("Content-Type", g_downloader.MAIN_MIME_TYPE)
                 self.end_headers()
 
                 init_done=True
 
-                self.downloader.keep_sending_video(self.wfile)
+                g_downloader.keep_sending_video(self.wfile)
 
             else:
-                is_playlist = request_path.endswith('.m3u8')
+                is_playlist = '.m3u8' in request_path and not '.srt.m3u8' in request_path
                 is_media = request_path.endswith('.ts')
                 self.send_response(200)
                 mime_type = PLAYLIST_MIME_TYPE if is_playlist else VIDEO_MIME_TYPE if is_media else 'application/octet-stream'
@@ -111,16 +116,19 @@ class ProxyHandler(BaseHTTPRequestHandler):
                 if is_playlist:
                     log("GET REQUEST MEDIA PLAYLIST")
                     base_uri = 'http://%s:%s' % (HOST_NAME, PORT_NUMBER)
-                    self.downloader.download_segment_playlist(path_and_query, base_uri, self.wfile)
+                    log("g_downloader: %s" % repr(g_downloader))
+                    g_downloader.download_segment_playlist(path_and_query, base_uri, self.wfile)
+                    log("finished g_downloader.download_segment_playlist")
                 elif is_media:
                     log("GET REQUEST MEDIA DATA")
-                    self.downloader.download_segment_media(path_and_query, self.wfile)
+                    g_downloader.download_segment_media(path_and_query, self.wfile)
                 else:
                     log("GET REQUEST BINARY DATA")
-                    self.downloader.download_binary(path_and_query, self.wfile)
+                    g_downloader.download_binary(path_and_query, self.wfile)
 
         except Exception as inst:
-            #Print out a stack trace
+            log("PROXY REQUEST ERROR")
+            # Print out a stack trace
             traceback.print_exc()
             if not init_done:
                 xbmc.executebuiltin("XBMC.Notification(BRPlayProxy,%s,4000,'')" % inst.message)
@@ -132,14 +140,14 @@ class ProxyHandler(BaseHTTPRequestHandler):
                 self.finish()
                 log("REQUEST FINISHED CALLED SUCCESSFULLY")
             except Exception, e:
-                xbmc.log("PROXYHANDLER ERROR: %s " % e.message, level=xbmc.LOGERROR)
+                control.log("PROXYHANDLER ERROR: %s " % e.message)
 
     def decode_url(self, url):
-        print 'in params',url
+        control.log('in params: %s' % url)
         params=urlparse.parse_qs(url)
-        print 'params',params
+        control.log('params: %s' % repr(params))
         received_url = params['url'][0].replace('\r','')
-        print 'received_url',received_url
+        control.log('received_url: %s' % received_url)
 
         proxy=None
         try:
@@ -151,22 +159,16 @@ class ProxyHandler(BaseHTTPRequestHandler):
             maxbitrate = int(params['maxbitrate'][0])
         except: pass
 
-        if proxy=='None' or proxy=='':
-            proxy=None
+        if proxy == 'None' or proxy == '':
+            proxy = None
         
-        return (received_url,proxy,maxbitrate)
-
-    def decode_videoparturl(self, url):
-        print 'in params', url
-        params = urlparse.parse_qs(url)
-        received_url = params['url'][0].replace('\r', '')
-        return received_url
+        return received_url, proxy, maxbitrate
 
 
-"""
-Sends the requested file and add additional headers.
-"""
 class Server(HTTPServer):
+    """
+    Sends the requested file and add additional headers.
+    """
     """HTTPServer class with timeout."""
  
     def get_request(self):
@@ -190,14 +192,21 @@ class Server(HTTPServer):
 
 class ThreadedHTTPServer(ThreadingMixIn, Server):
     """Handle requests in a separate thread."""
-    # def __init__(self):
-    #     ThreadingMixIn.daemon_threads = True
+    daemon_threads = True
+
+    def handle_error(self, request, client_address):
+        # surpress socket/ssl related errors
+        cls, e = sys.exc_info()[:2]
+        if cls is socket.error or cls is ssl.SSLError:
+            pass
+        else:
+            return Server.handle_error(self, request, client_address)
 
 
-class hlsProxy():
+class HlsProxy:
 
     @property
-    def stopEvent(self):
+    def stop_event(self):
         return self.stopPlaying
 
     def __init__(self):
@@ -208,17 +217,18 @@ class hlsProxy():
         global PORT_NUMBER
         global HOST_NAME
         global g_stopEvent
+        global g_downloader
 
         g_stopEvent = stopEvent
 
         socket.setdefaulttimeout(10)
 
         ProxyHandler.protocol_version = "HTTP/1.1"
-        ProxyHandler.downloader = player()
+        g_downloader = player()
 
         httpd = None
         try:
-            ThreadedHTTPServer.daemon_threads = True
+            # ThreadedHTTPServer.daemon_threads = True
             httpd = ThreadedHTTPServer((HOST_NAME, port), ProxyHandler)
 
             log("XBMCLocalProxy Starts - %s:%s" % (HOST_NAME, port))
@@ -228,15 +238,14 @@ class hlsProxy():
             try:
                 if httpd:
                     httpd.server_close()
-                    httpd.shutdown()
             finally:
                 log("XBMCLocalProxy Stops %s:%s" % (HOST_NAME, port))
 
     def __prepare_url(self, url, proxy=None, port=PORT_NUMBER, maxbitrate=0):
         global PORT_NUMBER
-        newurl=urllib.urlencode({'url': url, 'proxy': proxy, 'maxbitrate': maxbitrate})
+        newurl = urllib.urlencode({'url': url, 'proxy': proxy, 'maxbitrate': maxbitrate})
         link = 'http://%s:%s/brplay?%s' % (HOST_NAME, str(port), newurl)
-        return (link) #make a url that caller then call load into player
+        return link  # make a url that caller then call load into player
 
     def resolve(self, url, proxy=None, maxbitrate=0, player=None):
 
@@ -247,11 +256,13 @@ class hlsProxy():
         progress.update(20, "", 'Loading local proxy', "")
 
         self.stopPlaying.clear()
-        thread.start_new_thread(self.__start, (self.stopPlaying, player,))
+        t = threading.Thread(target=self.__start, args=(self.stopPlaying, player,))
+        t.daemon = True
+        t.start()
 
         url_to_play = self.__prepare_url(url, proxy, maxbitrate=maxbitrate)
 
-        xbmc.sleep(500)
+        xbmc.sleep(100)
 
         progress.update(100, "", "", "")
         progress.close()

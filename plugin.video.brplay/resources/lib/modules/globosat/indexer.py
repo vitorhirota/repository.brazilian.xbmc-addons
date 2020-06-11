@@ -1,5 +1,6 @@
 from resources.lib.modules import workers
 from resources.lib.modules import cache
+from resources.lib.modules import control
 
 
 class Indexer:
@@ -14,22 +15,34 @@ class Indexer:
         threads = [
             workers.Thread(self.__append_result, scraper.get_basic_live_channels, live),
             workers.Thread(self.__append_result, scraper.get_combate_live_channels, live),
-            workers.Thread(self.__append_result, scraper.get_premiere_live_channels, live)
+            workers.Thread(self.__append_result, scraper.get_premiere_live_24h_channels, live)
         ]
+
+        if control.setting('show_pfc_games') == 'true':
+            threads.append(workers.Thread(self.__append_result, scraper.get_premiere_live_games, live))
+
+        if control.setting('show_bbb') == 'true':
+            threads.append(workers.Thread(self.__append_result, scraper.get_bbb_channels, live))
+
         [i.start() for i in threads]
         [i.join() for i in threads]
 
-        authorized_channels = [channel for channel in self.get_authorized_channels() if channel["live"]]
+        if not control.ignore_channel_authorization:
+            control.log("Channels Found: %s" % live)
+            authorized_channels = [channel for channel in self.get_authorized_channels() if channel["live"]]
+            control.log("Authorized Channels: %s" % authorized_channels)
+            live = [channel for channel in live if self.is_in(channel, authorized_channels)]
 
-        live = [channel for channel in live if self.is_in(channel, authorized_channels)]
-
+        control.log("Live Channels: %s" % live)
         return live
 
     def is_in(self, live, authorized_channels):
         for channel in authorized_channels:
-            if channel['id'] == live['channel_id']:
+            if str(channel['id']) == str(live['channel_id']):
+                if channel['logo'] and str(channel['id']) in ['2001', '2002']:  # sportv2/sportv3 logo fix hack
+                    live['logo'] = channel['logo']
+                    live['clearlogo'] = channel['logo']
                 return True
-
         return False
 
     def __append_result(self, fn, list, *args):
@@ -38,12 +51,29 @@ class Indexer:
     def get_channel_programs(self, channel_id):
         import scraper_vod as scraper
 
-        programs = scraper.get_channel_programs(channel_id)
+        # programs = scraper.get_channel_programs(channel_id)
+        programs = scraper.get_channel_cards(channel_id)
 
         for item in programs:
             item["brplayprovider"] = "globosat"
 
         return programs
+
+    def get_seasons_by_program(self, id_globo_videos):
+        import scraper_vod as scraper
+
+        card = scraper.get_card_seasons(id_globo_videos)
+
+        card["brplayprovider"] = "globosat"
+
+        return card
+
+    def get_episodes_by_program(self, id_program, id_season=None):
+        import scraper_vod as scraper
+
+        episodes = scraper.get_card_episodes(id_program, id_season)
+
+        return episodes
 
     def get_authorized_channels(self):
         import scraper_vod as scraper
@@ -55,10 +85,10 @@ class Indexer:
     def get_vod(self):
         vod = self.get_authorized_channels()
 
-        vod = [channel for channel in vod if channel["vod"] and not channel["slug"].startswith("sportv-") and not channel["slug"].startswith("big-brother-brasil")]
+        vod = [channel for channel in vod if channel["vod"] and not channel["slug"].startswith("sportv-")]
 
         for item in vod:
-            item["brplayprovider"] = "globosat" if item['slug'] != 'sexyhot' else 'sexyhot'
+            item["brplayprovider"] = "globosat" if item['slug'] != 'sexyhot' and item['slug'] != 'sexy-hot' else 'sexyhot'
 
         return vod
 

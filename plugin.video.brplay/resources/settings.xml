@@ -1,75 +1,24 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-	<!-- 32310 = General -->
-	<category label="32310">
-
-		<!-- 31003 = Proxy -->
-		<setting type="lsep" label="31003" />
-		<setting id="use_proxy" type="bool" label="31004" default="true" />
-		<setting id="proxy_url" type="text" label="URL" enable="eq(-1,true)"/>
-		<setting type="sep" />
-
-		<!-- 33001 = Streaming -->
-		<setting type="lsep" label="33001" />
-
-		<!-- 33101 = Bandwidth 	-->
-		<!-- 33103 = Auto   	-->
-        <!-- 33102 = Adaptive 	-->
-		<!-- 33104 = Manual 	-->
-		<!-- 33105 = Max 		-->
-		<!-- 33106 = Medium 	-->
-		<!-- 33107 = Low 		-->
-		<setting id="bandwidth" type="enum" label="33101" lvalues="33103|33102|33104|33105|33106|33107" default="0" />
-
-		<!-- 33201 = Proxy Type -->
-		<!-- 33202 = Downloader -->
-		<!-- 33203 = Redirect  	-->
-		<!-- 33204 = Redirect Buffered  	-->
-		<setting id="proxy_type" type="enum" label="33201" lvalues="33202|33203|33204" default="1" visible="eq(-1,1)"/>
-		<setting type="sep" />
-
-		<setting type="lsep" label="GloboPlay"></setting>
-
-		<!-- 33301 = Show Full Videos Only -->
-		<setting id="globo_play_full_videos" type="bool" label="33301" default="true" />
-		<setting type="sep" />
-
-		<setting type="lsep" label="Sexy Hot"></setting>
-
-		<!-- 33401 = Show Adult Content -->
-		<!-- 33402 = Use Pagination -->
-		<setting id="show_adult" type="bool" label="33401" default="true" />
-		<setting id="sexy_hot_pagination" type="bool" label="33402" default="true" enable="eq(-1,true)"/>
-		<setting type="sep" />
-
-		<!-- 33501 = Clear Cache -->
-		<!-- 33502 = Addon Maintenance -->
-		<setting type="lsep" label="33502"></setting>
-		<setting id="clear" type="action" label="33501" action="RunPlugin(plugin://plugin.video.brplay/?action=clear)"/>
-		<setting type="sep" />
-
-	</category>
-
 	<!-- 32346 = Accounts -->
 	<category label="32346">
 
-		<!-- 32200 = Globosat Play -->
-		<setting type="lsep" label="31200"></setting>
-
-		<!-- 31210 = TV Provider -->
-		<setting id="globosat_provider" type="labelenum" label="31210" values="NET|TV Oi|Sky|Vivo|Globosat Guest|Claro|Multiplay|ORM Cabo" default="TV Oi" />
-
-		<!-- 31110 = User -->
-		<!-- 31120 = Password -->
-		<setting id="globosat_username" type="text" label="31110" default="" />
-		<setting id="globosat_password" type="text" option="hidden" label="31109" enable="!eq(-1,)" default="" />
-		<setting type="sep" />
-
+		<setting type="lsep" label="Globosat Play"></setting>
+		<setting id="globosat_available" type="bool" label="34108" default="true" />
+		<setting id="use_globoplay_credentials_for_globosat" type="bool" label="34109" default="true" visible="eq(-1,true)" enable="eq(-1,true)"/>
+		<setting id="globosat_username" type="text" label="31110" default="" visible="eq(-1,false)" enable="eq(-1,false)"/>
+		<setting id="globosat_password" type="text" option="hidden" label="31109" enable="!eq(-1,)" default="" visible="eq(-2,false)"/>
+		<setting id="globosat_geofence" type="select" label="31209" lvalues="31208|31112|31113|31114|31115|31117|31118|31119|31120|31121|31122|31123|31124|31125|31126|31127|31128|31129|31130|31131|31132|31133|31134|31135|31136|31137|31138|31139" default="0" visible="eq(-4,true)" enable="eq(-4,true)"/>
+		<setting id="show_bbb" type="bool" label="33404" default="true" visible="eq(-5,true)" />
+		<setting id="show_pfc_games" type="bool" label="33405" default="true" visible="eq(-6,true)" />
 		<!-- 31100 = Globo Play -->
 		<!-- 31110 = User -->
 		<!-- 31109 = Password -->
+
 		<!-- 31111 = Affiliate -->
 		<!-- 31116 = All -->
+		<!-- 33103 = Auto -->
+		<!-- 34112 = Custom -->
 		<!-- 31112 = Rio de Janeiro -->
 		<!-- 31113 = Sao Paulo -->
 		<!-- 31114 = Brasilia -->
@@ -95,11 +44,88 @@
 		<!-- 31135 = Sao Luis -->
 		<!-- 31136 = Joao Pessoa -->
 		<!-- 31137 = Natal -->
+		<!-- 31138 = Boa Vista -->
+		<!-- 31139 = Porto Velho -->
 		<setting type="lsep" label="31100"></setting>
+
 		<setting id="globoplay_username" type="text" label="31110" default="" />
 		<setting id="globoplay_password" type="text" option="hidden" label="31109" enable="!eq(-1,)" default="" />
 		<!--<setting id="globo_affiliate" type="enum" label="31111" lvalues="31116|31112|31113|31114|31115|31117|31118|31119|31120|31121|31122|31123|31124|31125|31126|31127|31128|31129|31130|31131|31132|31133|31134|31135|31136|31137" default="1" />-->
-		<setting id="globo_affiliate" type="enum" label="31111" lvalues="31116|31112|31113|31114|31115|31117" default="1" />
+		<!-- Rio de Janeiro|Sao Paulo|Brasilia|Belo Horizonte|Recife|Manaus|Rio Branco|Boa Vista|Porto Velho|Macapa|Goiania|Belem|Salvador|Florianopolis|Sao Luis|Vitoria -->
+		<setting id="globo_affiliate" type="select" label="31111" lvalues="31116|34112|33103|31112|31113|31114|31115|31117|31129|31133|31138|31139|31131|31127|31130|31118|31124|31135|31126|31119|31123|31137|31125" default="1" />
+		<setting id="use_custom_affiliate" type="bool" label="31211" default="false" visible="eq(-1,0)"/>
+		<setting id="custom_affiliate_latitude" type="text" label="34110" default="" visible="lt(-2,2)" enable="eq(-2,1)|eq(-1,true)"/>
+		<setting id="custom_affiliate_longitude" type="text" label="34111" default="" visible="lt(-3,2)" enable="eq(-3,1)|eq(-2,true)"/>
+
+		<setting type="lsep" label="SexyHot"></setting>
+
+		<!-- 33401 = Show Adult Content -->
+		<!-- 33402 = Use Pagination -->
+		<setting id="show_adult" type="bool" label="33401" default="true" />
+<!--		<setting id="sexy_hot_pagination" type="bool" label="33402" default="true" enable="eq(-1,true)"/>-->
 		<setting type="sep" />
+	</category>
+
+	<category label="33001">
+		<setting id="use_proxy" type="bool" label="31004" default="false" />
+		<setting id="proxy_url" type="text" label="URL" enable="eq(-1,true)" visible="eq(-1,true)" />
+		<setting type="sep" />
+
+		<!-- 33101 = Bandwidth 	-->
+		<!-- 33103 = Auto   	-->
+        <!-- 33102 = Adaptive 	-->
+		<!-- 33104 = Manual 	-->
+		<!-- 33105 = Max 		-->
+		<!-- 33106 = Medium 	-->
+		<!-- 33107 = Low 		-->
+		<!--<setting id="bandwidth" type="enum" label="33101" lvalues="33103|33102|33104|33105|33106|33107" default="0" />-->
+		<setting id="bandwidth" type="enum" label="33101" lvalues="33103|33102|33104" default="0" />
+
+		<!-- 33201 = Proxy Type -->
+		<!-- 33202 = Downloader -->
+		<!-- 33203 = Redirect  	-->
+		<setting id="proxy_type" type="enum" label="33201" lvalues="33202|33203" default="1" visible="eq(-1,1)"/>
+		<!--<setting id="average_download_speed" type="number" option="float" label="33200" range="0,999999999999" default="0" enable="false" visible="eq(-2,1)"/>-->
+
+		<setting type="lsep" label="34107"></setting>
+
+		<setting id="enable_4k" type="bool" label="Enable 4K when available" default="true" />
+		<setting id="enable_hdr" type="bool" label="Enable HDR when available" default="true" visible="eq(-1,true)" enable="eq(-1,true)"/>
+		<setting id="enable_4k_fanart" type="bool" label="Enable high resolution images when available" default="false" visible="eq(-2,true)" enable="eq(-2,true)"/>
+
+		<setting type="lsep" label="Advanced" visible="System.HasAddon(inputstream.adaptive)"></setting>
+
+		<setting id="disable_inputstream_adaptive" type="bool" label="Disable InputStream.Adaptive" default="true" visible="System.HasAddon(inputstream.adaptive)"/>
+		<setting id="prefer_smoothstreaming" type="bool" label="Prefer SmoothStreaming for DRM" default="false" visible="false" />
+		<setting id="prefer_playready" type="bool" label="Prefer PlayReady for DRM" default="false" visible="false"/>
+		<setting id="prefer_dash" type="bool" label="Prefer Dash over HLS" default="false" visible="System.HasAddon(inputstream.adaptive)+eq(-3,false)" />
+
+	</category>
+
+	<!-- 32310 = General -->
+	<category label="32310">
+
+		<setting type="lsep" label="Globo Play"></setting>
+
+		<!-- 33301 = Show Full Videos Only -->
+		<setting id="globo_play_full_videos" type="bool" label="33301" default="true" />
+		<setting id="play_children" type="bool" label="Play multi part videos as playlist" default="true" />
+		<setting type="sep" />
+
+		<setting type="lsep" label="Globosat Play"></setting>
+
+		<setting id="ignore_channel_authorization" type="bool" label="33403" default="false"/>
+		<setting type="sep" />
+
+		<!-- 33501 = Clear Cache -->
+		<!-- 33502 = Addon Maintenance -->
+		<setting type="lsep" label="33502"></setting>
+		<setting id="clear" type="action" label="33501" action="RunPlugin(plugin://plugin.video.brplay/?action=clear)"/>
+		<setting id="clearAuth" type="action" label="33503" action="RunPlugin(plugin://plugin.video.brplay/?action=clearAuth)"/>
+		<setting type="sep" />
+
+		<setting type="lsep" label="Debug"></setting>
+		<setting id="enable_log" type="bool" label="Debug Log" default="false" />
+
 	</category>
 </settings>

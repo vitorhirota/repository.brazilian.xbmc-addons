@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import urlparse, os, sys, json
+import os, json, threading
 
 import xbmc, xbmcaddon, xbmcplugin, xbmcgui, xbmcvfs
-
-integer = 1000
 
 lang = xbmcaddon.Addon().getLocalizedString
 
@@ -13,6 +11,8 @@ lang2 = xbmc.getLocalizedString
 setting = xbmcaddon.Addon().getSetting
 
 setSetting = xbmcaddon.Addon().setSetting
+
+openSettings = xbmcaddon.Addon().openSettings
 
 addon = xbmcaddon.Addon
 
@@ -143,8 +143,6 @@ listDir = xbmcvfs.listdir
 
 transPath = xbmc.translatePath
 
-log = xbmc.log
-
 skinPath = xbmc.translatePath('special://skin/')
 
 tempPath = xbmc.translatePath('special://temp/')
@@ -169,18 +167,93 @@ isJarvis = infoLabel("System.BuildVersion").startswith("16.")
 
 isKrypton = infoLabel("System.BuildVersion").startswith("17.")
 
+isFTV = skin.lower().startswith('skin.ftv')
+
 cookieFile = os.path.join(tempPath, 'cookies.dat')
 
 proxy_url = xbmcaddon.Addon().getSetting('proxy_url') if xbmcaddon.Addon().getSetting('use_proxy') == 'true' else None
 
 show_adult_content = xbmcaddon.Addon().getSetting('show_adult') == 'true'
 
+__inputstream_addon_available = None
+
+ignore_channel_authorization = xbmcaddon.Addon().getSetting('ignore_channel_authorization') == 'true'
+
+is_4k_enabled =  xbmcaddon.Addon().getSetting('enable_4k') == 'true'
+
+is_4k_images_enabled =  xbmcaddon.Addon().getSetting('enable_4k_fanart') == 'true'
+
+log_enabled = setting('enable_log') == 'true'
+
+disable_inputstream_adaptive = setting("disable_inputstream_adaptive") == 'true'
+
+
+def get_current_brasilia_utc_offset():
+    try:
+        import pytz
+        import datetime
+        import resources.lib.modules.util as util
+
+        sp_timezone = pytz.timezone('America/Sao_Paulo')
+        return util.get_total_seconds(datetime.datetime.now(sp_timezone).utcoffset()) / 60 / 60
+    except Exception as ex:
+        log("TIMEZONE ERROR: %s" % repr(ex))
+        return -3
+
+
+def get_inputstream_addon():
+    """Checks if the inputstream addon is installed & enabled.
+       Returns the type of the inputstream addon used and if it's enabled,
+       or None if not found.
+    Returns
+    -------
+    :obj:`tuple` of obj:`str` and bool, or None
+        Inputstream addon and if it's enabled, or None
+    """
+    type = 'inputstream.adaptive'
+    payload = {
+        'jsonrpc': '2.0',
+        'id': 1,
+        'method': 'Addons.GetAddonDetails',
+        'params': {
+            'addonid': type,
+            'properties': ['enabled']
+        }
+    }
+    response = xbmc.executeJSONRPC(json.dumps(payload))
+    data = json.loads(response)
+    if 'error' not in data.keys():
+        return type, data['result']['addon']['enabled']
+    return None, None
+
+
+def is_inputstream_available():
+    global disable_inputstream_adaptive
+
+    if disable_inputstream_adaptive:
+        return False
+
+    global __inputstream_addon_available
+
+    if __inputstream_addon_available is None:
+        lock = threading.RLock()
+
+        try:
+            lock.acquire()
+            if __inputstream_addon_available is None:
+                (inputstream_addon, inputstream_enabled) = get_inputstream_addon()
+                __inputstream_addon_available = inputstream_addon is not None and inputstream_enabled
+        except Exception as ex:
+            log("ERROR FINDING INPUTSTREAM ADDON, CONSIDERING MISSING: %s" % repr(ex))
+            __inputstream_addon_available = False
+        finally:
+            lock.release()
+
+    return __inputstream_addon_available
+
 
 def is_globosat_available():
-    username = setting('globosat_username')
-    password = setting('globosat_password')
-
-    return username and password and username.strip() != '' and password.strip() != ''
+    return setting('globosat_available') == 'true' and (is_globoplay_available() if setting('use_globoplay_credentials_for_globosat') == 'true' else setting('globosat_username') != '' and setting('globosat_password') != '')
 
 
 def is_globoplay_available():
@@ -196,7 +269,7 @@ def getKodiVersion():
 
 def addonIcon():
     art = artPath()
-    if not (art == None): return os.path.join(art, 'icon.png')
+    if not (art is None): return os.path.join(art, 'icon.png')
     return addonInfo('icon')
 
 
@@ -209,19 +282,19 @@ def getBandwidthLimit():
 
 def addonThumb():
     art = artPath()
-    if not (art == None): return os.path.join(art, 'poster.png')
+    if not (art is None): return os.path.join(art, 'poster.png')
     return addonInfo('icon')
 
 
 def addonPoster():
     art = artPath()
-    if not (art == None): return os.path.join(art, 'poster.png')
+    if not (art is None): return os.path.join(art, 'poster.png')
     return 'DefaultVideo.png'
 
 
 def addonBanner():
     art = artPath()
-    if not (art == None): return os.path.join(art, 'banner.png')
+    if not (art is None): return os.path.join(art, 'banner.png')
     return 'DefaultVideo.png'
 
 
@@ -231,12 +304,16 @@ def addonFanart():
 
 def addonNext():
     art = artPath()
-    if not (art == None): return os.path.join(art, 'next.png')
+    if not (art is None): return os.path.join(art, 'next.png')
     return 'DefaultVideo.png'
 
 
 def artPath():
     return os.path.join(addonPath, 'resources', 'media')
+
+
+def okDialog(heading, line1, line2=None, line3=None):
+    dialog.ok(heading=heading, line1=line1, line2=line2, line3=line3)
 
 
 def infoDialog(message, heading=addonInfo('name'), icon='', time=3000, sound=False):
@@ -257,13 +334,6 @@ def yesnoDialog(line1, line2, line3, heading=addonInfo('name'), nolabel='', yesl
 
 def selectDialog(list, heading=addonInfo('name')):
     return dialog.select(heading, list)
-
-
-def moderator():
-    netloc = [urlparse.urlparse(sys.argv[0]).netloc, '', 'plugin.video.live.streamspro', 'plugin.video.phstreams',
-              'plugin.video.cpstreams', 'plugin.video.streamarmy', 'plugin.video.tinklepad', 'plugin.video.metallic']
-
-    if not infoLabel('Container.PluginName') in netloc: sys.exit()
 
 
 def apiLanguage(ret_name=None):
@@ -333,13 +403,13 @@ def cdnImport(uri, name):
     path = path.decode('utf-8')
 
     deleteDir(os.path.join(path, ''), force=True)
-    makeFile(dataPath);
+    makeFile(dataPath)
     makeFile(path)
 
     r = client.request(uri)
     p = os.path.join(path, name + '.py')
-    f = openFile(p, 'w');
-    f.write(r);
+    f = openFile(p, 'w')
+    f.write(r)
     f.close()
     m = imp.load_source(name, p)
 
@@ -351,7 +421,7 @@ def openSettings(query=None, id=addonInfo('id')):
     try:
         idle()
         execute('Addon.OpenSettings(%s)' % id)
-        if query == None: raise Exception()
+        if query is None: raise Exception()
         c, f = query.split('.')
         execute('SetFocus(%i)' % (int(c) + 100))
         execute('SetFocus(%i)' % (int(f) + 200))
@@ -369,3 +439,120 @@ def idle():
 
 def queueItem():
     return execute('Action(Queue)')
+
+
+def clear_credentials():
+    setSetting("sexyhot_credentials", None)
+    setSetting("globosat_credentials", None)
+    setSetting("globoplay_credentials", None)
+
+
+def log(msg):
+    if log_enabled:
+        xbmc.log('[plugin.video.brplay] - ' + str(msg), xbmc.LOGNOTICE)  # xbmc.LOGDEBUG
+
+
+def get_coordinates(affiliate):
+
+    if affiliate == "Rio de Janeiro":
+        code, latitude, longitude = "RJ", "-22.970722", "-43.182365"
+    elif affiliate == "Sao Paulo":
+        code, latitude, longitude = "SP1", '-23.5505', '-46.6333'
+    elif affiliate == "Brasilia":
+        code, latitude, longitude = "DF", '-15.7942',' -47.8825'
+    elif affiliate == "Belo Horizonte":
+        code, latitude, longitude = "BH", '-19.9245','-43.9352'
+    elif affiliate == "Recife":
+        code, latitude, longitude = "PE1", '-8.0476','-34.8770'
+    elif affiliate == "Salvador":
+        code, latitude, longitude = "SAL", '-12.9722','-38.5014'
+    elif affiliate == "Fortaleza":
+        code, latitude, longitude = "CE1", '-3.7319','-38.5267'
+    elif affiliate == "Aracaju":
+        code, latitude, longitude = "SER", '-10.9472','-37.0731'
+    elif affiliate == "Maceio":
+        code, latitude, longitude = "MAC", '-9.6498','-35.7089'
+    elif affiliate == "Cuiaba":
+        code, latitude, longitude = "MT", '-15.6014','-56.0979'
+    elif affiliate == "Porto Alegre":
+        code, latitude, longitude = "RS1", '-30.0347','-51.2177'
+    elif affiliate == "Florianopolis":
+        code, latitude, longitude = "SC1", '-27.5949','-48.5482'
+    elif affiliate == "Curitiba":
+        code, latitude, longitude = "CUR", '-25.4244','-49.2654'
+    elif affiliate == "Vitoria":
+        code, latitude, longitude = "VIT", '-20.2976','-40.2958'
+    elif affiliate == "Goiania":
+        code, latitude, longitude = "GO01", '-16.6869','-49.2648'
+    elif affiliate == "Campo Grande":
+        code, latitude, longitude = "MS1", '-20.4697','-54.6201'
+    elif affiliate == "Manaus":
+        code, latitude, longitude = "MAN", '-3.1190','-60.0217'
+    elif affiliate == "Belem":
+        code, latitude, longitude = "BEL", '-1.4558','-48.4902'
+    elif affiliate == "Macapa":
+        code, latitude, longitude = "AMP", '-0.0356','-51.0705'
+    elif affiliate == "Palmas":
+        code, latitude, longitude = "PAL", '-10.2491','-48.3243'
+    elif affiliate == "Rio Branco":
+        code, latitude, longitude = "ACR", '-9.9754','-67.8249'
+    elif affiliate == "Teresina":
+        code, latitude, longitude = "TER", '-5.0920','-42.8038'
+    elif affiliate == "Sao Luis":
+        code, latitude, longitude = "MA1", '-2.5391','-44.2829'
+    elif affiliate == "Joao Pessoa":
+        code, latitude, longitude = "JP", '-7.1195','-34.8450'
+    elif affiliate == "Natal":
+        code, latitude, longitude = "NAT", '-5.7793','-35.2009'
+    elif affiliate == "Boa Vista":
+        code, latitude, longitude = "ROR", '2.82','-60.672'
+    elif affiliate == "Porto Velho":
+        code, latitude, longitude = "RON", '-8.76194','-63.90389'
+    elif affiliate == "Auto":
+        city, latitude, longitude = get_ip_coordinates()
+        code = None
+    elif affiliate == "Custom":
+        latitude = setting('custom_affiliate_latitude')
+        longitude = setting('custom_affiliate_longitude')
+        if not latitude:
+            latitude = None
+        if not longitude:
+            longitude = None
+        code = None
+    else:
+        code, latitude, longitude = None, None, None
+
+    return code, latitude, longitude
+
+
+def get_ip_coordinates():
+    from urllib2 import urlopen
+
+    url = 'http://ipinfo.io/json'
+    response = urlopen(url)
+    data = json.load(response)
+
+    loc = data['loc']
+    city = data['city']
+    loc = loc.split(',')
+
+    latitude = loc[0]
+    longitude = loc[1]
+
+    return city, latitude, longitude
+
+
+def get_affiliates_by_id(id):
+
+    all_affiliates = ['Custom','Auto','Rio de Janeiro','Sao Paulo','Brasilia','Belo Horizonte','Recife','Manaus','Rio Branco','Boa Vista','Porto Velho','Macapa','Goiania','Belem','Salvador','Florianopolis','Sao Luis','Vitoria','Fortaleza','Porto Alegre','Natal','Curitiba']
+
+    if id == 0:  # All
+        return all_affiliates
+
+    id = id -1
+
+    if len(all_affiliates) > id >= 0:
+        return [all_affiliates[id]]
+
+    # Default Rio de Janeiro
+    return [all_affiliates[0]]
