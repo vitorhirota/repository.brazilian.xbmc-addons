@@ -9,7 +9,10 @@ import resources.lib.modules.util as util
 from resources.lib.modules import control
 from resources.lib.modules import workers
 from resources.lib.modules.globoplay import indexer as globoplay
+from resources.lib.modules.globoplay import scraper_live as globoplay_live
 from resources.lib.modules.globosat import indexer as globosat
+from resources.lib.modules.futuraplay import scraper_live as futuraplay
+from resources.lib.modules.sexyhotplay import scraper_live as sexyhotplay
 
 
 class Live:
@@ -27,6 +30,10 @@ class Live:
 
         if control.is_globosat_available():
             threads.append(workers.Thread(self.append_result, globosat.Indexer().get_live, live))
+            if control.show_adult_content:
+                threads.append(workers.Thread(self.append_result, sexyhotplay.get_live_channels, live))
+
+        threads.append(workers.Thread(self.append_result, futuraplay.get_live_channels, live))
 
         [i.start() for i in threads]
         [i.join() for i in threads]
@@ -49,10 +56,9 @@ class Live:
         #     'url': 'http://evcv.mm.uol.com.br:1935/band/bandnews/playlist.m3u8'
         # })
 
-        # control.addSortMethod(int(sys.argv[1]), control.SORT_METHOD_LABEL_IGNORE_FOLDERS)
-        live = sorted(live, key=lambda k: k['sorttitle'])
-        live = sorted(live, key=lambda k: '1' if 'isFolder' in k and k['isFolder'] == 'true' else '0')
-        live = sorted(live, key=lambda k: k['dateadded'] if 'dateadded' in k else None, reverse=True)
+        # live = sorted(live, key=lambda k: k['sorttitle'])
+        # live = sorted(live, key=lambda k: '1' if 'isFolder' in k and k['isFolder'] == 'true' else '0')
+        # live = sorted(live, key=lambda k: k['dateadded'] if 'dateadded' in k else None, reverse=True)
 
         # shuffle(live)
 
@@ -63,22 +69,31 @@ class Live:
     def append_result(self, fn, list, *args):
         list += fn(*args)
 
-    def get_subitems(self, meta):
+    def get_subitems_pfc(self, meta):
         live = globosat.Indexer().get_pfc(meta)
 
         self.channel_directory(live)
 
         return live
 
+    def get_subitems_bbb(self, program_id):
+        live = globoplay_live.get_multicam(program_id)
+
+        self.channel_directory(live)
+
+        return live
+
     def channel_directory(self, items):
-        if items == None or len(items) == 0: control.idle(); sys.exit()
+        if items is None or len(items) == 0:
+            control.idle()
+            sys.exit()
 
         sysaddon = sys.argv[0]
 
         syshandle = int(sys.argv[1])
 
         try:
-            isOld = False;
+            isOld = False
             control.item().getArt('type')
         except:
             isOld = True
@@ -95,6 +110,10 @@ class Live:
             meta.update({'duration': channel['duration']}) if 'duration' in channel else None
             meta.update({'title': channel['title']}) if 'title' in channel else None
             meta.update({'tagline': channel['tagline']}) if 'tagline' in channel else None
+            meta.update({'year': channel['year']}) if 'year' in channel else None
+
+            meta.update({'sorttitle': meta['title']})
+            meta.update({'title': meta['name']})
 
             sysmeta = urllib.quote_plus(json.dumps(meta))
             id_globo_videos = channel['id']
@@ -104,11 +123,9 @@ class Live:
 
             url = channel['url'] if 'url' in channel else '%s?action=playlive&provider=%s&id_globo_videos=%s&isFolder=%s&meta=%s&t=%s' % (sysaddon, brplayprovider, id_globo_videos, isFolder, sysmeta, self.systime)
 
-            cm = []
+            cm = [(refreshMenu, 'RunPlugin(%s?action=refresh)' % sysaddon)]
 
-            cm.append((refreshMenu, 'RunPlugin(%s?action=refresh)' % sysaddon))
-
-            if isOld == True:
+            if isOld is True:
                 cm.append((control.lang2(19033).encode('utf-8'), 'Action(Info)'))
 
             item = control.item(label=label)
@@ -166,17 +183,17 @@ class Live:
                 item.setProperty('Progress', str((offset / duration) * 100) if duration else str(0))
                 item.setProperty('totaltime', str(duration))
 
-            if not isFolder:
-                item.setMimeType("application/vnd.apple.mpegurl")
+            # if not isFolder:
+            #     item.setMimeType("application/vnd.apple.mpegurl")
 
             list_items.append((url, item, isFolder))
 
-        # control.addSortMethod(int(sys.argv[1]), control.SORT_METHOD_DATEADDED)
         # control.addSortMethod(int(sys.argv[1]), control.SORT_METHOD_VIDEO_SORT_TITLE)
+        # control.addSortMethod(int(sys.argv[1]), control.SORT_METHOD_DATEADDED)
         # control.addSortMethod(int(sys.argv[1]), control.SORT_METHOD_LABEL_IGNORE_FOLDERS)
 
         control.addItems(syshandle, list_items)
-        control.category(handle=syshandle, category="Live")
+        control.category(handle=syshandle, category=control.lang(32001).encode('utf-8'))
 
         content = 'LiveTV' if control.isJarvis else 'tvshows'
 

@@ -4,19 +4,23 @@ import json
 import re
 import sys
 import urllib
+from urlparse import urlparse
 
-import auth
-import auth_helper
 from resources.lib.modules import util
 from resources.lib.modules import client
 from resources.lib.modules import control
 from resources.lib.modules import hlshelper
+from resources.lib.modules.globoplay import resourceshelper
+from resources.lib.modules.globosat import auth_helper
 
 import xbmc
 import threading
 import scraper_live
 
+
 HISTORY_URL_API = 'https://api.vod.globosat.tv/globosatplay/watch_history.json?token=%s'
+PLAYER_SLUG = 'android'
+PLAYER_VERSION = '1.1.24'
 
 
 class Player(xbmc.Player):
@@ -31,28 +35,38 @@ class Player(xbmc.Player):
 
     def playlive(self, id, meta):
 
+        control.log("Globosat Play - play_stream: id=%s | meta=%s" % (id, meta))
+
         if id is None: return
 
-        info = self.__get_video_info(id)
+        info = resourceshelper.get_video_info(id)
 
-        if not info or 'channel' not in info:
+        control.log("INFO: %s" % repr(info))
+
+        if not info or info is None or 'channel' not in info:
             return
 
-        if 'encrypted' in info and info['encrypted'] == 'true':
-            control.infoDialog(message=control.lang(34103).encode('utf-8'), icon='Wr')
+        try:
+            hash, user, credentials = self.sign_resource(info['provider_id'], info['resource_id'], id, info['player'], info['version'])
+        except Exception as ex:
+            control.log("ERROR: %s" % repr(ex))
+            return
+
+        encrypted = 'encrypted' in info and info['encrypted']
+
+        if encrypted and not control.is_inputstream_available():
+            control.okDialog(control.lang(31200), control.lang(34103).encode('utf-8'))
             return
 
         title = info['channel']
 
-        signed_hashes = util.get_signed_hashes(info['hash'])
-
         query_string = re.sub(r'{{(\w*)}}', r'%(\1)s', info['query_string_template'])
 
         query_string = query_string % {
-            'hash': signed_hashes[0],
+            'hash': hash,
             'key': 'app',
             'openClosed': 'F' if info['subscriber_only'] else 'A',
-            'user': info['user'] if info['subscriber_only'] else ''
+            'user': user if info['subscriber_only'] else ''
         }
 
         url = '?'.join([info['url'], query_string])
@@ -84,7 +98,12 @@ class Player(xbmc.Player):
 
         self.isLive = 'livefeed' in meta and meta['livefeed'] == 'true'
 
-        self.url, mime_type, stopEvent = hlshelper.pick_bandwidth(url)
+        parsed_url = urlparse(url)
+        if parsed_url.path.endswith(".m3u8"):
+            self.url, mime_type, stopEvent, cookies = hlshelper.pick_bandwidth(url)
+        else:
+            self.url = url
+            mime_type, stopEvent, cookies = 'video/mp4', None, None
 
         if self.url is None:
             if stopEvent:
@@ -94,19 +113,49 @@ class Player(xbmc.Player):
             return
 
         control.log("Resolved URL: %s" % repr(self.url))
+        control.log("Parsed URL: %s" % repr(parsed_url))
 
         item = control.item(path=self.url)
         item.setArt({'icon': thumb, 'thumb': thumb, 'poster': poster, 'tvshow.poster': poster, 'season.poster': poster})
         item.setProperty('IsPlayable', 'true')
         item.setInfo(type='Video', infoLabels=meta)
 
-        if mime_type:
-            item.setMimeType(mime_type)
-
         item.setContentLookup(False)
 
-        item.setProperty('inputstream.adaptive.manifest_type', 'hls')
-        item.setProperty('inputstreamaddon', 'inputstream.adaptive')
+        if parsed_url.path.endswith(".mpd"):
+            mime_type = 'application/dash+xml'
+            item.setProperty('inputstream.adaptive.manifest_type', 'mpd')
+            if self.isLive:
+                item.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')
+
+        elif parsed_url.path.endswith(".ism/manifest"):
+            mime_type = 'application/vnd.ms-sstr+xml'
+            item.setProperty('inputstream.adaptive.manifest_type', 'ism')
+
+        else:
+            item.setProperty('inputstream.adaptive.manifest_type', 'hls')
+
+        if encrypted:
+            control.log("DRM: %s" % info['drm_scheme'])
+            licence_url = info['protection_url']
+            item.setProperty('inputstream.adaptive.license_type', info['drm_scheme'])
+            if info['drm_scheme'] == 'com.widevine.alpha' or info['drm_scheme'] == 'com.microsoft.playready':
+                item.setProperty('inputstream.adaptive.license_key', licence_url + "||R{SSM}|")
+
+        if mime_type:
+            item.setMimeType(mime_type)
+            control.log("MIME TYPE: %s" % repr(mime_type))
+
+        if not cookies and control.is_inputstream_available():
+            item.setProperty('inputstreamaddon', 'inputstream.adaptive')
+            # reqCookies = client.request(url=self.url,output='cookiejar',headRequest=True)
+            # cookie_string = "; ".join([str(x) + "=" + str(y) for x, y in reqCookies.items()])
+            # item.setProperty('inputstream.adaptive.stream_headers', 'cookie=%s' % cookie_string)
+            # control.log("COOKIE STRING: %s" % cookie_string)
+
+        if 'subtitles' in info and info['subtitles'] and len(info['subtitles']) > 0:
+            control.log("FOUND SUBTITLES: %s" % repr([sub['url'] for sub in info['subtitles']]))
+            item.setSubtitles([sub['url'] for sub in info['subtitles']])
 
         control.resolve(int(sys.argv[1]), True, item)
 
@@ -117,16 +166,22 @@ class Player(xbmc.Player):
 
         self.video_id = info['id'] if 'id' in info else None
 
+        first_run = True
         last_time = 0.0
         while not self.stopPlayingEvent.isSet():
             if control.monitor.abortRequested():
                 control.log("Abort requested")
                 break
-            if self.isPlaying() and not self.isLive:
-                current_time = self.getTime()
-                if current_time - last_time > 5 or (last_time == 0 and current_time > 1):
-                    last_time = current_time
-                    self.save_video_progress(self.token, self.video_id, current_time)
+
+            if self.isPlaying():
+                if first_run:
+                    self.showSubtitles(False)
+                    first_run = False
+                if not self.isLive:
+                    current_time = self.getTime()
+                    if current_time - last_time > 5 or (last_time == 0 and current_time > 1):
+                        last_time = current_time
+                        self.save_video_progress(self.token, self.video_id, current_time)
             control.sleep(1000)
 
         if stopEvent:
@@ -138,7 +193,7 @@ class Player(xbmc.Player):
     def onPlayBackStarted(self):
         # Will be called when xbmc starts playing a file
         control.log("Playback has started!")
-        if self.offset > 0: self.seekTime(float(self.offset))
+        # if self.offset > 0: self.seekTime(float(self.offset))
 
     def onPlayBackEnded(self):
         # Will be called when xbmc stops playing a file
@@ -149,91 +204,55 @@ class Player(xbmc.Player):
 
     def onPlayBackStopped(self):
         # Will be called when user stops xbmc playing a file
-        control.log("setting event in onPlayBackStopped ")
+        control.log("setting event in onPlayBackStopped")
 
-        # if self.stopPlayingEvent:
-        #     self.stopPlayingEvent.set()
+        if self.stopPlayingEvent:
+            self.stopPlayingEvent.set()
 
-    def __get_video_info(self, video_id):
-
+    def sign_resource(self, provider_id, resource_id, video_id, player, version):
         proxy = control.proxy_url
         proxy = None if proxy is None or proxy == '' else {
             'http': proxy,
             'https': proxy,
         }
 
-        playlist_url = 'http://api.globovideos.com/videos/%s/playlist'
-        playlist_json = client.request(playlist_url % video_id, headers={"Accept-Encoding": "gzip"})
+        credentials = auth_helper.get_globosat_cookie(provider_id)
 
-        if 'videos' not in playlist_json or len(playlist_json['videos']) == 0:
-            control.infoDialog(message=control.lang(34101).encode('utf-8'), sound=True, icon='ERROR')
-            return None
-            # raise Exception("Player version not found.")
-
-        playlist_json = playlist_json['videos'][0]
-
-        for node in playlist_json['resources']:
-            if any("ios" in s for s in node['players']):
-                resource = node
-                break
-
-        if (resource or None) is None:
-            control.infoDialog(message=control.lang(34102).encode('utf-8'), sound=True, icon='ERROR')
-            return None
-
-        resource_id = resource['_id']
-
-        provider = control.setting('globosat_provider').lower().replace(' ', '_')
-        username = control.setting('globosat_username')
-        password = control.setting('globosat_password')
-
-        # authenticate
-        authenticator = getattr(auth, provider)()
-        credentials = authenticator.authenticate(playlist_json["provider_id"], username, password)
-
-        hash_url = 'https://security.video.globo.com/videos/%s/hash?resource_id=%s&version=1.1.23&player=ios' % (video_id, resource_id)
+        hash_url = 'https://security.video.globo.com/videos/%s/hash?resource_id=%s&version=%s&player=%s' % (video_id, resource_id, PLAYER_VERSION, PLAYER_SLUG)
         hash_json = client.request(hash_url, cookie=credentials, mobile=True, headers={"Accept-Encoding": "gzip"}, proxy=proxy)
 
-        if not hash_json or 'message' in hash_json and hash_json['message']:
-            control.infoDialog(message=control.lang(34102).encode('utf-8'), sound=True, icon='ERROR')
-            return None
+        if not hash_json or hash_json is None or 'message' in hash_json and hash_json['message']:
+            message = hash_json['message'] if hash_json and 'message' in hash_json else control.lang(34102)
+            message = str(hash_json['http_status_code']) + u'|' + message.encode('utf-8') if hash_json and 'http_status_code' in hash_json else message
+            control.infoDialog(message=message.encode('utf-8'), sound=True, icon='ERROR')
+            raise Exception(message)
 
-        return {
-            "id": playlist_json["id"],
-            "title": playlist_json["title"],
-            "program": playlist_json["program"],
-            "program_id": playlist_json["program_id"],
-            "provider_id": playlist_json["provider_id"],
-            "channel": playlist_json["channel"],
-            "channel_id": playlist_json["channel_id"],
-            "category": playlist_json["category"],
-            "subscriber_only": playlist_json["subscriber_only"],
-            "exhibited_at": playlist_json["exhibited_at"],
-            "player": "ios",
-            "url": resource["url"],
-            "query_string_template": resource["query_string_template"],
-            "thumbUri": resource["thumbUri"] if 'thumbUri' in resource else None,
-            "hash": hash_json["hash"],
-            "user": hash_json["user"] if 'user' in hash_json else None,
-            "encrypted": resource['encrypted'] if 'encrypted' in resource else 'false',
-            "credentials": credentials
-        }
+        hash = util.get_signed_hashes(hash_json['hash'])[0]
+
+        return hash, hash_json["user"] if 'user' in hash_json else None, credentials
 
     def save_video_progress(self, token, video_id, watched_seconds):
 
-        post_data = {
-            'watched_seconds': int(round((watched_seconds))),
-            'id': video_id
-        }
+        try:
+            if self.isLive:
+                return
 
-        url = HISTORY_URL_API % token
-        headers = {
-            "Accept-Encoding": "gzip",
-            "Content-Type": "application/x-www-form-urlencoded",
-            "version": "2",
-            "Authorization": scraper_live.GLOBOSAT_API_AUTHORIZATION
-        }
+            post_data = {
+                'watched_seconds': int(round((watched_seconds))),
+                'id': video_id
+            }
 
-        post_data = urllib.urlencode(post_data)
+            url = HISTORY_URL_API % token
+            headers = {
+                "Accept-Encoding": "gzip",
+                "Content-Type": "application/x-www-form-urlencoded",
+                "version": "2",
+                "Authorization": scraper_live.GLOBOSAT_API_AUTHORIZATION
+            }
 
-        client.request(url, error=True, mobile=True, headers=headers, post=post_data)
+            post_data = urllib.urlencode(post_data)
+
+            client.request(url, error=True, mobile=True, headers=headers, post=post_data)
+
+        except Exception as ex:
+            control.log("ERROR SAVING VIDEO PROGRESS (GLOBO PLAY): %s" % repr(ex))
