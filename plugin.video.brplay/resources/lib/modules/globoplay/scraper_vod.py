@@ -12,7 +12,7 @@ GLOBO_LOGO = 'http://s3.glbimg.com/v1/AUTH_180b9dd048d9434295d27c4b6dadc248/medi
 GLOBO_FANART = 'https://s02.video.glbimg.com/x720/4452349.jpg'
 
 GLOBOPLAY_URL = 'https://api.globoplay.com.br'
-GLOBOPLAY_APIKEY = '***REMOVED***'  # '***REMOVED***'
+GLOBOPLAY_APIKEY = ''
 GLOBOPLAY_CATEGORIES = GLOBOPLAY_URL + '/v3/categories/?api_key=' + GLOBOPLAY_APIKEY
 GLOBOPLAY_DAYS = GLOBOPLAY_URL + '/v1/programs/%d/videos/days?api_key=' + GLOBOPLAY_APIKEY
 GLOBOPLAY_VIDEOS = GLOBOPLAY_URL + '/v1/programs/%d/videos?day=%s&order=asc&page=%d&per_page=%s&api_key=' + GLOBOPLAY_APIKEY

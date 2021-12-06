@@ -10,7 +10,7 @@ import util
 BASE_URL = 'http://%s.globo.com'
 
 GLOBOPLAY_URL = 'https://api.globoplay.com.br'
-GLOBOPLAY_APIKEY = '***REMOVED***'
+GLOBOPLAY_APIKEY = ''
 GLOBOPLAY_CATEGORIAS = GLOBOPLAY_URL + '/v1/categories/?api_key=' + GLOBOPLAY_APIKEY
 #GLOBOPLAY_EPISODIOS = GLOBOPLAY_URL + '/v2/programs/%d?api_key=' + GLOBOPLAY_APIKEY
 GLOBOPLAT_DAYS = GLOBOPLAY_URL + '/v1/programs/%d/videos/days?api_key=' + GLOBOPLAY_APIKEY

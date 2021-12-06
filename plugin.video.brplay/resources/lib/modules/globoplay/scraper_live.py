@@ -15,7 +15,7 @@ from scraper_vod import GLOBOPLAY_CONFIGURATION
 GLOBO_LOGO = 'http://s3.glbimg.com/v1/AUTH_180b9dd048d9434295d27c4b6dadc248/media_kit/42/f3/a1511ca14eeeca2e054c45b56e07.png'
 GLOBO_FANART = os.path.join(control.artPath(), 'globo.jpg')
 
-GLOBOPLAY_APIKEY = '***REMOVED***'
+GLOBOPLAY_APIKEY = ''
 
 LOGO_BBB = 'https://s.glbimg.com/pc/gm/media/dc0a6987403a05813a7194cd0fdb05be/2014/12/1/7e69a2767aebc18453c523637722733d.png'
 FANART_BBB = 'http://s01.video.glbimg.com/x720/244881.jpg'
